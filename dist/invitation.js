@@ -6,7 +6,6 @@
   const cover = document.getElementById('cover');
   const envelopeButton = document.getElementById('envelope-button');
   const envelopeImage = document.getElementById('envelope-image');
-  const openButton = document.getElementById('open-button');
   const skipButton = document.getElementById('skip-button');
   const replayButton = document.getElementById('replay-button');
   const title = document.getElementById('invitation-title');
@@ -30,6 +29,7 @@
   }
 
   function animate(element, frames, options) {
+    if (!element) return null;
     const animation = element.animate(frames, {
       duration: 850,
       easing: ease,
@@ -52,7 +52,6 @@
     experience.style.removeProperty('height');
     cover.style.removeProperty('height');
     envelopeButton.disabled = false;
-    openButton.disabled = false;
     if (focus) title.focus({ preventScroll: true });
   }
 
@@ -81,10 +80,8 @@
     const initialHeight = experience.getBoundingClientRect().height;
     const coverHeight = cover.getBoundingClientRect().height;
     envelopeButton.disabled = true;
-    openButton.disabled = true;
     cover.style.height = `${coverHeight}px`;
     invitation.hidden = false;
-    replayButton.hidden = false;
     setState('opening');
     const targetHeight = Math.max(invitation.getBoundingClientRect().height, initialHeight);
     experience.style.height = `${initialHeight}px`;
@@ -92,44 +89,76 @@
     skipButton.focus({ preventScroll: true });
 
     try {
+      const art = cover.querySelector('.envelope-art');
+      const card = cover.querySelector('.envelope-card');
+      const rise = 0.75;
       animate(experience, [{ height: `${initialHeight}px` }, { height: `${targetHeight}px` }], {
-        duration: 1650,
+        duration: 1400,
       });
       animate(cover.querySelector('.cover-heading'), [
         { opacity: 1, transform: 'translateY(0)' },
         { opacity: 0, transform: 'translateY(-18px)' },
       ], { duration: 430 });
       animate(cover.querySelector('.cover-action'), [{ opacity: 1 }, { opacity: 0 }], { duration: 240 });
-      animate(cover.querySelector('.envelope-art'), [
-        { offset: 0, opacity: 1, transform: 'translateY(0) rotate(-3deg) scale(1)' },
-        { offset: .24, opacity: 1, transform: 'translateY(-12px) rotate(0deg) scale(1.025)' },
-        { offset: .48, opacity: 1, transform: 'translateY(5px) rotateX(9deg) scale(1.02)' },
-        { offset: 1, opacity: 0, transform: 'translateY(85px) rotateX(22deg) scale(.91)' },
-      ], { duration: 1050, easing: 'cubic-bezier(.4, 0, .2, 1)' });
-      animate(cover.querySelector('.envelope-halo'), [{ opacity: 1 }, { opacity: 0 }], { duration: 700 });
-      animate(invitation, [
-        { opacity: 0, transform: 'translateY(34px) scale(.975)' },
-        { opacity: 1, transform: 'translateY(0) scale(1)' },
-      ], { delay: 620, duration: 1100 });
-      animate(invitation.querySelector('.crest'), [
-        { opacity: 0, transform: 'translateY(22px) scale(.96)' },
-        { opacity: 1, transform: 'translateY(0) scale(1)' },
-      ], { delay: 730, duration: 1050 });
-      const reveals = [
-        ['.eyebrow', 900],
-        ['.couple-names', 990],
-        ['.ornament', 1120],
-        ['.event-details', 1220],
-        ['.invitation-actions', 1370],
-      ];
-      for (const [selector, delay] of reveals) {
-        animate(invitation.querySelector(selector), [
-          { opacity: 0, transform: 'translateY(13px)' },
-          { opacity: 1, transform: 'translateY(0)' },
-        ], { delay, duration: 650 });
+      animate(cover.querySelector('.envelope-halo'), [{ opacity: 1 }, { opacity: 0 }], { duration: 600 });
+      // The seal catches the light, the envelope settles, the flap lifts and the card slides out.
+      animate(cover.querySelector('.seal-glow'), [
+        { opacity: 0, transform: 'scale(.9)' },
+        { opacity: 1, transform: 'scale(1.15)', offset: 0.45 },
+        { opacity: 0, transform: 'scale(1.3)' },
+      ], { duration: 520, easing: 'ease-out' });
+      animate(art, [
+        { offset: 0, opacity: 1, transform: 'translateY(0) rotate(-3deg) scale(1)', easing: 'cubic-bezier(.3, .7, .3, 1)' },
+        { offset: 0.18, opacity: 1, transform: 'translateY(-6px) rotate(0deg) scale(1.02)' },
+        { offset: 0.76, opacity: 1, transform: 'translateY(-6px) rotate(0deg) scale(1.02)', easing: 'cubic-bezier(.5, 0, .7, .4)' },
+        { offset: 1, opacity: 0, transform: 'translateY(90px) rotate(0deg) scale(.96)' },
+      ], { duration: 1650, easing: 'linear' });
+      // The flap lifts, snaps through edge-on quickly (so it never reads as a sliver), then settles open.
+      const flapTiming = { delay: 260, duration: 600, easing: 'linear' };
+      animate(cover.querySelector('.envelope-flap'), [
+        { offset: 0, transform: 'rotateX(0deg)', zIndex: 4, easing: 'cubic-bezier(.45, 0, .9, .6)' },
+        { offset: 0.46, transform: 'rotateX(76deg)', zIndex: 4 },
+        { offset: 0.5, transform: 'rotateX(90deg)', zIndex: 4 },
+        { offset: 0.5, transform: 'rotateX(90deg)', zIndex: 0 },
+        { offset: 0.54, transform: 'rotateX(104deg)', zIndex: 0, easing: 'cubic-bezier(.1, .4, .3, 1)' },
+        { offset: 1, transform: 'rotateX(180deg)', zIndex: 0 },
+      ], flapTiming);
+      animate(cover.querySelector('.flap-front'), [
+        { filter: 'brightness(1)' },
+        { filter: 'brightness(.86)', offset: 0.46 },
+        { filter: 'brightness(.86)' },
+      ], flapTiming);
+      animate(card, [
+        { transform: 'translateY(0)' },
+        { transform: `translateY(${-rise * 100}%)` },
+      ], { delay: 640, duration: 600, easing: 'cubic-bezier(.3, .7, .25, 1)' });
+
+      // Hand the little card over to the real invitation at the same place and size, then bring it forward.
+      const box = envelopeButton.getBoundingClientRect();
+      const k = 1.02;
+      const artCx = box.left + art.offsetLeft + art.offsetWidth / 2;
+      const artCy = box.top + art.offsetTop + art.offsetHeight / 2 - 6;
+      const cardCx = artCx + (card.offsetLeft + card.offsetWidth / 2 - art.offsetWidth / 2) * k;
+      const cardCy = artCy + (card.offsetTop + card.offsetHeight / 2 - art.offsetHeight / 2 - rise * card.offsetHeight) * k;
+      const inv = invitation.getBoundingClientRect();
+      const matches = inv.width / inv.height > 1.3 && targetHeight === initialHeight;
+      if (matches) {
+        const s = (card.offsetWidth * k) / inv.width;
+        const from = `translate(${cardCx - (inv.left + inv.width / 2)}px, ${cardCy - (inv.top + inv.height / 2)}px) scale(${s})`;
+        animate(invitation, [
+          { offset: 0, opacity: 0, transform: from },
+          { offset: 0.12, opacity: 1, transform: from, easing: 'cubic-bezier(.3, .1, .2, 1)' },
+          { offset: 1, opacity: 1, transform: 'none' },
+        ], { delay: 1220, duration: 820, easing: 'linear' });
+      } else {
+        animate(invitation, [
+          { opacity: 0, transform: 'translateY(26px) scale(.975)' },
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
+        ], { delay: 1240, duration: 760 });
       }
-      // A single bounded timer also settles the page if a tab was backgrounded.
-      finishTimer = window.setTimeout(() => finishOpening(), 2070);
+      // A single bounded timer, just after the last animation ends, also settles the page if a tab was backgrounded.
+      const end = Math.max(...animations.map((a) => a.effect.getComputedTiming().endTime));
+      finishTimer = window.setTimeout(() => finishOpening(), end + 50);
     } catch {
       // Any unavailable animation feature falls back to the readable invitation.
       finishOpening();
@@ -137,7 +166,6 @@
   }
 
   envelopeButton.addEventListener('click', openInvitation);
-  openButton.addEventListener('click', openInvitation);
   skipButton.addEventListener('click', () => finishOpening());
   replayButton.addEventListener('click', () => {
     resetCover();

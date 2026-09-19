@@ -22,9 +22,9 @@ Open <http://127.0.0.1:4173>. No package installation or build step is required.
 
 ## Experience
 
-- Tap the envelope or **Open invitation** to reveal the original wedding crest and announcement.
-- The two-second reveal supports skipping, replay, keyboard input, and reduced motion.
-- The layout changes from a desktop composition with artwork beside the text to a stacked mobile invitation.
+- Tap the envelope's wax seal to open it: the flap lifts with the seal, the invitation slides out of the pocket, and the card comes forward as the envelope falls away (about 2.3 seconds).
+- The reveal supports skipping (the **Skip** control or Escape), replay (in the footer), keyboard input, and reduced motion.
+- The invitation is a centered card in stationery proportions (3:2), framed by gold line-art corners: Indian flowers (marigold, rose, lotus, jasmine and a gold jhumka) cascading from the top corners, Yosemite from Tunnel View (El Capitan, Half Dome, Bridalveil Fall) bottom-left, and New York (the Brooklyn Bridge, Chrysler, Empire State and One World Trade Center) bottom-right. On phones and portrait tablets the corners become bands above and below the text.
 - **Add to calendar** offers Google Calendar and a downloadable Apple/Outlook-compatible event. The event is all-day on May 15, 2027; May 16 is its exclusive end date.
 - Without JavaScript, the complete invitation and calendar links are available immediately.
 - Fonts and images are served locally. No analytics, storage, audio, guest data, or external runtime dependencies are used. Google Calendar is opened only when the guest selects it.
@@ -35,11 +35,14 @@ Open <http://127.0.0.1:4173>. No package installation or build step is required.
 - `dist/styles.css`: responsive layout, typography, and interaction styling.
 - `dist/invitation.js`: opening/replay animation and accessibility behavior.
 - `dist/rajat-and-rachita.ics`: downloadable all-day event.
-- `dist/assets/`: original crest, envelope, local fonts, and their licenses.
-
-The supplied crest is preserved in `dist/assets/wedding-crest.png`, with a high-quality WebP copy for faster browser loading. The skyline in that supplied artwork is intentionally retained; the invitation text identifies Philadelphia as the wedding location.
+- `dist/assets/`: envelope, local fonts, and their licenses.
+- `dist/assets/art/`: the four corner illustrations (`florals.svg`, `florals-right.svg`, `yosemite.svg`, `new-york.svg`).
+- `art-src/`: the script that draws the corner illustrations. Run `node art-src/gen.mjs` to regenerate `dist/assets/art/`; the output is deterministic.
+- `reference/wedding-crest.png`: the couple's original watercolor crest, kept unmodified outside the published site. It is no longer displayed; the corner art takes its motifs (Indian flowers, jhumkas, mountains, the New York skyline) as inspiration.
 
 ## Artwork provenance
+
+The corner illustrations are original vector line art written as code (`art-src/`) for this site; no image generator was used and they do not trace the crest. Yosemite and New York are places that matter to the couple; the invitation text identifies Philadelphia as the wedding location.
 
 One matching envelope was created with the **built-in Imagegen tool**. The final asset is `dist/assets/envelope.webp`; the original generated image is preserved at `dist/assets/envelope.png`. This artwork does not replace or modify the supplied wedding crest.
 
