@@ -156,6 +156,64 @@
           { opacity: 1, transform: 'translateY(0) scale(1)' },
         ], { delay: 1240, duration: 760 });
       }
+
+      // Two lovebirds carry the rolled banner down, beak to beak, then back apart to pull it open from the middle.
+      const banner = document.getElementById('banner');
+      const flight = 1900;
+      const unfurl = flight + 1650;
+      const unfurlTime = 1300;
+      const drop = unfurl + unfurlTime + 80;
+      animate(banner, [
+        { offset: 0, opacity: 0, transform: 'translate(-26px, -52vh)' },
+        { offset: 0.14, opacity: 1 },
+        { offset: 0.45, transform: 'translate(22px, -20vh)' },
+        { offset: 0.78, transform: 'translate(-7px, -6px)' },
+        { offset: 1, opacity: 1, transform: 'translate(0, 0)' },
+      ], { delay: flight, duration: 1500, easing: 'cubic-bezier(.25, .5, .35, 1)' });
+      banner.querySelectorAll('.bird-wing').forEach((wing, i) => {
+        animate(wing, [
+          { transform: 'rotate(0deg)' },
+          { transform: 'rotate(52deg)', offset: 0.35 },
+          { transform: 'rotate(-14deg)', offset: 0.75 },
+          { transform: 'rotate(0deg)' },
+        ], { delay: flight + i * 70, duration: 270, iterations: 14, easing: 'ease-in-out' });
+      });
+      const unfurlTiming = { delay: unfurl, duration: unfurlTime, easing: 'cubic-bezier(.5, 0, .25, 1)' };
+      animate(banner.querySelector('.banner-cloth'), [
+        { clipPath: 'inset(0 50% 0 50%)' },
+        { clipPath: 'inset(0 0 0 0)' },
+      ], unfurlTiming);
+      animate(banner.querySelector('.banner-carrier-l'), [
+        { transform: 'translateX(100%)' },
+        { transform: 'translateX(0)' },
+      ], unfurlTiming);
+      animate(banner.querySelector('.banner-carrier-r'), [
+        { transform: 'translateX(-100%)' },
+        { transform: 'translateX(0)' },
+      ], unfurlTiming);
+      banner.querySelectorAll('.banner-roll').forEach((roll) => {
+        animate(roll, [
+          { offset: 0, opacity: 1, transform: 'scaleX(1.5)' },
+          { offset: 0.88, opacity: 1, transform: 'scaleX(.85)' },
+          { offset: 1, opacity: 0, transform: 'scaleX(.7)' },
+        ], unfurlTiming);
+      });
+
+      // With the banner open, the rest of the invitation drops in line by line.
+      const lines = [
+        ...title.children,
+        invitation.querySelector('.ornament'),
+        invitation.querySelector('.wedding-date'),
+        invitation.querySelector('.wedding-location'),
+        invitation.querySelector('.invitation-actions'),
+      ];
+      lines.forEach((line, i) => {
+        animate(line, [
+          { offset: 0, opacity: 0, transform: 'translateY(-30px)' },
+          { offset: 0.65, opacity: 1, transform: 'translateY(3px)' },
+          { offset: 1, opacity: 1, transform: 'translateY(0)' },
+        ], { delay: drop + i * 150, duration: 720, easing: 'cubic-bezier(.3, .6, .35, 1)' });
+      });
       // A single bounded timer, just after the last animation ends, also settles the page if a tab was backgrounded.
       const end = Math.max(...animations.map((a) => a.effect.getComputedTiming().endTime));
       finishTimer = window.setTimeout(() => finishOpening(), end + 50);

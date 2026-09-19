@@ -40,13 +40,6 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var
 .envelope-card::before{content:'';position:absolute;inset:.65cqw;border:1px solid #eadcbf}
 .envelope-card img{position:absolute;width:26cqw;height:auto}
 .ec-tl{left:1.3cqw;top:1.3cqw}.ec-tr{right:1.3cqw;top:1.3cqw}.ec-bl{left:1.3cqw;bottom:1.3cqw}.ec-br{right:1.3cqw;bottom:1.3cqw}
-.ec-copy{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2}
-.ec-eyebrow{font-family:var(--sans);font-size:1.3cqw;letter-spacing:.25em;text-transform:uppercase;color:var(--burgundy);margin-bottom:2.2cqw}
-.ec-names{display:flex;flex-direction:column;align-items:center;font-family:var(--serif);font-size:8.2cqw;line-height:.99;letter-spacing:-.035em;color:var(--burgundy)}
-.ec-names em{font-size:.6em;line-height:1;color:var(--gold)}
-.ec-rule{width:9cqw;height:1px;background:var(--line);margin:2.6cqw 0 2.3cqw}
-.ec-date{font-family:var(--serif);font-size:2cqw;line-height:1.5;color:var(--ink)}
-.ec-place{font-family:var(--sans);font-size:1.08cqw;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-top:1.7cqw}
 .envelope-patch{inset:0;z-index:3;overflow:hidden;clip-path:polygon(40.72% 53.41%,50.00% 64.53%,59.27% 53.36%,60.09% 57.04%,60.27% 60.91%,59.80% 64.73%,58.72% 68.25%,57.08% 71.26%,54.99% 73.55%,52.59% 74.99%,50.02% 75.49%,47.45% 75.01%,45.04% 73.58%,42.95% 71.30%,41.30% 68.30%,40.21% 64.78%,39.73% 60.97%,39.90% 57.10%)}
 .envelope-patch::before{content:'';position:absolute;inset:0;background:url(assets/envelope.webp) 0 0/100% 100% no-repeat;transform-origin:50% 82.23%;transform:translateY(-18.07%) scale(1.8)}
 .envelope-patch::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#b08638,#d4b36c 50%,#b08638);clip-path:polygon(40.72% 53.43%,50.00% 64.53%,59.27% 53.38%,59.27% 53.87%,50.00% 65.02%,40.72% 53.92%)}
@@ -81,6 +74,30 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var
 .corner-br{grid-area:br;transform-origin:100% 100%;align-self:end;margin:0 var(--bleed) var(--bleed) 0}
 .invitation-copy{grid-area:copy;align-self:center;text-align:center;padding:8px 0;min-width:0}
 .eyebrow{margin:0 0 24px;color:var(--burgundy);text-transform:uppercase;font-size:.875rem;letter-spacing:.25em;line-height:1.8}
+.banner-line{display:flex;justify-content:center}
+.banner{position:relative;display:inline-block;color:#f6e8c9}
+.banner-cloth{position:relative;display:block;padding:0 1.45em .42em;isolation:isolate}
+.banner-cloth::before,.banner-cloth::after{content:'';position:absolute;top:.42em;bottom:0;width:1.87em;z-index:-1}
+.banner-cloth::before{left:0;background:linear-gradient(90deg,#6c2839,#57202f calc(100% - .42em),#3b121e calc(100% - .42em));clip-path:polygon(0 0,100% 0,100% calc(100% - .42em),calc(100% - .42em) 100%,0 100%,.62em 50%)}
+.banner-cloth::after{right:0;background:linear-gradient(270deg,#6c2839,#57202f calc(100% - .42em),#3b121e calc(100% - .42em));clip-path:polygon(100% 0,0 0,0 calc(100% - .42em),.42em 100%,100% 100%,calc(100% - .62em) 50%)}
+.banner-band{position:relative;display:block;padding:.62em 1.25em .58em 1.5em;line-height:1.2;white-space:nowrap;background:linear-gradient(#8c3a51,#782f43 55%,#6a2839);box-shadow:0 3px 5px -3px #4d18265c}
+.banner-band::before{content:'';position:absolute;inset:.22em 0;border-block:1px solid #dcc07f8c}
+.banner-carrier{position:absolute;top:0;bottom:0;width:50%;pointer-events:none}
+.banner-carrier-l{left:0}.banner-carrier-r{right:0}
+.banner-roll{position:absolute;top:-.14em;bottom:-.1em;width:.5em;border-radius:.25em;background:linear-gradient(90deg,#4a1826,#9b4960 45%,#5c2132);box-shadow:0 1px 2px #4d182666;opacity:0}
+.banner-carrier-l .banner-roll{left:-.25em}.banner-carrier-r .banner-roll{right:-.25em}
+.bird{position:absolute;top:-.69em;left:-3.68em;width:3.8em;height:2.85em;transform-origin:96.9% 41.7%}
+.banner-carrier-r .bird{left:calc(100% - 3.68em);scale:-1 1}
+.bird svg{display:block;width:100%;height:100%;overflow:visible}
+.bird-body,.bird-wing{fill:var(--card);stroke:var(--gold);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.bird-wing{fill:#f1e4c8;transform-origin:42px 21px}
+.bird .bird-line{fill:none;stroke-width:1;opacity:.7}
+.bird .bird-beak{fill:var(--burgundy);stroke:var(--burgundy);stroke-width:.8}
+.bird .bird-eye{fill:var(--ink);stroke:none}
+.bird .bird-cheek{fill:var(--burgundy);stroke:none;opacity:.2}
+.experience[data-state="opened"] .bird-wing{animation:bird-ruffle 7s ease-in-out 2s infinite}
+.experience[data-state="opened"] .banner-carrier-r .bird-wing{animation-delay:5.5s}
+@keyframes bird-ruffle{0%,86%,100%{transform:rotate(0)}89%{transform:rotate(38deg)}92%{transform:rotate(-8deg)}95%{transform:rotate(24deg)}}
 .couple-names{display:flex;flex-direction:column;align-items:center;font-family:var(--serif);font-weight:400;font-size:clamp(3.5rem,min(6vw,10svh),5.9rem);line-height:.99;letter-spacing:-.035em;margin:0;color:var(--burgundy)}
 .couple-names em{font-size:.6em;line-height:1;font-weight:400;color:var(--gold);margin:.02em 0 .06em}
 .couple-names:focus{outline:none}
@@ -111,9 +128,9 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var
 .footer-diamond{color:var(--gold);font-size:.75rem}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(min-width:1440px){.page-shell{padding-top:42px;padding-bottom:34px}.masthead{margin-bottom:35px}.page-footer{padding-top:35px}.invitation{--chrome:222px}}
-@media(max-width:760px){.page-shell{padding:20px 18px 22px}.masthead{margin-bottom:20px;min-height:40px;gap:20px}.masthead-rule{width:44px}.masthead-monogram{font-size:1.65rem}.invitation{--pad:22px;grid-template-columns:1fr 1fr;grid-template-areas:"tl tr" "copy copy" "bl br";column-gap:12px;row-gap:14px;width:min(100%,510px);aspect-ratio:auto}.corner-art img{width:min(100%,170px)}.corner-tr img,.corner-br img{margin-left:auto}.corner-tl,.corner-tr{margin-bottom:calc(min(100%,170px) * -.72 - 22px)}.invitation-copy{padding:0}.eyebrow{margin-bottom:15px;font-size:.875rem}.couple-names{font-size:clamp(3.7rem,12vw,5rem);flex-direction:row;justify-content:center;flex-wrap:wrap;column-gap:.13em;line-height:1.08}.couple-names em{margin:0;font-size:.58em}.ornament{margin:23px auto 20px}.wedding-date{font-size:1.32rem}.wedding-location{font-size:.74rem;margin-top:15px}.invitation-actions{margin-top:27px;gap:6px}.page-footer{padding-top:23px;font-size:.72rem;gap:13px}.calendar-options{position:relative;top:auto;margin-top:8px}}
+@media(max-width:760px){.page-shell{padding:20px 18px 22px}.masthead{margin-bottom:20px;min-height:40px;gap:20px}.masthead-rule{width:44px}.masthead-monogram{font-size:1.65rem}.invitation{--pad:22px;grid-template-columns:1fr 1fr;grid-template-areas:"tl tr" "copy copy" "bl br";column-gap:12px;row-gap:14px;width:min(100%,510px);aspect-ratio:auto}.corner-art img{width:min(100%,170px)}.corner-tr img,.corner-br img{margin-left:auto}.corner-tl,.corner-tr{margin-bottom:calc(min(100%,170px) * -.72 - 22px)}.invitation-copy{padding:0}.eyebrow{margin-bottom:15px;font-size:.875rem}.bird{font-size:.82em}.couple-names{font-size:clamp(3.7rem,12vw,5rem);flex-direction:row;justify-content:center;flex-wrap:wrap;column-gap:.13em;line-height:1.08}.couple-names em{margin:0;font-size:.58em}.ornament{margin:23px auto 20px}.wedding-date{font-size:1.32rem}.wedding-location{font-size:.74rem;margin-top:15px}.invitation-actions{margin-top:27px;gap:6px}.page-footer{padding-top:23px;font-size:.72rem;gap:13px}.calendar-options{position:relative;top:auto;margin-top:8px}}
 @media(min-width:761px) and (max-width:1100px) and (orientation:portrait){.invitation{grid-template-columns:1fr 1fr;grid-template-areas:"tl tr" "copy copy" "bl br";column-gap:16px;row-gap:16px;width:min(100%,680px);aspect-ratio:auto}.corner-art img{width:min(100%,230px)}.corner-tr img,.corner-br img{margin-left:auto}.corner-tl,.corner-tr{margin-bottom:calc(min(100%,230px) * -.72 - 22px)}.couple-names{font-size:clamp(3.8rem,8.5vw,5rem);flex-direction:row;justify-content:center;flex-wrap:wrap;column-gap:.13em;line-height:1.08}.couple-names em{margin:0;font-size:.58em}}
-@media(max-width:390px){.page-shell{padding-inline:13px}.invitation{--pad:18px}.couple-names{font-size:3.5rem;flex-direction:column;gap:0}.couple-names em{line-height:1.05}.wedding-date{font-size:1.23rem}.wedding-location{font-size:.7rem;letter-spacing:.16em}.page-footer{letter-spacing:.09em}}
+@media(max-width:390px){.page-shell{padding-inline:13px}.invitation{--pad:18px}.banner{font-size:.9em}.couple-names{font-size:3.5rem;flex-direction:column;gap:0}.couple-names em{line-height:1.05}.wedding-date{font-size:1.23rem}.wedding-location{font-size:.7rem;letter-spacing:.16em}.page-footer{letter-spacing:.09em}}
 @media(max-width:760px){.cover{padding:20px 0 25px}.cover-heading .eyebrow{font-size:.875rem;margin-bottom:15px}.cover-names{font-size:clamp(2.8rem,9.8vw,4.8rem)}.cover-subtitle{font-size:1.25rem;margin-top:12px}.envelope-button{width:min(570px,100%);margin:22px 0 12px}.experience[data-state="closed"] .cover{padding-bottom:clamp(24px,11svh,110px)}.envelope-art{transform:rotate(-4deg)}.cover-hint{font-size:1.1rem}}
 @media(max-height:820px) and (min-width:761px){.page-shell{padding-top:16px;padding-bottom:12px}.masthead{margin-bottom:12px;min-height:40px}.invitation{--pad:clamp(18px,2.2vw,30px);--chrome:126px}.eyebrow{margin-bottom:12px}.couple-names{font-size:clamp(3.1rem,min(6vw,8.6svh),5.2rem)}.ornament{margin:16px auto 14px}.wedding-location{margin-top:10px}.invitation-actions{margin-top:16px;gap:0}.page-footer{padding-top:12px}}
 @media(max-height:650px) and (min-width:761px){.invitation{--chrome:107px}.page-shell{padding-top:14px;padding-bottom:14px}.masthead{margin-bottom:8px;min-height:35px}.cover{padding-top:0;padding-bottom:0}.cover-names{font-size:3.8rem}.cover-subtitle{font-size:1.15rem;margin-top:4px}.envelope-button{width:min(510px,65vw);margin-top:0;margin-bottom:-10px}.cover-heading .eyebrow{margin-bottom:2px}.page-footer{padding-top:14px}}
