@@ -1,6 +1,14 @@
 # Rajat & Rachita · Save the Date
 
-A local, responsive wedding invitation for **Saturday, May 15, 2027**, in **Philadelphia, Pennsylvania**.
+A responsive wedding invitation for **Saturday, May 15, 2027**, in **Philadelphia, Pennsylvania**.
+
+## Website
+
+**[Open the invitation](https://nkkhare.github.io/rajatandrachita/)**
+
+GitHub Pages publishes the contents of `dist/` using `.github/workflows/pages.yml`. Changes to the invitation on `main` deploy automatically. You can also run the workflow manually from the repository’s Actions tab.
+
+The repository’s **Settings → Pages → Build and deployment → Source** is set to **GitHub Actions**. All site assets use relative paths so the invitation works at the repository’s `/rajatandrachita/` address as well as in the local preview.
 
 ## Preview
 
@@ -10,7 +18,7 @@ From this directory:
 python3 -m http.server 4173 --bind 127.0.0.1 --directory dist
 ```
 
-Open <http://127.0.0.1:4173>. No package installation or build step is required. Nothing has been deployed.
+Open <http://127.0.0.1:4173>. No package installation or build step is required.
 
 ## Experience
 
