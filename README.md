@@ -22,43 +22,26 @@ Open <http://127.0.0.1:4173>. No package installation or build step is required.
 
 ## Experience
 
-- Tap the envelope's wax seal to open it: the flap lifts with the seal, the invitation slides out of the pocket, and the card comes forward as the envelope falls away (about 2.3 seconds).
+- Guests land on a full-screen envelope: textured cotton paper, a flap with a rounded tip, an embossed script "R&R" monogram, and "Tap to open". Tapping it lifts the flap, the envelope drops away, and the invitation rises into view and assembles: the frame draws in, a burgundy silk "Save the Date" banner with gold jhumka tassels unfurls and letters itself, then the names, date, crest, countdown and calendar button arrive (about 4 seconds in all).
 - The reveal supports skipping (the **Skip** control or Escape), replay (in the footer), keyboard input, and reduced motion.
-- The invitation is a centered card in stationery proportions (3:2), framed by gold line-art corners: Indian flowers (marigold, rose, lotus, jasmine and a gold jhumka) cascading from the top corners, Yosemite from Tunnel View (El Capitan, Half Dome, Bridalveil Fall) bottom-left, and New York (the Brooklyn Bridge, Chrysler, Empire State and One World Trade Center) bottom-right. On phones and portrait tablets the corners become bands above and below the text.
+- The invitation is a centered portrait card: "We are getting married", "Rajat & Rachita", "Saturday, May 15, 2027", Philadelphia, the couple's watercolor crest, and a live countdown to the day. On the wedding day the countdown reads "Today's the day"; afterwards it's hidden.
 - **Add to calendar** offers Google Calendar and a downloadable Apple/Outlook-compatible event. The event is all-day on May 15, 2027; May 16 is its exclusive end date.
-- Without JavaScript, the complete invitation and calendar links are available immediately.
+- Without JavaScript, the complete invitation and calendar links are available immediately (the countdown needs JavaScript).
 - Fonts and images are served locally. No analytics, storage, audio, guest data, or external runtime dependencies are used. Google Calendar is opened only when the guest selects it.
+- The experience is modeled on The Digital Yes invitations; see `research/the-digital-yes.md`.
 
 ## Files
 
-- `dist/index.html`: accessible content and calendar links.
-- `dist/styles.css`: responsive layout, typography, and interaction styling.
-- `dist/invitation.js`: opening/replay animation and accessibility behavior.
+- `dist/index.html`: accessible content, the envelope, the inline "Save the Date" banner, and calendar links.
+- `dist/styles.css`: responsive layout, typography, the envelope layers and interaction styling.
+- `dist/invitation.js`: envelope geometry, the opening/replay animation, the countdown, and accessibility behavior.
 - `dist/rajat-and-rachita.ics`: downloadable all-day event.
-- `dist/assets/`: envelope, local fonts, and their licenses.
-- `dist/assets/art/`: the four corner illustrations (`florals.svg`, `florals-right.svg`, `yosemite.svg`, `new-york.svg`).
-- `art-src/`: the script that draws the corner illustrations. Run `node art-src/gen.mjs` to regenerate `dist/assets/art/`; the output is deterministic.
-- `reference/wedding-crest.png`: the couple's original watercolor crest, kept unmodified outside the published site. It is no longer displayed; the corner art takes its motifs (Indian flowers, jhumkas, mountains, the New York skyline) as inspiration.
+- `dist/assets/`: the crest (900px WebP and PNG copies), local fonts, and their licenses.
+- `reference/wedding-crest.png`: the couple's original watercolor crest, unmodified and not published. The copies in `dist/assets/` are resized from it.
+- `research/`: notes on the reference experience this site follows.
 
 ## Artwork provenance
 
-The corner illustrations are original vector line art written as code (`art-src/`) for this site; no image generator was used and they do not trace the crest. Yosemite and New York are places that matter to the couple; the invitation text identifies Philadelphia as the wedding location.
+The crest is the couple's own artwork, shown as supplied (resized for the web). The envelope, its paper texture and the silk banner are drawn in code (CSS and SVG); no image generator was used for them. The banner's gold jhumkas echo the jhumkas in the crest.
 
-One matching envelope was created with the **built-in Imagegen tool**. The final asset is `dist/assets/envelope.webp`; the original generated image is preserved at `dist/assets/envelope.png`. This artwork does not replace or modify the supplied wedding crest.
-
-Final generation prompt:
-
-```text
-Use case: product-mockup
-Asset type: interactive clickable envelope asset for a premium wedding save-the-date website.
-Primary request: Generate exactly one fine-art stationery envelope, straight-on view of its back, entirely visible, no perspective skew.
-Scene/backdrop: Genuinely transparent background with alpha, no painted backdrop. Approximately 3:2 horizontal canvas. Envelope is large and centered with a small generous transparent margin around every edge.
-Subject: A warm ivory handmade cotton-paper envelope with a precisely closed triangular flap. Fine, restrained antique-gold edging outlines the envelope and flap. A beautiful small deep burgundy wax seal sits at the central point of the flap and bears an elegant embossed gold monogram.
-Text (verbatim): "RR" — only these two uppercase letters, elegantly interlaced on the wax seal. No other typography.
-Style/medium: Premium fine-art stationery product illustration, richly tactile but refined and graceful, tasteful wedding aesthetic, exceptionally subtle paper grain.
-Lighting/mood: Soft gentle studio lighting and delicate paper fold shading, no hard cast shadow.
-Color palette: Warm ivory, restrained antique gold, deep burgundy.
-Constraints: Exactly one envelope. Entire silhouette visible. Closed triangular flap. Straight-on orthographic composition. Preserve true transparent alpha. No hands, props, flowers, extra ornaments, background text, watermarks, or typography outside the RR seal.
-```
-
-Fonts: Cormorant Garamond and Jost, downloaded from the Google Fonts distribution and used under their SIL Open Font Licenses.
+Fonts: Cormorant Garamond, Jost and Pinyon Script, downloaded from the Google Fonts distribution and used under their SIL Open Font Licenses.
