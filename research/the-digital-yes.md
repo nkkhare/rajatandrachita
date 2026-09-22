@@ -47,14 +47,14 @@ Live demo: `https://savethedate-thelovebirds.thedigitalyes.com/?embed=1`, captur
 ## How this site adapts it
 Decisions made with the couple on 2026-09-19:
 - **Envelope:** a full-screen embossed envelope on every screen size, drawn live in CSS and SVG instead of video, since there's no video pipeline.
-  - Paper relief comes from an SVG lighting filter.
+  - The paper is smooth, with soft lighting and crisp folds. (A textured cotton relief was tried first and read as too grainy.)
   - The monogram is a Pinyon Script "R&R" embossed with layered text shadows.
   - The flap is a clipped layer rotated in 3D, with a moving shadow.
 - **Reveal:** the flap lifts and swings away, the envelope drops, and the card rises. The card then assembles in sequence, echoing their beats:
-  1. the frame draws in
-  2. a **burgundy silk ribbon with gold jhumka tassels**, taken from the dupatta in the couple's crest, unfurls; "Save the Date" writes itself on and the tassels swing
-  3. the text fades up
-  4. the couple's watercolor crest blooms in, in place of their flower illustration
+  1. a **burgundy silk ribbon with gold jhumka tassels**, taken from the dupatta in the couple's crest, unrolls from the middle like their ribbon unfurling (rolled ends travelling outward, satin texture, gold embroidery, a sheen), then "Save the Date" is written on stroke by stroke, echoing their hand-lettering. The couple asked for the banner to finish before anything else appears
+  2. in place of their flower illustration, the card carries the crest's own scenery: its peaks and forest across the top, and along the bottom Philadelphia's landmarks painted in the crest's manner (Independence Hall, City Hall, the Liberty Bell), with the crest's flowers framing the words between them. (Code-drawn scenery read as cartoonish; unpainted photos read as too literal; painted photos of a named park still weren't the crest. The couple asked for the crest itself.)
+  3. the frame draws in
+  4. the text fades up
   5. the countdown and "Add to calendar" arrive
 - **Included:** the countdown and the "We are getting married" line.
 - **Not included (yet):** music, the language switch, birds, scratch-to-reveal.

@@ -3,7 +3,7 @@
 @font-face{font-family:Jost;src:url('assets/jost-regular.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap}
 @font-face{font-family:Pinyon;src:url('assets/pinyon-script.woff2') format('woff2');font-style:normal;font-weight:400;font-display:block}
 
-:root{color-scheme:light;--paper:#f3ede3;--card:#fdf9f2;--ink:#4c3431;--burgundy:#782f43;--gold:#b3883b;--muted:#76665a;--line:rgba(157,116,48,.4);--env:#efe6d7;--env-flap:#f2eadd;--env-inside:#dccdb4;--serif:Cormorant,Georgia,'Times New Roman',serif;--sans:Jost,'Helvetica Neue',Arial,sans-serif;--script:Pinyon,'Snell Roundhand','Apple Chancery',cursive;--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .33 0 0 0 0 .22 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+:root{color-scheme:light;--paper:#f3ede3;--card:#fdf9f2;--ink:#4c3431;--burgundy:#782f43;--gold:#b3883b;--muted:#76665a;--line:rgba(157,116,48,.4);--env:#efe6d7;--env-flap:#f2eadd;--env-inside:#e7dcca;--serif:Cormorant,Georgia,'Times New Roman',serif;--sans:Jost,'Helvetica Neue',Arial,sans-serif;--script:Pinyon,'Snell Roundhand','Apple Chancery',cursive;--grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .33 0 0 0 0 .22 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 *{box-sizing:border-box}
 html{min-width:280px;min-height:100%;background:var(--paper);scrollbar-gutter:stable}
 html:is([data-state="loading"],[data-state="closed"],[data-state="opening"]){overflow:hidden;overscroll-behavior:none}
@@ -22,15 +22,16 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var
 .envelope-button{position:absolute;inset:0;display:block;width:100%;height:100%;padding:0;border:0;background:none;color:inherit;cursor:pointer;perspective:max(1100px,150vh);perspective-origin:50% 40%}
 .envelope-button:focus-visible{outline-offset:-10px}
 .env-body,.env-inside,.env-pocket,.env-lines,.env-flap,.flap-face,.flap-dim{position:absolute;inset:0;display:block;pointer-events:none}
-.env-inside{background:linear-gradient(#3a241540,#3a24150d 42%,#0000 70%),var(--grain),var(--cotton,none) 41px 170px/320px,var(--env-inside);background-blend-mode:normal,normal,multiply,normal}
-.env-pocket{background:radial-gradient(130% 80% at 22% 12%,#fffdf640,#0000 60%),radial-gradient(110% 70% at 85% 105%,#4a302012,#0000 70%),var(--grain),var(--cotton,none) 0 0/320px,var(--env);background-blend-mode:normal,normal,normal,multiply,normal}
+.env-inside{background:linear-gradient(#3a241526,#3a241508 45%,#0000 70%),var(--env-inside)}
+.env-pocket{background:radial-gradient(130% 80% at 22% 12%,#fffdf640,#0000 60%),radial-gradient(110% 70% at 85% 105%,#4a302012,#0000 70%),var(--env)}
 .env-lines{width:100%;height:100%;overflow:visible}
 .flap-shadow{fill:none;stroke:#3f2a1a;stroke-opacity:.3;stroke-width:10}
+.side-shade{fill:#5a3c1e;fill-opacity:.035}
 .fold{fill:none;stroke-width:1.2}
 .fold-shade{stroke:#5a3c1e;stroke-opacity:.16}
 .fold-light{stroke:#fffdf7;stroke-opacity:.8}
 .env-flap{transform-origin:50% 0;-webkit-backface-visibility:hidden;backface-visibility:hidden}
-.flap-face{background:linear-gradient(178deg,#fffdf830,#0000 45%,#4a302010),var(--grain),var(--cotton,none) 97px 53px/320px,var(--env-flap);background-blend-mode:normal,normal,multiply,normal}
+.flap-face{background:linear-gradient(178deg,#fffdf830,#0000 45%,#4a302010),var(--env-flap)}
 .flap-dim{background:linear-gradient(#3a241533,#3a241566);opacity:0}
 .monogram{position:absolute;left:50%;top:calc(var(--tip-y,58svh) - var(--lift,80px));translate:-50% -100%;font-family:var(--script);font-size:clamp(4.25rem,min(20vw,12svh),8.5rem);line-height:1.15;white-space:nowrap;color:#f5eee2;text-shadow:-.012em -.014em .012em #fffefb,-.022em -.026em .05em #fffaf299,.012em .016em .014em #5a3c1e5c,.03em .04em .08em #5a3c1e29}
 .monogram .amp{font-size:.62em;margin-inline:-.02em;vertical-align:.14em}
@@ -44,8 +45,21 @@ html[data-state="opening"] .invitation{pointer-events:none}
 .skip-button span[aria-hidden]{margin-left:4px;color:var(--gold)}
 
 /* ---------- The invitation card ---------- */
-.invitation{position:relative;display:flex;flex-direction:column;align-items:center;width:min(100%,560px);margin:0 auto;padding:clamp(22px,5vw,40px) clamp(18px,5.5vw,46px) clamp(30px,6vw,46px);text-align:center;isolation:isolate}
+.invitation{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(100%,560px);margin:0 auto;padding:clamp(22px,5vw,40px) clamp(18px,5.5vw,46px) clamp(30px,6vw,46px);text-align:center;isolation:isolate}
 .invitation-sheet{position:absolute;inset:0;z-index:-1;background:var(--grain),var(--card);box-shadow:0 34px 70px -40px #4d302370,0 2px 10px -6px #4d302333;pointer-events:none}
+/* The photo bands fill the top and bottom of the card; the spacers keep the words in the clear middle band between them. */
+.card-art{position:absolute;left:0;z-index:-1;display:block;width:100%;pointer-events:none}
+.card-art img{display:block;width:100%;height:auto}
+.card-art-top{top:0;-webkit-mask-image:linear-gradient(#000 55%,#0000 90%);mask-image:linear-gradient(#000 55%,#0000 90%)}
+.card-art-bottom{bottom:0;-webkit-mask-image:linear-gradient(#0000 10%,#000 42%);mask-image:linear-gradient(#0000 10%,#000 42%)}
+/* Flowers cut from the crest, framing the words. */
+.sprig{position:absolute;z-index:-1;width:19%;max-width:124px;pointer-events:none}
+.sprig img{display:block;width:100%;height:auto}
+.sprig-l{left:1.5%;top:44%}
+.sprig-r{right:1.5%;top:44%;scale:-1 1}
+.invitation::before,.invitation::after{content:'';flex:none;width:100%}
+.invitation::before{aspect-ratio:600/170}
+.invitation::after{aspect-ratio:600/200}
 .invitation-rules{position:absolute;inset:9px;width:calc(100% - 18px);height:calc(100% - 18px);overflow:visible;pointer-events:none}
 .invitation-rules rect{fill:none;stroke:var(--gold);stroke-width:1.2;vector-effect:non-scaling-stroke;opacity:.6}
 .invitation-rules rect+rect{stroke-width:.8;opacity:.4}
@@ -55,6 +69,7 @@ html[data-state="opening"] .invitation{pointer-events:none}
 .bn-tail-l{transform-origin:100% 0}
 .bn-tail-r{transform-origin:0 0}
 .bn-jhumka{transform-origin:50% 0}
+.bn-roll{opacity:0}
 .eyebrow{margin:4px 0 0;padding-left:.34em;font-size:.72rem;line-height:2;letter-spacing:.34em;text-transform:uppercase;color:var(--muted)}
 .eyebrow span{display:block}
 .couple-names{margin:6px 0 0;font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(2.5rem,11vw,3.7rem);line-height:1.05;letter-spacing:-.01em;color:var(--burgundy);text-wrap:balance}
@@ -62,8 +77,6 @@ html[data-state="opening"] .invitation{pointer-events:none}
 .couple-names:focus{outline:none}
 .wedding-date{margin:18px 0 0;padding-left:.28em;font-size:.78rem;letter-spacing:.28em;text-transform:uppercase;color:var(--ink)}
 .wedding-location{margin:4px 0 0;font-family:var(--serif);font-style:italic;font-size:1.22rem;color:var(--muted)}
-.crest{width:min(76%,320px);margin:22px 0 0}
-.crest img{display:block;width:100%;height:auto;clip-path:circle(48.8%);mix-blend-mode:multiply}
 .countdown{display:flex;justify-content:center;margin:22px 0 0}
 .cd-cell{display:flex;flex-direction:column;align-items:center;min-width:4.6rem;margin:0;padding-inline:clamp(10px,3.4vw,22px)}
 .cd-cell+.cd-cell{border-left:1px solid var(--line)}
@@ -84,13 +97,15 @@ html[data-state="opening"] .invitation{pointer-events:none}
 
 /* ---------- Footer ---------- */
 .page-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 17px;padding:22px 16px calc(env(safe-area-inset-bottom,0px) + 22px);color:var(--muted);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase}
+.photo-credits{flex-basis:100%;max-width:560px;margin:10px auto 0;font-size:.6rem;line-height:1.7;letter-spacing:.04em;text-transform:none;text-align:center;opacity:.8}
+.photo-credits a{color:inherit}
 .footer-diamond{color:var(--gold);font-size:.72rem}
 .replay-button{display:inline-flex;align-items:center;min-height:44px;margin-block:-14px;background:none;border:0;color:var(--muted);font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;padding:6px 2px;transition:color .2s}
 .replay-button::before{content:'◇';content:'◇' / '';color:var(--gold);margin-right:17px}
 .replay-button:hover{color:var(--burgundy)}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
-@media(max-width:480px){.eyebrow{font-size:.68rem;letter-spacing:.28em}.wedding-date{font-size:.72rem;letter-spacing:.22em}.wedding-location{font-size:1.14rem}.crest{margin-top:20px}.cd-num{font-size:2rem}.cd-cell{min-width:4.1rem}}
-@media(max-width:360px){.couple-names{font-size:2.3rem}.cd-cell{padding-inline:8px}.page-footer{letter-spacing:.09em}}
-@media(min-width:761px) and (max-height:860px){.experience{padding-top:14px}.invitation{padding-block:18px 26px}.crest{width:min(52%,250px,31svh);margin-top:16px}.countdown{margin-top:16px}.invitation-actions{margin-top:18px}.page-footer{padding-block:14px}}
+@media(max-width:480px){.eyebrow{font-size:.68rem;letter-spacing:.28em}.sprig{width:23%;max-width:88px}.sprig-l{left:1%;top:46%}.sprig-r{right:1%;top:46%}.wedding-date{font-size:.72rem;letter-spacing:.22em}.wedding-location{font-size:1.14rem}.cd-num{font-size:2rem}.cd-cell{min-width:4.1rem}}
+@media(max-width:360px){.couple-names{font-size:2.3rem}.sprig{max-width:76px}.cd-cell{padding-inline:8px}.page-footer{letter-spacing:.09em}}
+@media(min-width:761px) and (max-height:860px){.experience{padding-top:14px}.invitation{padding-block:18px 26px}.countdown{margin-top:16px}.invitation-actions{margin-top:18px}.page-footer{padding-block:14px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

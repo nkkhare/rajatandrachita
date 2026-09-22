@@ -1,0 +1,32 @@
+<!doctype html>
+<!-- Paints an image (?src=...) with paint.js and writes the result into #out as data URLs, for bake.py to collect.
+     Open it in a browser with ?src=... to preview a painting. -->
+<html><head><meta charset="utf-8"><script src="paint.js"></script></head>
+<body style="margin:0"><canvas id="c"></canvas><pre id="png"></pre><pre id="webp"></pre><script>
+const params = new URLSearchParams(location.search);
+
+const img = new Image();
+img.onload = () => {
+  const c = document.getElementById('c');
+  c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  const options = params.has('options') ? JSON.parse(params.get('options')) : {};
+  // A piece that is already a painting (cut from the crest) passes straight through, keeping its transparency:
+  // the painting pass writes every pixel opaque.
+  if (!params.has('passthrough')) {
+    ctx.putImageData(paint(ctx.getImageData(0, 0, c.width, c.height), options), 0, 0);
+  }
+  // A whisker of blur softens the square patches the smoothing leaves behind.
+  if (!params.has('passthrough') && options.blur !== 0) {
+    ctx.filter = `blur(${options.blur || 0.5}px)`;
+    ctx.drawImage(c, 0, 0);
+    ctx.filter = 'none';
+  }
+  if (params.has('export')) {
+    document.getElementById('png').textContent = c.toDataURL('image/png');
+    document.getElementById('webp').textContent = c.toDataURL('image/webp', Number(params.get('export')));
+  }
+};
+img.src = params.get('src');
+</script></body></html>
