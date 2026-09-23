@@ -1,25 +1,17 @@
 <!doctype html>
-<!-- The top band is the couple's own crest, cropped: its painted peaks and forest, with its pines brought in from
-     their own corner of the crest to frame both sides, as they do there. The crop stays clear of the gold monogram
-     (below y≈330 of the crest's 1254) and of the jhumka and leaves on the right (beyond x≈830). Rendered at 1200×680
-     by bake.py, and it skips the painting pass, being a painting already. -->
+<!-- The top band is cut straight from the couple's reference design (reference/save-the-date-reference.png, 979x1606):
+     its snow-capped range and the evergreen forest along its foot, taken from inside the card's own gold border
+     (source x 30-950, y 25-405 at 1.304x). The forest runs on either side of the reference's own ribbon; that ribbon is
+     lifted out with a soft patch, since this template draws it in SVG. The reference already fades the forest into the paper, so this adds only a
+     whisper at the very edges. Rendered at 1200x496 by bake.py. -->
 <html><head><meta charset="utf-8"><style>
-html,body{margin:0;width:1200px;height:680px;overflow:hidden;background:#fdf9f2}
-.band{position:relative;width:1200px;height:680px;overflow:hidden}
-/* Peaks and forest: crest x 345-830, y 110-330, scaled to the band's width. */
-.peaks{position:absolute;display:block;width:3103px;left:-853px;top:-272px;filter:saturate(1.22) contrast(1.08)}
-/* Pines: crest x 200-360, y 240-440 at 1.9x, one each side, the right one mirrored and faded toward the middle. */
-.pines{position:absolute;top:196px;width:304px;height:380px;overflow:hidden;
-  -webkit-mask-image:linear-gradient(to right,#000 66%,#0000 96%),linear-gradient(#0000,#000 10%,#000 84%,#0000);
-  mask-image:linear-gradient(to right,#000 66%,#0000 96%),linear-gradient(#0000,#000 10%,#000 84%,#0000);
-  -webkit-mask-composite:source-in;mask-composite:intersect}
-.pines img{position:absolute;display:block;width:2383px;left:-380px;top:-456px;filter:saturate(1.22) contrast(1.08)}
-.pines-l{left:-34px}
-.pines-r{right:-34px;transform:scaleX(-1)}
-.wash{position:absolute;inset:0;background:linear-gradient(#fdf9f200 0,#fdf9f200 64%,#fdf9f2 97%)}
+html,body{margin:0;width:1200px;height:496px;overflow:hidden;background:#fdf9f2}
+.band{position:relative;width:1200px;height:496px;overflow:hidden}
+img{position:absolute;display:block;width:1277px;left:-39px;top:-33px}
+.edges{position:absolute;inset:0;background:linear-gradient(to right,#fdf9f2,#fdf9f200 3%,#fdf9f200 97%,#fdf9f2)}
+.foot{position:absolute;left:0;right:0;bottom:0;height:28px;background:linear-gradient(#fdf9f200,#fdf9f2)}
+/* The reference’s own ribbon starts here (x 150-830, y 360 down); this template draws it, so take the painted one off. */
+.clear-ribbon{position:absolute;left:150px;top:430px;width:900px;height:80px;border-radius:40px;background:#fdf9f2;filter:blur(15px)}
 </style></head><body><div class="band">
-<img class="peaks" src="src/crest.png" alt="">
-<div class="pines pines-l"><img src="src/crest.png" alt=""></div>
-<div class="pines pines-r"><img src="src/crest.png" alt=""></div>
-<div class="wash"></div>
+<img src="src/reference.png" alt=""><div class="clear-ribbon"></div><div class="edges"></div><div class="foot"></div>
 </div></body></html>

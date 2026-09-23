@@ -50,11 +50,11 @@ html[data-state="opening"] .invitation{pointer-events:none}
 /* The photo bands fill the top and bottom of the card; the spacers keep the words in the clear middle band between them. */
 .card-art{position:absolute;left:0;z-index:-1;display:block;width:100%;pointer-events:none}
 .card-art img{display:block;width:100%;height:auto}
-.card-art-top{top:0;-webkit-mask-image:linear-gradient(#000 76%,#0000 100%);mask-image:linear-gradient(#000 76%,#0000 100%)}
-.card-art-bottom{bottom:0;-webkit-mask-image:linear-gradient(#0000 0,#000 18%);mask-image:linear-gradient(#0000 0,#000 18%)}
+.card-art-top{top:0;-webkit-mask-image:linear-gradient(#000 94%,#0000 100%);mask-image:linear-gradient(#000 94%,#0000 100%)}
+.card-art-bottom{bottom:0;-webkit-mask-image:linear-gradient(#0000 0,#000 6%);mask-image:linear-gradient(#0000 0,#000 6%)}
 .invitation::before,.invitation::after{content:'';flex:none;width:100%}
-.invitation::before{aspect-ratio:600/215}
-.invitation::after{aspect-ratio:600/225}
+.invitation::before{aspect-ratio:600/207}
+.invitation::after{aspect-ratio:600/310}
 .invitation-rules{position:absolute;inset:9px;width:calc(100% - 18px);height:calc(100% - 18px);overflow:visible;pointer-events:none}
 .invitation-rules rect{fill:none;stroke:var(--gold);stroke-width:1.2;vector-effect:non-scaling-stroke;opacity:.6}
 .invitation-rules rect+rect{stroke-width:.8;opacity:.4}
