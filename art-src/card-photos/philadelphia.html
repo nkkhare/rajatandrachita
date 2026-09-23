@@ -1,45 +1,64 @@
 <!doctype html>
-<!-- The bottom band: Philadelphia in the crest's manner, as one continuous scene rather than three pictures.
-     Independence Hall on the left, City Hall's tower in the middle and the Liberty Bell on the right stand on a
-     shared ground, each fading sideways into the next across a wide overlap, with warm light behind them and mist
-     gathering at their feet. bake.py maps its tones onto the crest's palette and paints it; then it fades
-     to card paper at the top. Rendered at 1200×680. -->
+<!-- The bottom band follows the crest's city panel: a dusk skyline over water, towers in periwinkle with pinpricks of
+     warm window light, reflections beneath, and Philadelphia's landmarks standing along the waterfront in front of it
+     (Independence Hall, City Hall's tower, the Liberty Bell). Each photograph's sky is dropped out by brightness
+     (#skyout) so only the buildings print on the warm ground. bake.py paints it and maps it toward the crest's
+     palette; it fades to card paper at the top and into paper at both ends. Rendered at 1200×680. -->
 <html><head><meta charset="utf-8"><style>
 html,body{margin:0;width:1200px;height:680px;overflow:hidden;background:#fdf9f2}
 .band{position:relative;width:1200px;height:680px;overflow:hidden;isolation:isolate}
-.sky{position:absolute;inset:0;background:linear-gradient(#f7e3cb 10%,#f9e8d6 40%,#f6e2d2 66%,#f2dfd2 100%)}
-.band img{position:absolute;display:block;object-fit:cover;filter:saturate(1.12) contrast(1.18) brightness(.94) url(#skyout)}
-/* Wide side fades, so neighbours melt into one another instead of ending; all three stand on the same ground. */
-.hall{left:0px;bottom:74px;width:520px;height:330px;object-position:84% 66%;
-  -webkit-mask-image:linear-gradient(to right,#000 40%,#0000 96%),linear-gradient(#0000,#000 24%,#000 86%,#0000);
-  mask-image:linear-gradient(to right,#000 40%,#0000 96%),linear-gradient(#0000,#000 24%,#000 86%,#0000);
+/* The crest's dusk: pale periwinkle above, peach gathering at the horizon. */
+.sky{position:absolute;inset:0;background:linear-gradient(#e6e6f1 6%,#eee6ea 28%,#f7e0c8 52%,#f9e5cf 66%,#f2e2d6 100%)}
+.band img{position:absolute;display:block;object-fit:cover;filter:saturate(1.05) contrast(1.12) brightness(.97) url(#skyout)}
+/* The skyline sits across the middle, its own water below it. */
+.band img.skyline{left:0;top:150px;width:1200px;height:420px;object-position:50% 42%;
+  filter:saturate(1.08) contrast(1.32) brightness(1.4) url(#skyout);
+  -webkit-mask-image:linear-gradient(#0000,#000 14%,#000 84%,#0000),linear-gradient(to right,#0000,#000 12%,#000 88%,#0000);
+  mask-image:linear-gradient(#0000,#000 14%,#000 84%,#0000),linear-gradient(to right,#0000,#000 12%,#000 88%,#0000);
   -webkit-mask-composite:source-in;mask-composite:intersect}
-.cityhall{left:330px;bottom:74px;width:540px;height:540px;object-position:52% 16%;
-  -webkit-mask-image:linear-gradient(to right,#0000,#000 28%,#000 72%,#0000),linear-gradient(#0000,#000 20%,#000 88%,#0000);
-  mask-image:linear-gradient(to right,#0000,#000 28%,#000 72%,#0000),linear-gradient(#0000,#000 20%,#000 88%,#0000);
+/* Lit windows, the way the crest speckles its towers with gold. */
+.lights{position:absolute;left:0;top:250px;width:1200px;height:230px;opacity:.45;
+  background-image:radial-gradient(circle,#ffce85 0 1.1px,#0000 1.7px);background-size:9px 11px;
+  -webkit-mask-image:linear-gradient(#0000,#000 30%,#000 74%,#0000),linear-gradient(to right,#0000,#000 16%,#000 84%,#0000);
+  mask-image:linear-gradient(#0000,#000 30%,#000 74%,#0000),linear-gradient(to right,#0000,#000 16%,#000 84%,#0000);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+/* The landmarks stand along the waterfront, blended sideways into one another and into the skyline behind. */
+.band img.hall{left:30px;bottom:118px;width:400px;height:270px;object-position:95% 72%;
+  -webkit-mask-image:linear-gradient(to right,#000 44%,#0000 96%),linear-gradient(#0000,#000 26%,#000 88%,#0000);
+  mask-image:linear-gradient(to right,#000 44%,#0000 96%),linear-gradient(#0000,#000 26%,#000 88%,#0000);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.band img.cityhall{left:400px;bottom:118px;width:420px;height:440px;object-position:52% 16%;
+  -webkit-mask-image:linear-gradient(to right,#0000,#000 30%,#000 70%,#0000),linear-gradient(#0000,#000 18%,#000 90%,#0000);
+  mask-image:linear-gradient(to right,#0000,#000 30%,#000 70%,#0000),linear-gradient(#0000,#000 18%,#000 90%,#0000);
   -webkit-mask-composite:source-in;mask-composite:intersect}
 /* The bronze bell is warmed first, so the painting lands it in gold rather than deep blue. */
-.bell{right:-40px;bottom:78px;width:520px;height:400px;object-position:50% 46%;
-  filter:sepia(.3) saturate(1.6) brightness(1.3) contrast(.95) url(#skyout);
-  -webkit-mask-image:linear-gradient(to left,#000 38%,#0000 92%),linear-gradient(#0000,#000 22%,#000 86%,#0000);
-  mask-image:linear-gradient(to left,#000 38%,#0000 92%),linear-gradient(#0000,#000 22%,#000 86%,#0000);
+.band img.bell{right:40px;bottom:126px;width:300px;height:250px;object-position:50% 46%;
+  filter:sepia(.32) saturate(1.7) brightness(1.62) contrast(.88) url(#skyout);
+  -webkit-mask-image:linear-gradient(to left,#000 42%,#0000 94%),linear-gradient(#0000,#000 24%,#000 88%,#0000);
+  mask-image:linear-gradient(to left,#000 42%,#0000 94%),linear-gradient(#0000,#000 24%,#000 88%,#0000);
   -webkit-mask-composite:source-in;mask-composite:intersect}
-.glow{position:absolute;inset:0;background:radial-gradient(105% 46% at 50% 64%,#f9cf9c 0%,#f9cf9c66 38%,#f9cf9c00 72%);mix-blend-mode:soft-light;opacity:.85}
-/* Depth the way the crest builds it: one band of mist at the feet, nothing across the buildings themselves. */
-.mist{position:absolute;left:0;right:0;bottom:0;height:170px;background:linear-gradient(#fbf3e800,#fbf3e84d 38%,#fbf3e8a6 66%,#fbf3e8e6 88%,#fbf3e8)}
-.fade{position:absolute;inset:0;background:linear-gradient(#fdf9f2 0%,#fdf9f2 8%,#fdf9f2a0 22%,#fdf9f200 42%)}
+/* Water: the crest's reflections, drawn as a soft mirror of the light above. */
+.water{position:absolute;left:0;right:0;bottom:0;height:190px;background:linear-gradient(#e9e2e400,#eee5e2 28%,#f4eade 62%,#f8eee2)}
+.ripples{position:absolute;left:0;right:0;bottom:0;height:150px;opacity:.42;
+  background-image:repeating-linear-gradient(#fdf6ea00 0 5px,#fdf6eacc 5px 7px);
+  -webkit-mask-image:linear-gradient(#000,#0000);mask-image:linear-gradient(#000,#0000)}
+.glow{position:absolute;inset:0;background:radial-gradient(105% 44% at 50% 62%,#f9cf9c 0%,#f9cf9c66 38%,#f9cf9c00 72%);mix-blend-mode:soft-light;opacity:.9}
+.mist{position:absolute;left:0;right:0;bottom:118px;height:140px;background:linear-gradient(#fbf3e800,#fbf3e899 52%,#fbf3e8c4)}
+.fade{position:absolute;inset:0;background:linear-gradient(#fdf9f2 0%,#fdf9f2 7%,#fdf9f2a0 20%,#fdf9f200 40%)}
 /* The scene fades into the paper at both ends, so it reads as a painting rather than a photograph cropped. */
-.edges{position:absolute;inset:0;background:linear-gradient(to right,#fdf9f2,#fdf9f200 15%,#fdf9f200 88%,#fdf9f2)}
+.edges{position:absolute;inset:0;background:linear-gradient(to right,#fdf9f2,#fdf9f200 13%,#fdf9f200 87%,#fdf9f2)}
 </style></head><body>
-<!-- Alpha from darkness: bright sky drops out, the buildings stay, so each photo sits on the warm ground without
-     carrying its own rectangle of sky. -->
+<!-- Alpha from darkness: bright sky drops out, the buildings stay. -->
 <svg width="0" height="0" style="position:absolute"><filter id="skyout" color-interpolation-filters="sRGB">
 <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  -.96 -1.89 -.35 0 2.95" result="a"/>
 <feComposite in="SourceGraphic" in2="a" operator="in"/></filter></svg>
 <div class="band">
 <div class="sky"></div>
+<img class="skyline" src="src/skyline.jpg" alt="">
+<div class="lights"></div>
 <img class="hall" src="src/hall.jpg" alt="">
 <img class="cityhall" src="src/cityhall.jpg" alt="">
 <img class="bell" src="src/bell.jpg" alt="">
+<div class="water"></div><div class="ripples"></div>
 <div class="glow"></div><div class="mist"></div><div class="fade"></div><div class="edges"></div>
 </div></body></html>

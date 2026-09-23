@@ -24,7 +24,7 @@ Open <http://127.0.0.1:4173>. No package installation or build step is required.
 
 - Guests land on a full-screen envelope: smooth ivory paper, a flap with a rounded tip, an embossed script "R&R" monogram, and "Tap to open". Tapping it lifts the flap, the envelope drops away, and the invitation rises into view, blank. The "Save the Date" ribbon comes first, drawn as a gold outline: it unrolls from the middle, its tails and gold jhumka tassels fall into place, and the lettering writes itself on. Then the photos, frame, names, date, countdown and calendar button arrive (about 11.5 seconds in all).
 - The reveal supports skipping (the **Skip** control or Escape), replay (in the footer), keyboard input, and reduced motion.
-- The invitation is a centered portrait card: "We are getting married", "Rajat & Rachita", "Saturday, May 15, 2027", Philadelphia, and a live countdown to the day, set between two watercolors: across the top, the peaks and pine forest cut from the couple's own crest; along the bottom, Philadelphia in the crest's manner, as one scene: Independence Hall, City Hall and the Liberty Bell. Flowers cut from the crest frame the words in the middle. On the wedding day the countdown reads "Today's the day"; afterwards it's hidden.
+- The invitation is a centered portrait card: "We are getting married", "Rajat & Rachita", "Saturday, May 15, 2027", Philadelphia, and a live countdown to the day, set between two watercolors: across the top, the peaks and pine forest cut from the couple's own crest; along the bottom, Philadelphia in the crest's manner: a dusk skyline over water with Independence Hall, City Hall and the Liberty Bell standing in it. Flowers cut from the crest frame the words in the middle. On the wedding day the countdown reads "Today's the day"; afterwards it's hidden.
 - **Add to calendar** offers Google Calendar and a downloadable Apple/Outlook-compatible event. The event is all-day on May 15, 2027; May 16 is its exclusive end date.
 - Without JavaScript, the complete invitation and calendar links are available immediately (the countdown needs JavaScript).
 - Fonts and images are served locally. No analytics, storage, audio, guest data, or external runtime dependencies are used. Google Calendar is opened only when the guest selects it.
@@ -47,6 +47,7 @@ The crest is the couple's own artwork. The card's mountains and the flowers fram
 
 The city band is adapted (cropped, skies dropped out, painted into a watercolor and faded) from photos on Wikimedia Commons, credited in the page footer:
 
+- [Philadelphia Skyline from the Camden Waterfront (cropped)](https://commons.wikimedia.org/wiki/File:Philadelphia_Skyline_from_the_Camden_Waterfront_(cropped).jpg): Bronzeage10, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 - [Independence Hall Exterior Front](https://commons.wikimedia.org/wiki/File:Independence_Hall_Exterior_Front.jpg): Andrew Rehbein, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 - [City Hall - Philadelphia](https://commons.wikimedia.org/wiki/File:City_Hall_-_Philadelphia_(2642140481).jpg): Reading Tom, [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/).
 - The Liberty Bell: NPS photo, public domain.

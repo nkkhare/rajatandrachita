@@ -21,6 +21,7 @@ UA = 'rajatandrachita-savethedate/1.0 (personal wedding site; https://github.com
 
 # (local name, Commons file title, credit, license)
 SOURCES = [
+    ('skyline.jpg', 'Philadelphia Skyline from the Camden Waterfront (cropped).jpg', 'Bronzeage10', 'CC BY 4.0'),
     ('cityhall.jpg', 'City Hall - Philadelphia (2642140481).jpg', 'Reading Tom', 'CC BY 2.0'),
     ('hall.jpg', 'Independence Hall Exterior Front.jpg', 'Andrew Rehbein', 'CC BY-SA 4.0'),
     ('bell.jpg', 'Originally cast to be the State House bell, this bell is known today as the Liberty Bell. '

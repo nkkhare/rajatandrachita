@@ -36,7 +36,7 @@ PIECES = {
                             'saturate': 1.05, 'blur': 0.4}},
     'philadelphia': {'size': (1200, 680),
                      'paint': {'radius': 5, 'smooth': 0.9, 'edge': 1.6, 'saturate': 1.2, 'lift': 0.02, 'blur': 0.35,
-                               'palette': {'strength': 0.45}}},
+                               'palette': {'strength': 0.6}}},
     'sprig': {'size': (440, 560), 'paint': None, 'transparent': True},
 }
 WEBP_QUALITY, JPEG_QUALITY = 0.8, 80
