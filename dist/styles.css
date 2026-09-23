@@ -59,7 +59,7 @@ html[data-state="opening"] .invitation{pointer-events:none}
 .sprig-r{right:1.5%;top:44%;scale:-1 1}
 .invitation::before,.invitation::after{content:'';flex:none;width:100%}
 .invitation::before{aspect-ratio:600/170}
-.invitation::after{aspect-ratio:600/200}
+.invitation::after{aspect-ratio:600/225}
 .invitation-rules{position:absolute;inset:9px;width:calc(100% - 18px);height:calc(100% - 18px);overflow:visible;pointer-events:none}
 .invitation-rules rect{fill:none;stroke:var(--gold);stroke-width:1.2;vector-effect:non-scaling-stroke;opacity:.6}
 .invitation-rules rect+rect{stroke-width:.8;opacity:.4}
@@ -97,8 +97,6 @@ html[data-state="opening"] .invitation{pointer-events:none}
 
 /* ---------- Footer ---------- */
 .page-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 17px;padding:22px 16px calc(env(safe-area-inset-bottom,0px) + 22px);color:var(--muted);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase}
-.photo-credits{flex-basis:100%;max-width:560px;margin:10px auto 0;font-size:.6rem;line-height:1.7;letter-spacing:.04em;text-transform:none;text-align:center;opacity:.8}
-.photo-credits a{color:inherit}
 .footer-diamond{color:var(--gold);font-size:.72rem}
 .replay-button{display:inline-flex;align-items:center;min-height:44px;margin-block:-14px;background:none;border:0;color:var(--muted);font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;padding:6px 2px;transition:color .2s}
 .replay-button::before{content:'◇';content:'◇' / '';color:var(--gold);margin-right:17px}

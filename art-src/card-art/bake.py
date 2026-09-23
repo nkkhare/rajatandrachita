@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Render the card's photo bands, paint them, and write them to dist/assets/art/ as WebP and JPEG.
+"""Render the card's art from the couple's paintings and write it to dist/assets/art/ as WebP and JPEG.
 
-    python3 art-src/card-photos/fetch.py   # once, to download the source photos
-    python3 art-src/card-photos/bake.py
+    python3 art-src/card-art/fetch.py   # once, to copy the paintings in
+    python3 art-src/card-art/bake.py
 
-Each band is composed in its own HTML file, then turned into a watercolor by paint.js, so the scenes read like the
-couple's crest rather than like photographs.
+Each piece is composed in its own HTML file as crops of a painting, then softened by paint.js to take the edge off
+the upscaling.
 
-Needs Google Chrome (headless renders, paints and encodes) and macOS `sips` (writes the JPEG).
+Needs Google Chrome (headless renders, softens and encodes) and macOS `sips` (writes the JPEG).
 """
 import base64
 import functools
@@ -24,19 +24,13 @@ import threading
 HERE = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.normpath(os.path.join(HERE, '..', '..', 'dist', 'assets', 'art'))
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-# Painting settings per band: the city keeps more definition so its landmarks stay readable.
-# The top band is cut straight from the crest, so it is already painted and skips the painting pass. The city is a
-# photograph: its tones are mapped onto the crest's palette and it gets a watercolor pass, so both bands look like
-# one hand.
-# `paint` of None means the piece is already a painting (cut from the crest) and only gets re-encoded.
+# Every piece is cut from one of the couple's paintings, so none of them is painted here: they only need their
+# upscaling softened (`smooth`) and a whisper of paper. `paint` of None skips the pass entirely, which is what the
+# sprig needs, since the pass writes every pixel opaque and the sprig carries transparency.
+SOFTEN = {'radius': 0, 'smooth': 1.1, 'edge': 0, 'wash': 0.04, 'grain': 0.012, 'lift': 0, 'saturate': 1.05, 'blur': 0.4}
 PIECES = {
-    # The crest's own painting only needs its upscaling softened, so it takes the blur but no Kuwahara smoothing.
-    'mountains': {'size': (1200, 680),
-                  'paint': {'radius': 0, 'smooth': 1.1, 'edge': 0, 'wash': 0.04, 'grain': 0.012, 'lift': 0,
-                            'saturate': 1.05, 'blur': 0.4}},
-    'philadelphia': {'size': (1200, 680),
-                     'paint': {'radius': 5, 'smooth': 0.9, 'edge': 1.6, 'saturate': 1.2, 'lift': 0.02, 'blur': 0.35,
-                               'palette': {'strength': 0.6}}},
+    'mountains': {'size': (1200, 680), 'paint': SOFTEN},
+    'philadelphia': {'size': (1200, 680), 'paint': SOFTEN},
     'sprig': {'size': (440, 560), 'paint': None, 'transparent': True},
 }
 WEBP_QUALITY, JPEG_QUALITY = 0.8, 80

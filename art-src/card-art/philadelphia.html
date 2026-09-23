@@ -1,0 +1,52 @@
+<!doctype html>
+<!-- The bottom band is cut from the couple's Philadelphia painting (reference/philadelphia-medallion.png), the way the
+     top band is cut from their crest: the skyline across the back, Independence Hall among its trees on the left,
+     City Hall's tower with William Penn on the right, and the bridge over the river along the bottom.
+
+     Every crop must stay inside the painting's inner gold ring (centre 627,627 of 1254, radius ≈560 — check all four
+     corners) and clear of its "SAVE THE DATE" lettering (x 490-790, y 450-800). A slot is the crop window; the image
+     inside it is scaled by `width` and pulled into place by `left`/`top`. Rendered at 1200×680 by bake.py, and it
+     skips the watercolor pass, being a painting already. -->
+<html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:1200px;height:680px;overflow:hidden;background:#fdf9f2}
+.band{position:relative;width:1200px;height:680px;overflow:hidden}
+.slot{position:absolute;overflow:hidden}
+.slot img{position:absolute;display:block}
+/* Skyline, behind everything: source x 300-900, y 200-440 at 2x. */
+.skyline{left:0;top:-60px;width:1200px;height:480px;
+  -webkit-mask-image:linear-gradient(#000 62%,#0000 98%),linear-gradient(to right,#0000,#000 10%,#000 90%,#0000);
+  mask-image:linear-gradient(#000 62%,#0000 98%),linear-gradient(to right,#0000,#000 10%,#000 90%,#0000);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.skyline img{width:2508px;left:-600px;top:-400px}
+/* Independence Hall and its trees: source x 210-520, y 380-950 at .86x (clear of the painting's jasmine at its left edge). */
+.hall{left:16px;top:70px;width:267px;height:490px;
+  -webkit-mask-image:linear-gradient(to right,#000 56%,#0000 97%),linear-gradient(#0000,#000 12%,#000 82%,#0000);
+  mask-image:linear-gradient(to right,#000 56%,#0000 97%),linear-gradient(#0000,#000 12%,#000 82%,#0000);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.hall img{width:1078px;left:-181px;top:-327px}
+/* City Hall and William Penn: source x 930-1120, y 380-880 at .86x. */
+.cityhall{left:1010px;top:120px;width:163px;height:430px;
+  -webkit-mask-image:linear-gradient(to left,#000 54%,#0000 97%),linear-gradient(#0000,#000 10%,#000 84%,#0000);
+  mask-image:linear-gradient(to left,#000 54%,#0000 97%),linear-gradient(#0000,#000 10%,#000 84%,#0000);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.cityhall img{width:1078px;left:-800px;top:-327px}
+/* The bridge and the river in front, a strip along the foot: source x 560-990, y 890-1040 at 2.09x. */
+.river{left:150px;top:400px;width:900px;height:313px;
+  -webkit-mask-image:linear-gradient(#0000,#000 20%,#000 94%,#0000),linear-gradient(to right,#0000,#000 16%,#000 84%,#0000);
+  mask-image:linear-gradient(#0000,#000 20%,#000 94%,#0000),linear-gradient(to right,#0000,#000 16%,#000 84%,#0000);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.river img{width:2621px;left:-1170px;top:-1860px}
+/* Mist where the buildings meet the water, as the painting has it. */
+.mist{position:absolute;left:0;right:0;top:470px;height:130px;background:linear-gradient(#fbf3e800,#fbf3e877 52%,#fbf3e800)}
+.fade{position:absolute;inset:0;background:linear-gradient(#fdf9f2 0%,#fdf9f2 6%,#fdf9f2a0 18%,#fdf9f200 40%)}
+/* The foot settles into paper, so the card’s own edge never cuts the painting off. */
+.foot{position:absolute;left:0;right:0;bottom:0;height:110px;background:linear-gradient(#fdf9f200,#fdf9f2)}
+/* The scene fades into the paper at both ends, so it reads as a painting rather than a picture cropped. */
+.edges{position:absolute;inset:0;background:linear-gradient(to right,#fdf9f2,#fdf9f200 12%,#fdf9f200 88%,#fdf9f2)}
+</style></head><body><div class="band">
+<div class="slot skyline"><img src="src/philadelphia.png" alt=""></div>
+<div class="slot hall"><img src="src/philadelphia.png" alt=""></div>
+<div class="slot cityhall"><img src="src/philadelphia.png" alt=""></div>
+<div class="slot river"><img src="src/philadelphia.png" alt=""></div>
+<div class="mist"></div><div class="fade"></div><div class="foot"></div><div class="edges"></div>
+</div></body></html>

@@ -1,12 +1,12 @@
-// Turns a photo into a watercolor painting, so the card's scenes read like the couple's crest: recognizable shapes,
-// softened into washes, not photographic detail. Runs in the browser on a canvas (see paint.html).
+// Softens a rendered piece of the card's art. The scenes are crops of the couple's paintings, scaled up, so this
+// takes the edge off that upscaling and lays a little paper over it. Runs in the browser on a canvas (see
+// paint.html). The Kuwahara pass is kept for any source that needs real painting rather than softening.
 //
 //   1. Kuwahara smoothing, twice: every pixel takes the calmest neighbouring patch's average color, which melts
 //      texture into flat, brush-like areas while keeping the edges between them.
 //   1b. A gentle blur over that, because Kuwahara's patches are square and would otherwise read as blocks.
 //   2. Pigment edges: watercolor pools where a wash stops, so edges get a soft, slightly darker rim.
-//   3. Color: tones mapped onto the crest's palette, then saturation pushed back up, since a wash keeps more
-//      color than the softened photo does.
+//   3. Color: saturation nudged back up, since softening flattens it.
 //   4. Paper: gentle uneven washes (low-frequency blotches) and a fine cold-press grain, seeded so output repeats.
 //   5. Lift toward the paper color, like a transparent wash, then a whisker of blur to take the digital edge off.
 'use strict';
@@ -106,29 +106,8 @@ function blotches(w, h, cell, random) {
   return out;
 }
 
-// Map tone onto a palette: dark pixels take the first color, bright ones the last. This is how a photographed city
-// ends up in the crest's own range (violet-blue shadows, lavender stone, peach sky) instead of its camera colors.
-const CREST = [[0, [72, 76, 114]], [0.32, [134, 143, 182]], [0.55, [176, 180, 206]], [0.72, [232, 203, 172]], [0.88, [246, 222, 190]], [1, [252, 240, 220]]];
-
-function gradientMap(px, stops, strength) {
-  const out = new Uint8ClampedArray(px.length);
-  for (let i = 0; i < px.length; i += 4) {
-    const t = (0.3 * px[i] + 0.59 * px[i + 1] + 0.11 * px[i + 2]) / 255;
-    let k = 1;
-    while (k < stops.length - 1 && stops[k][0] < t) k++;
-    const [t0, c0] = stops[k - 1], [t1, c1] = stops[k];
-    const f = t1 === t0 ? 0 : (t - t0) / (t1 - t0);
-    for (let c = 0; c < 3; c++) {
-      const mapped = c0[c] + (c1[c] - c0[c]) * f;
-      out[i + c] = px[i + c] + (mapped - px[i + c]) * strength;
-    }
-    out[i + 3] = 255;
-  }
-  return out;
-}
-
 function paint(imageData, options = {}) {
-  const { radius = 6, smooth = 0, edge = 0.55, wash = 0.1, grain = 0.035, lift = 0.1, saturate = 1, palette = null, paper = [253, 249, 242], seed = 7 } = options;
+  const { radius = 6, smooth = 0, edge = 0.55, wash = 0.1, grain = 0.035, lift = 0.1, saturate = 1, paper = [253, 249, 242], seed = 7 } = options;
   const { width: w, height: h } = imageData;
   let px = imageData.data;
   if (radius) {
@@ -137,7 +116,6 @@ function paint(imageData, options = {}) {
   }
 
   px = blur(px, w, h, smooth);
-  if (palette) px = gradientMap(px, palette.stops || CREST, palette.strength ?? 0.85);
 
   const lum = new Float32Array(w * h);
   for (let i = 0; i < w * h; i++) lum[i] = 0.3 * px[i * 4] + 0.59 * px[i * 4 + 1] + 0.11 * px[i * 4 + 2];
