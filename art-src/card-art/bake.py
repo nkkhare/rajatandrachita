@@ -24,15 +24,16 @@ import threading
 HERE = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.normpath(os.path.join(HERE, '..', '..', 'dist', 'assets', 'art'))
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-# Both bands are cut from the couple's paintings, so nothing is painted here: they only need their upscaling
-# softened (`smooth`) and a whisper of paper. `paint` of None would skip the pass entirely, for a piece that
-# carries transparency (the pass writes every pixel opaque).
-SOFTEN = {'radius': 0, 'smooth': 0.45, 'edge': 0, 'wash': 0.02, 'grain': 0, 'lift': 0, 'saturate': 1.06, 'blur': 0.15}
+# Both bands are cut from the couple's paintings, so nothing is painted or softened here: they are sharpened, to
+# put back the edges that scaling costs them, and their color is pushed up. `paint` of None would skip the pass
+# entirely, for a piece that carries transparency (the pass writes every pixel opaque).
+CRISP = {'radius': 0, 'smooth': 0, 'sharpenAmount': 0.9, 'sharpenSigma': 1.0, 'edge': 0, 'wash': 0, 'grain': 0,
+         'lift': 0, 'saturate': 1.2, 'contrast': 1.07, 'blur': 0}
 PIECES = {
-    'mountains': {'size': (1200, 680), 'paint': SOFTEN},
-    'philadelphia': {'size': (1200, 680), 'paint': SOFTEN},
+    'mountains': {'size': (1200, 680), 'paint': CRISP},
+    'philadelphia': {'size': (1200, 680), 'paint': CRISP},
 }
-WEBP_QUALITY, JPEG_QUALITY = 0.92, 90
+WEBP_QUALITY, JPEG_QUALITY = 0.95, 92
 
 def chrome(*args):
     return subprocess.run([CHROME, '--headless=new', '--disable-gpu', '--hide-scrollbars', '--force-device-scale-factor=1',

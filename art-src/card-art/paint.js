@@ -6,7 +6,7 @@
 //      texture into flat, brush-like areas while keeping the edges between them.
 //   1b. A gentle blur over that, because Kuwahara's patches are square and would otherwise read as blocks.
 //   2. Pigment edges: watercolor pools where a wash stops, so edges get a soft, slightly darker rim.
-//   3. Color: saturation nudged back up, since softening flattens it.
+//   3. Color: saturation and contrast pushed up, for a crisper, richer read than the bare crop.
 //   4. Paper: gentle uneven washes (low-frequency blotches) and a fine cold-press grain, seeded so output repeats.
 //   5. Lift toward the paper color, like a transparent wash, then a whisker of blur to take the digital edge off.
 'use strict';
@@ -82,6 +82,19 @@ function blur(px, w, h, sigma) {
   return out;
 }
 
+// Unsharp mask: subtract a blurred copy to put the edges back after scaling, which is what keeps architecture
+// reading as drawn lines rather than mush.
+function sharpen(px, w, h, amount, sigma) {
+  if (!amount) return px;
+  const soft = blur(px, w, h, sigma);
+  const out = new Uint8ClampedArray(px.length);
+  for (let i = 0; i < px.length; i += 4) {
+    for (let c = 0; c < 3; c++) out[i + c] = px[i + c] + (px[i + c] - soft[i + c]) * amount;
+    out[i + 3] = 255;
+  }
+  return out;
+}
+
 function rng(seed) {
   return () => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
@@ -107,7 +120,8 @@ function blotches(w, h, cell, random) {
 }
 
 function paint(imageData, options = {}) {
-  const { radius = 6, smooth = 0, edge = 0.55, wash = 0.1, grain = 0.035, lift = 0.1, saturate = 1, paper = [253, 249, 242], seed = 7 } = options;
+  const { radius = 6, smooth = 0, sharpenAmount = 0, sharpenSigma = 1.1, edge = 0.55, wash = 0.1, grain = 0.035,
+    lift = 0.1, saturate = 1, contrast = 1, paper = [253, 249, 242], seed = 7 } = options;
   const { width: w, height: h } = imageData;
   let px = imageData.data;
   if (radius) {
@@ -116,6 +130,7 @@ function paint(imageData, options = {}) {
   }
 
   px = blur(px, w, h, smooth);
+  px = sharpen(px, w, h, sharpenAmount, sharpenSigma);
 
   const lum = new Float32Array(w * h);
   for (let i = 0; i < w * h; i++) lum[i] = 0.3 * px[i * 4] + 0.59 * px[i * 4 + 1] + 0.11 * px[i * 4 + 2];
@@ -132,7 +147,7 @@ function paint(imageData, options = {}) {
       const tone = 1 - rim * 0.35 + (big[k] - 0.5) * wash + (small[k] - 0.5) * wash * 0.5 + (random() - 0.5) * grain;
       const grey = 0.3 * px[i] + 0.59 * px[i + 1] + 0.11 * px[i + 2];
       for (let c = 0; c < 3; c++) {
-        const v = (grey + (px[i + c] - grey) * saturate) * tone;
+        const v = ((grey + (px[i + c] - grey) * saturate - 128) * contrast + 128) * tone;
         out[i + c] = v + (paper[c] - v) * lift;
       }
       out[i + 3] = 255;

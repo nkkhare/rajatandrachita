@@ -7,16 +7,16 @@
 html,body{margin:0;width:1200px;height:680px;overflow:hidden;background:#fdf9f2}
 .band{position:relative;width:1200px;height:680px;overflow:hidden}
 /* Peaks and forest: crest x 345-830, y 110-330, scaled to the band's width. */
-.peaks{position:absolute;display:block;width:3103px;left:-853px;top:-272px;filter:saturate(1.25) contrast(1.04)}
+.peaks{position:absolute;display:block;width:3103px;left:-853px;top:-272px;filter:saturate(1.22) contrast(1.08)}
 /* Pines: crest x 200-360, y 240-440 at 1.9x, one each side, the right one mirrored and faded toward the middle. */
 .pines{position:absolute;top:196px;width:304px;height:380px;overflow:hidden;
-  -webkit-mask-image:linear-gradient(to right,#000 42%,#0000 88%),linear-gradient(#0000,#000 22%,#000 66%,#0000);
-  mask-image:linear-gradient(to right,#000 42%,#0000 88%),linear-gradient(#0000,#000 22%,#000 66%,#0000);
+  -webkit-mask-image:linear-gradient(to right,#000 66%,#0000 96%),linear-gradient(#0000,#000 10%,#000 84%,#0000);
+  mask-image:linear-gradient(to right,#000 66%,#0000 96%),linear-gradient(#0000,#000 10%,#000 84%,#0000);
   -webkit-mask-composite:source-in;mask-composite:intersect}
-.pines img{position:absolute;display:block;width:2383px;left:-380px;top:-456px;filter:saturate(1.25) contrast(1.04)}
+.pines img{position:absolute;display:block;width:2383px;left:-380px;top:-456px;filter:saturate(1.22) contrast(1.08)}
 .pines-l{left:-34px}
 .pines-r{right:-34px;transform:scaleX(-1)}
-.wash{position:absolute;inset:0;background:linear-gradient(#fdf9f230,#fdf9f200 12%,#fdf9f200 62%,#fdf9f2 94%)}
+.wash{position:absolute;inset:0;background:linear-gradient(#fdf9f200 0,#fdf9f200 64%,#fdf9f2 97%)}
 </style></head><body><div class="band">
 <img class="peaks" src="src/crest.png" alt="">
 <div class="pines pines-l"><img src="src/crest.png" alt=""></div>
