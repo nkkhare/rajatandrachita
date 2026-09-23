@@ -43,7 +43,7 @@ Open <http://127.0.0.1:4173>. No package installation or build step is required.
 
 ## Artwork provenance
 
-The card's art is all the couple's own. The mountains and the flowers framing the words are cut from their crest
+The card's art is all the couple's own. The mountains are cut from their crest
 (`reference/wedding-crest.png`); the city is cut from their Philadelphia painting
 (`reference/philadelphia-medallion.png`): the skyline, Independence Hall among its trees, City Hall's tower and the
 bridge over the river. Neither original is modified or published whole — only crops of them ship, baked by

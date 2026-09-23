@@ -30,17 +30,16 @@ html,body{margin:0;width:1200px;height:680px;overflow:hidden;background:#fdf9f2}
   mask-image:linear-gradient(to left,#000 54%,#0000 97%),linear-gradient(#0000,#000 10%,#000 84%,#0000);
   -webkit-mask-composite:source-in;mask-composite:intersect}
 .cityhall img{width:1078px;left:-800px;top:-327px}
-/* The bridge and the river in front, a strip along the foot: source x 560-990, y 890-1040 at 2.09x. */
-.river{left:150px;top:400px;width:900px;height:313px;
-  -webkit-mask-image:linear-gradient(#0000,#000 20%,#000 94%,#0000),linear-gradient(to right,#0000,#000 16%,#000 84%,#0000);
-  mask-image:linear-gradient(#0000,#000 20%,#000 94%,#0000),linear-gradient(to right,#0000,#000 16%,#000 84%,#0000);
+/* The bridge and the river in front, carried the full width so the foot has no empty corners:
+   source x 505-1000, y 890-1030 at 2.42x. */
+.river{left:0;top:341px;width:1200px;height:339px;
+  -webkit-mask-image:linear-gradient(#0000,#000 18%,#000 100%),linear-gradient(to right,#0000,#000 9%,#000 91%,#0000);
+  mask-image:linear-gradient(#0000,#000 18%,#000 100%),linear-gradient(to right,#0000,#000 9%,#000 91%,#0000);
   -webkit-mask-composite:source-in;mask-composite:intersect}
-.river img{width:2621px;left:-1170px;top:-1860px}
-/* Mist where the buildings meet the water, as the painting has it. */
-.mist{position:absolute;left:0;right:0;top:470px;height:130px;background:linear-gradient(#fbf3e800,#fbf3e877 52%,#fbf3e800)}
+.river img{width:3035px;left:-1222px;top:-2154px}
 .fade{position:absolute;inset:0;background:linear-gradient(#fdf9f2 0%,#fdf9f2 6%,#fdf9f2a0 18%,#fdf9f200 40%)}
 /* The foot settles into paper, so the card’s own edge never cuts the painting off. */
-.foot{position:absolute;left:0;right:0;bottom:0;height:110px;background:linear-gradient(#fdf9f200,#fdf9f2)}
+.foot{position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(#fdf9f200,#fdf9f2cc)}
 /* The scene fades into the paper at both ends, so it reads as a painting rather than a picture cropped. */
 .edges{position:absolute;inset:0;background:linear-gradient(to right,#fdf9f2,#fdf9f200 12%,#fdf9f200 88%,#fdf9f2)}
 </style></head><body><div class="band">
@@ -48,5 +47,5 @@ html,body{margin:0;width:1200px;height:680px;overflow:hidden;background:#fdf9f2}
 <div class="slot hall"><img src="src/philadelphia.png" alt=""></div>
 <div class="slot cityhall"><img src="src/philadelphia.png" alt=""></div>
 <div class="slot river"><img src="src/philadelphia.png" alt=""></div>
-<div class="mist"></div><div class="fade"></div><div class="foot"></div><div class="edges"></div>
+<div class="fade"></div><div class="foot"></div><div class="edges"></div>
 </div></body></html>

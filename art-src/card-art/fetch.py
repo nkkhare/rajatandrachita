@@ -3,7 +3,7 @@
 
     python3 art-src/card-art/fetch.py
 
-Both bands and the floral sprig are crops of these two, so nothing is downloaded and nothing third-party ships.
+Both bands are crops of these two, so nothing is downloaded and nothing third-party ships.
 The originals in reference/ are never modified; this only copies them into src/ (git-ignored).
 """
 import os

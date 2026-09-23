@@ -24,16 +24,15 @@ import threading
 HERE = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.normpath(os.path.join(HERE, '..', '..', 'dist', 'assets', 'art'))
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-# Every piece is cut from one of the couple's paintings, so none of them is painted here: they only need their
-# upscaling softened (`smooth`) and a whisper of paper. `paint` of None skips the pass entirely, which is what the
-# sprig needs, since the pass writes every pixel opaque and the sprig carries transparency.
-SOFTEN = {'radius': 0, 'smooth': 1.1, 'edge': 0, 'wash': 0.04, 'grain': 0.012, 'lift': 0, 'saturate': 1.05, 'blur': 0.4}
+# Both bands are cut from the couple's paintings, so nothing is painted here: they only need their upscaling
+# softened (`smooth`) and a whisper of paper. `paint` of None would skip the pass entirely, for a piece that
+# carries transparency (the pass writes every pixel opaque).
+SOFTEN = {'radius': 0, 'smooth': 0.45, 'edge': 0, 'wash': 0.02, 'grain': 0, 'lift': 0, 'saturate': 1.06, 'blur': 0.15}
 PIECES = {
     'mountains': {'size': (1200, 680), 'paint': SOFTEN},
     'philadelphia': {'size': (1200, 680), 'paint': SOFTEN},
-    'sprig': {'size': (440, 560), 'paint': None, 'transparent': True},
 }
-WEBP_QUALITY, JPEG_QUALITY = 0.8, 80
+WEBP_QUALITY, JPEG_QUALITY = 0.92, 90
 
 def chrome(*args):
     return subprocess.run([CHROME, '--headless=new', '--disable-gpu', '--hide-scrollbars', '--force-device-scale-factor=1',

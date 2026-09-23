@@ -228,9 +228,6 @@
       animate(piece('.card-art-top'), [{ opacity: 0, transform: 'translateY(-10px)' }, { opacity: 1, transform: 'none' }], { ...at(4500, 1200), easing: 'ease-out' });
       animate(piece('.card-art-bottom'), [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { ...at(4650, 1200), easing: 'ease-out' });
       animate(piece('.invitation-rules'), [{ clipPath: 'inset(50% 50% 50% 50%)' }, { clipPath: 'inset(0% 0% 0% 0%)' }], { ...at(4600, 950), easing: 'cubic-bezier(.4, 0, .2, 1)' });
-      for (const [selector, ms] of [['.sprig-l', 4750], ['.sprig-r', 4850]]) {
-        animate(piece(selector), [{ opacity: 0, transform: 'scale(.94)' }, { opacity: 1, transform: 'none' }], at(ms, 900));
-      }
       for (const [selector, ms] of [['.eyebrow', 4900], ['.couple-names', 5000], ['.wedding-date', 5150], ['.wedding-location', 5230]]) {
         animate(piece(selector), fadeUp, at(ms, 650));
       }
