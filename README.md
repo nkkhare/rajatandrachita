@@ -24,7 +24,7 @@ Open <http://127.0.0.1:4173>. No package installation or build step is required.
 
 - Guests land on a full-screen envelope: smooth ivory paper, a flap with a rounded tip, an embossed script "R&R" monogram, and "Tap to open". Tapping it lifts the flap, the envelope drops away, and the invitation rises into view, blank. The "Save the Date" ribbon comes first, drawn as a gold outline: it unrolls from the middle, its tails and gold jhumka tassels fall into place, and the lettering writes itself on. Then the photos, frame, names, date, countdown and calendar button arrive (about 11.5 seconds in all).
 - The reveal supports skipping (the **Skip** control or Escape), replay (in the footer), keyboard input, and reduced motion.
-- The invitation is a centered portrait card: "We are getting married", "Rajat & Rachita", "Saturday, May 15, 2027", Philadelphia, and a live countdown to the day, set between two watercolors: across the top, the peaks and pine forest cut from the couple's own crest; along the bottom, their Philadelphia painting: the skyline, Independence Hall among its trees, City Hall's tower and the bridge over the river. Flowers cut from the crest frame the words in the middle. On the wedding day the countdown reads "Today's the day"; afterwards it's hidden.
+- The invitation is a centered portrait card: "We are getting married", "Rajat & Rachita", "Saturday, May 15, 2027", Philadelphia, and a live countdown to the day, set between two watercolors: across the top, the peaks and pine forest cut from the couple's own crest; along the bottom, their Philadelphia painting: Independence Hall, City Hall's tower, the skyline between them and the river. Flowers cut from the crest frame the words in the middle. On the wedding day the countdown reads "Today's the day"; afterwards it's hidden.
 - **Add to calendar** offers Google Calendar and a downloadable Apple/Outlook-compatible event. The event is all-day on May 15, 2027; May 16 is its exclusive end date.
 - Without JavaScript, the complete invitation and calendar links are available immediately (the countdown needs JavaScript).
 - Fonts and images are served locally. No analytics, storage, audio, guest data, or external runtime dependencies are used. Google Calendar is opened only when the guest selects it.
@@ -45,8 +45,8 @@ Open <http://127.0.0.1:4173>. No package installation or build step is required.
 
 The card's art is all the couple's own. The mountains are cut from their crest
 (`reference/wedding-crest.png`); the city is cut from their Philadelphia painting
-(`reference/philadelphia-medallion.png`): the skyline, Independence Hall among its trees, City Hall's tower and the
-bridge over the river. Neither original is modified or published whole — only crops of them ship, baked by
+(`reference/philadelphia-medallion.png`): Independence Hall, City Hall's tower with William Penn, the skyline
+between them and the river along the foot. Neither original is modified or published whole — only crops of them ship, baked by
 `art-src/card-art/`. The envelope and the silk banner are drawn in code (CSS and SVG); no image generator was used
 for them, and the banner's gold jhumkas echo the jhumkas in the crest.
 

@@ -1,55 +1,44 @@
 <!doctype html>
 <!-- The bottom band is cut from the couple's Philadelphia painting (reference/philadelphia-medallion.png), the way the
-     top band is cut from their crest: the skyline across the back, Independence Hall among its trees on the left,
-     City Hall's tower with William Penn on the right, and the bridge over the river along the bottom.
+     top band is cut from their crest, and it keeps that painting's own arrangement: Independence Hall on the left,
+     City Hall with William Penn on the right, the skyline between them, and the river along the foot.
 
-     Every crop must stay inside the painting's inner gold ring (centre 627,627 of 1254, radius ≈560 — check all four
-     corners) and clear of its "SAVE THE DATE" lettering (x 490-790, y 450-800). A slot is the crop window; the image
-     inside it is scaled by `width` and pulled into place by `left`/`top`. Rendered at 1200×680 by bake.py, and it
-     skips the watercolor pass, being a painting already. -->
+     Every crop must stay inside the painting's inner gold ring (centre 627,627 of 1254, radius ~560 - check all four
+     corners) and clear of its "SAVE THE DATE" lettering (x 450-800, y 270-680), which is why the middle is taken from
+     below the lettering and the two landmarks from either side of it. A slot is the crop window; the image inside it
+     is scaled by `width` and pulled into place by `left`/`top`. Rendered at 1200x680 by bake.py, and it skips the
+     watercolor pass, being a painting already. -->
 <html><head><meta charset="utf-8"><style>
 html,body{margin:0;width:1200px;height:680px;overflow:hidden;background:#fdf9f2}
 .band{position:relative;width:1200px;height:680px;overflow:hidden}
 .slot{position:absolute;overflow:hidden}
 .slot img{position:absolute;display:block}
-/* Skyline, behind everything: source x 300-900, y 200-440 at 2x. */
-.skyline{left:0;top:-60px;width:1200px;height:480px;
-  -webkit-mask-image:linear-gradient(#000 74%,#0000 100%),linear-gradient(to right,#0000,#000 10%,#000 90%,#0000);
-  mask-image:linear-gradient(#000 74%,#0000 100%),linear-gradient(to right,#0000,#000 10%,#000 90%,#0000);
+/* Skyline, tree line and river, carried the full width: source x 450-950, y 790-1070 at 2.4x. */
+.city{left:0;top:-34px;width:1200px;height:672px;
+  -webkit-mask-image:linear-gradient(#0000,#000 12%,#000 100%),linear-gradient(to right,#0000,#000 8%,#000 92%,#0000);
+  mask-image:linear-gradient(#0000,#000 12%,#000 100%),linear-gradient(to right,#0000,#000 8%,#000 92%,#0000);
   -webkit-mask-composite:source-in;mask-composite:intersect}
-.skyline img{width:2508px;left:-600px;top:-400px}
-/* Independence Hall and its trees: source x 210-520, y 380-950 at .86x (clear of the painting's jasmine at its left edge). */
-.hall{left:16px;top:112px;width:267px;height:490px;
-  -webkit-mask-image:linear-gradient(to right,#000 56%,#0000 97%),linear-gradient(#0000,#000 12%,#000 82%,#0000);
-  mask-image:linear-gradient(to right,#000 56%,#0000 97%),linear-gradient(#0000,#000 12%,#000 82%,#0000);
+.city img{width:3010px;left:-1080px;top:-1896px}
+/* Independence Hall: source x 170-460, y 340-950 at .8x. */
+.hall{left:26px;top:36px;width:232px;height:488px;
+  -webkit-mask-image:linear-gradient(to right,#000 72%,#0000 99%),linear-gradient(#0000,#000 8%,#000 88%,#0000);
+  mask-image:linear-gradient(to right,#000 72%,#0000 99%),linear-gradient(#0000,#000 8%,#000 88%,#0000);
   -webkit-mask-composite:source-in;mask-composite:intersect}
-.hall img{width:1078px;left:-181px;top:-327px}
-/* City Hall and William Penn: source x 930-1120, y 380-880 at .86x. */
-.cityhall{left:1010px;top:160px;width:163px;height:430px;
-  -webkit-mask-image:linear-gradient(to left,#000 54%,#0000 97%),linear-gradient(#0000,#000 10%,#000 84%,#0000);
-  mask-image:linear-gradient(to left,#000 54%,#0000 97%),linear-gradient(#0000,#000 10%,#000 84%,#0000);
+.hall img{width:1003px;left:-136px;top:-272px}
+/* City Hall and William Penn: source x 930-1100, y 390-900 at .85x. */
+.cityhall{right:55px;top:56px;width:145px;height:434px;
+  -webkit-mask-image:linear-gradient(to left,#000 70%,#0000 99%),linear-gradient(#0000,#000 6%,#000 90%,#0000);
+  mask-image:linear-gradient(to left,#000 70%,#0000 99%),linear-gradient(#0000,#000 6%,#000 90%,#0000);
   -webkit-mask-composite:source-in;mask-composite:intersect}
-.cityhall img{width:1078px;left:-800px;top:-327px}
-/* The tree line along the foot: the riverbank grove, clear of both the bridge and the painting's jasmine
-   (source x 474-660, y 852-1000 at 2.26x). Laid three times, the middle one mirrored, so the corners are full and
-   no bridge dominates the band. */
-.grove{top:398px;width:470px;height:374px;
-  -webkit-mask-image:linear-gradient(#0000,#000 16%,#000 100%),linear-gradient(to right,#0000,#000 9%,#000 91%,#0000);
-  mask-image:linear-gradient(#0000,#000 16%,#000 100%),linear-gradient(to right,#0000,#000 9%,#000 91%,#0000);
-  -webkit-mask-composite:source-in;mask-composite:intersect}
-.grove img{width:3172px;left:-1198px;top:-2155px}
-.grove-a{left:-40px}
-.grove-b{left:365px;transform:scaleX(-1)}
-.grove-c{left:770px}
-.foot{position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(#fdf9f200,#fdf9f2cc)}
+.cityhall img{width:1066px;left:-791px;top:-332px}
+.fade{position:absolute;inset:0;background:linear-gradient(#fdf9f2 0%,#fdf9f2 6%,#fdf9f2a0 18%,#fdf9f200 40%)}
+/* The foot settles into paper, so the card's own edge never cuts the painting off. */
+.foot{position:absolute;left:0;right:0;bottom:0;height:44px;background:linear-gradient(#fdf9f200,#fdf9f2b3)}
 /* The scene fades into the paper at both ends, so it reads as a painting rather than a picture cropped. */
 .edges{position:absolute;inset:0;background:linear-gradient(to right,#fdf9f2,#fdf9f200 12%,#fdf9f200 88%,#fdf9f2)}
 </style></head><body><div class="band">
-<div class="slot skyline"><img src="src/philadelphia.png" alt=""></div>
+<div class="slot city"><img src="src/philadelphia.png" alt=""></div>
 <div class="slot hall"><img src="src/philadelphia.png" alt=""></div>
 <div class="slot cityhall"><img src="src/philadelphia.png" alt=""></div>
-<div class="slot grove grove-a"><img src="src/philadelphia.png" alt=""></div>
-<div class="slot grove grove-b"><img src="src/philadelphia.png" alt=""></div>
-<div class="slot grove grove-c"><img src="src/philadelphia.png" alt=""></div>
 <div class="fade"></div><div class="foot"></div><div class="edges"></div>
 </div></body></html>
