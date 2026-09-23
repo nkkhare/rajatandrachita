@@ -35,8 +35,8 @@ PIECES = {
                   'paint': {'radius': 0, 'smooth': 1.1, 'edge': 0, 'wash': 0.04, 'grain': 0.012, 'lift': 0,
                             'saturate': 1.05, 'blur': 0.4}},
     'philadelphia': {'size': (1200, 680),
-                     'paint': {'radius': 5, 'smooth': 1.3, 'edge': 0.75, 'saturate': 1.3, 'lift': 0.03, 'blur': 0.6,
-                               'palette': {'strength': 0.25}}},
+                     'paint': {'radius': 5, 'smooth': 0.9, 'edge': 1.6, 'saturate': 1.2, 'lift': 0.02, 'blur': 0.35,
+                               'palette': {'strength': 0.45}}},
     'sprig': {'size': (440, 560), 'paint': None, 'transparent': True},
 }
 WEBP_QUALITY, JPEG_QUALITY = 0.8, 80
