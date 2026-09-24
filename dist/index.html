@@ -32,6 +32,14 @@
         <div class="invitation-sheet" aria-hidden="true"></div>
         <picture class="card-art card-art-top"><source srcset="assets/art/mountains.webp" type="image/webp"><img src="assets/art/mountains.jpg" width="1200" height="680" alt="" decoding="async"></picture>
         <picture class="card-art card-art-bottom"><source srcset="assets/art/philadelphia.webp" type="image/webp"><img src="assets/art/philadelphia.jpg" width="1200" height="680" alt="" decoding="async"></picture>
+        <!-- The printed card, very gently alive: the river moves, the sky drifts, a few petals fall. Behind the
+             words (z-index:-1), so nothing it does can touch legibility, and it only runs once the card is open. -->
+        <div class="ambient" aria-hidden="true">
+          <div class="cloud cloud-peaks"></div>
+          <div class="cloud cloud-city"></div>
+          <div class="water"><span></span><span></span><span></span></div>
+          <div class="petals"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
         <svg class="invitation-rules" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="0.5" y="0.5" width="99" height="99" pathLength="1"/><rect x="2" y="1.4" width="96" height="97.2" pathLength="1"/></svg>
         <svg class="banner" viewBox="0 54 600 186" role="img" aria-label="Save the Date">
           <defs>

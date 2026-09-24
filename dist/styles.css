@@ -55,6 +55,23 @@ html[data-state="opening"] .invitation{pointer-events:none}
 .invitation::before,.invitation::after{content:'';flex:none;width:100%}
 .invitation::before{aspect-ratio:600/207}
 .invitation::after{aspect-ratio:600/310}
+/* ---------- The card, gently alive: water, sky and petals ---------- */
+.ambient{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+/* Sky: a breath of haze crossing each band, far too slow to catch in the act. */
+.cloud{position:absolute;left:-40%;width:180%;opacity:0;background:radial-gradient(60% 100% at 30% 50%,#fffdf8bf,#fffdf800 70%),radial-gradient(45% 100% at 68% 45%,#fff6e6a6,#fff6e600 72%)}
+.cloud-peaks{top:4%;height:22%}
+.cloud-city{bottom:6%;height:20%}
+/* Water: the river's own shimmer, drifting sideways and breathing. */
+.water{position:absolute;left:-6%;right:-6%;bottom:0;height:5.5%;opacity:0;
+  -webkit-mask-image:linear-gradient(#0000,#000 38%,#000 88%,#0000);mask-image:linear-gradient(#0000,#000 38%,#000 88%,#0000)}
+.water span{position:absolute;inset:0;background:repeating-linear-gradient(#fff0 0 5px,#fffaf0a6 5px 6px,#fff0 6px 13px)}
+.water span:nth-child(2){background:repeating-linear-gradient(#fff0 0 8px,#ffeed199 8px 9px,#fff0 9px 21px)}
+.water span:nth-child(3){background:repeating-linear-gradient(#fff0 0 11px,#fff7e680 11px 13px,#fff0 13px 31px)}
+/* Petals: a handful, never a shower, each falling at its own pace. */
+.petals i{position:absolute;top:-8%;width:15px;height:11px;border-radius:64% 36% 60% 40%/58% 62% 38% 42%;
+  background:radial-gradient(120% 120% at 30% 25%,#f0cdd0,#d79aa6 55%,#bd7f8d);opacity:0}
+/* The nearest two blur very slightly, the way a petal close to the eye would. */
+.petals i:nth-child(3),.petals i:nth-child(7){filter:blur(1.1px)}
 .invitation-rules{position:absolute;inset:9px;width:calc(100% - 18px);height:calc(100% - 18px);overflow:visible;pointer-events:none}
 .invitation-rules rect{fill:none;stroke:var(--gold);stroke-width:1.2;vector-effect:non-scaling-stroke;opacity:.6}
 .invitation-rules rect+rect{stroke-width:.8;opacity:.4}
@@ -96,6 +113,27 @@ html[data-state="opening"] .invitation{pointer-events:none}
 .replay-button{display:inline-flex;align-items:center;min-height:44px;margin-block:-14px;background:none;border:0;color:var(--muted);font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;padding:6px 2px;transition:color .2s}
 .replay-button::before{content:'◇';content:'◇' / '';color:var(--gold);margin-right:17px}
 .replay-button:hover{color:var(--burgundy)}
+html[data-state="opened"] .cloud-peaks{animation:cloud-drift 96s linear infinite}
+html[data-state="opened"] .cloud-city{animation:cloud-drift 124s linear -40s infinite}
+html[data-state="opened"] .water{opacity:1}
+html[data-state="opened"] .water span{animation:ripple 19s linear infinite}
+html[data-state="opened"] .water span:nth-child(2){animation-duration:27s;animation-direction:reverse}
+html[data-state="opened"] .water span:nth-child(3){animation-duration:38s}
+html[data-state="opened"] .petals i{animation:petal-fall var(--dur,34s) linear var(--delay,0s) infinite}
+.petals i:nth-child(1){left:7%;--dur:34s;--delay:-21s;--sway:-26px;--spin:200deg;transform:scale(0.86)}
+.petals i:nth-child(2){left:19%;--dur:41s;--delay:-16s;--sway:22px;--spin:-260deg;transform:scale(1.02)}
+.petals i:nth-child(3){left:31%;--dur:37s;--delay:-26s;--sway:-18px;--spin:180deg;transform:scale(1.18)}
+.petals i:nth-child(4){left:44%;--dur:45s;--delay:-19s;--sway:26px;--spin:-210deg;transform:scale(0.70)}
+.petals i:nth-child(5){left:56%;--dur:39s;--delay:-23s;--sway:-30px;--spin:240deg;transform:scale(0.86)}
+.petals i:nth-child(6){left:67%;--dur:43s;--delay:-17s;--sway:20px;--spin:-190deg;transform:scale(1.02)}
+.petals i:nth-child(7){left:78%;--dur:36s;--delay:-25s;--sway:-22px;--spin:260deg;transform:scale(1.18)}
+.petals i:nth-child(8){left:88%;--dur:47s;--delay:-20s;--sway:28px;--spin:-170deg;transform:scale(0.70)}
+.petals i:nth-child(9){left:96%;--dur:33s;--delay:-22s;--sway:-16px;--spin:230deg;transform:scale(0.86)}
+@keyframes cloud-drift{0%{opacity:0;transform:translateX(-12%)}18%{opacity:.5}82%{opacity:.5}100%{opacity:0;transform:translateX(12%)}}
+@keyframes ripple{0%{transform:translate3d(0,0,0);opacity:.55}50%{transform:translate3d(-14px,1px,0);opacity:.8}100%{transform:translate3d(-28px,0,0);opacity:.55}}
+@keyframes petal-fall{0%{opacity:0;transform:translate3d(0,0,0) rotate(0deg)}9%{opacity:.62}
+  38%{transform:translate3d(calc(var(--sway,18px) * -.7),42%,0) rotate(calc(var(--spin,220deg) * .35))}
+  70%{transform:translate3d(calc(var(--sway,18px) * .8),78%,0) rotate(calc(var(--spin,220deg) * .7))}91%{opacity:.5}100%{opacity:0;transform:translate3d(var(--sway,18px),118%,0) rotate(var(--spin,220deg))}}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 @media(max-width:480px){.eyebrow{font-size:.68rem;letter-spacing:.28em}.wedding-date{font-size:.72rem;letter-spacing:.22em}.wedding-location{font-size:1.14rem}.cd-num{font-size:2rem}.cd-cell{min-width:4.1rem}}
