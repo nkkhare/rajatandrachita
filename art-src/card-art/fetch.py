@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Copy the couple's paintings in, ready for bake.py to cut the card's art from them.
+"""Copy the couple's artwork in, ready for bake.py to encode the card from it.
 
     python3 art-src/card-art/fetch.py
 
-Both bands are crops of these two, so nothing is downloaded and nothing third-party ships.
+The card is the couple's own artwork, so nothing is downloaded and nothing third-party ships.
 The originals in reference/ are never modified; this only copies them into src/ (git-ignored).
 """
 import os
@@ -14,8 +14,7 @@ REFERENCE = os.path.normpath(os.path.join(HERE, '..', '..', 'reference'))
 
 # (source in reference/, name under src/)
 PAINTINGS = [
-    ('wedding-crest.png', 'crest.png'),
-    ('philadelphia-medallion.png', 'philadelphia.png'),
+    ('save-the-date-card.png', 'card.png'),
 ]
 
 

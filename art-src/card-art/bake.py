@@ -30,9 +30,8 @@ CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 CRISP = {'radius': 0, 'smooth': 0, 'sharpenAmount': 0.5, 'sharpenSigma': 0.9, 'edge': 0, 'wash': 0, 'grain': 0,
          'lift': 0, 'saturate': 1.06, 'contrast': 1.02, 'blur': 0}
 PIECES = {
-    # Sizes follow the reference's own regions, so the bands keep its proportions.
-    'mountains': {'size': (1200, 496), 'paint': CRISP},
-    'philadelphia': {'size': (1200, 660), 'paint': CRISP},
+    # The card is the artwork itself, at its own size: no crops, no painting, only encoding.
+    'card': {'size': (1024, 1536), 'paint': None},
 }
 WEBP_QUALITY, JPEG_QUALITY = 0.95, 92
 

@@ -4,9 +4,9 @@ PRODID:-//Rajat and Rachita//Save the Date//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-UID:rajat-rachita-wedding-20270515@save-the-date.local
+UID:rajat-rachita-wedding-20270514@save-the-date.local
 DTSTAMP:20260919T120000Z
-DTSTART;VALUE=DATE:20270515
+DTSTART;VALUE=DATE:20270514
 DTEND;VALUE=DATE:20270516
 SUMMARY:Rajat & Rachita Wedding
 LOCATION:Philadelphia\, Pennsylvania

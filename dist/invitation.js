@@ -8,9 +8,6 @@
   const skipButton = document.getElementById('skip-button');
   const replayButton = document.getElementById('replay-button');
   const title = document.getElementById('invitation-title');
-  const calendar = document.getElementById('calendar');
-  const countdown = document.getElementById('countdown');
-  const countdownDone = document.getElementById('countdown-done');
   const flapFace = cover.querySelector('.flap-face');
   const pocket = cover.querySelector('.env-pocket');
   const flapShadow = cover.querySelector('.flap-shadow');
@@ -21,12 +18,10 @@
   const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
   const canAnimate = typeof Element.prototype.animate === 'function';
   const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
-  // Midnight at the start of the wedding day in Philadelphia (EDT).
-  const WEDDING = Date.parse('2027-05-15T00:00:00-04:00');
   const TAN40 = Math.tan((40 * Math.PI) / 180);
   let state = 'closed';
   let animations = [];
-  let finishTimer, countdownTimer, layoutFrame, openWidth;
+  let finishTimer, layoutFrame, openWidth;
 
   function setState(next) {
     state = next;
@@ -80,34 +75,6 @@
     cover.style.setProperty('--lift', `${n(lift)}px`);
   }
 
-  // Days, hours and minutes until the wedding; "Today's the day" on the day; nothing afterwards.
-  function renderCountdown() {
-    window.clearTimeout(countdownTimer);
-    const left = WEDDING - Date.now();
-    if (left <= -864e5) {
-      countdown.hidden = true;
-      countdownDone.hidden = true;
-      return;
-    }
-    if (left <= 0) {
-      countdown.hidden = true;
-      countdownDone.hidden = false;
-      countdownTimer = window.setTimeout(renderCountdown, left + 864e5 + 25);
-      return;
-    }
-    countdown.hidden = false;
-    countdownDone.hidden = true;
-    const total = Math.ceil(left / 6e4);
-    const values = { days: Math.floor(total / 1440), hours: Math.floor(total / 60) % 24, mins: total % 60 };
-    const labels = { days: ['Day', 'Days'], hours: ['Hour', 'Hours'], mins: ['Min', 'Mins'] };
-    for (const num of countdown.querySelectorAll('.cd-num')) {
-      const unit = num.dataset.unit;
-      num.textContent = values[unit];
-      num.nextElementSibling.textContent = labels[unit][values[unit] === 1 ? 0 : 1];
-    }
-    countdownTimer = window.setTimeout(renderCountdown, (left % 6e4 || 6e4) + 25);
-  }
-
   function finishOpening({ focus = true } = {}) {
     clearAnimations();
     setState('opened');
@@ -122,7 +89,6 @@
 
   function resetCover() {
     clearAnimations();
-    calendar.open = false;
     setState('closed');
     cover.hidden = false;
     invitation.inert = true;
@@ -170,70 +136,14 @@
       ], flapTiming);
       animate(part('.env-body'), [{ transform: 'translateY(0)' }, { transform: 'translateY(104%)' }], { delay: 3700, duration: 1500, easing: 'cubic-bezier(.55, 0, .7, .2)' });
 
-      // The card rises into place beneath it, blank. The banner comes first: the rolled silk appears, unrolls outward
-      // from the middle, its tails fold out and light runs across it, then "Save the Date" is written on stroke by
-      // stroke. Only then does the rest arrive: photos, frame, words, countdown, calendar.
-      // Everything after the card lands is timed from `card` and stretched by `pace`.
-      const card = 3900;
-      const pace = 1.2;
-      const at = (ms, duration) => ({ delay: card + ms * pace, duration: duration * pace });
+      // The card is a single painting, so it simply rises into place; its water, sky and petals take over from
+      // there, in CSS, once the state is `opened`.
       animate(invitation, [
         { opacity: 0, transform: 'translateY(min(140px, 16vh)) scale(.985)' },
-        { opacity: 1, offset: 0.3 },
+        { opacity: 1, offset: 0.35 },
         { opacity: 1, transform: 'none' },
-      ], { delay: card, duration: 1900, easing: 'cubic-bezier(.16, 1, .3, 1)' });
+      ], { delay: 3900, duration: 2100, easing: 'cubic-bezier(.16, 1, .3, 1)' });
 
-      animate(piece('.bn-rolls'), [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], at(250, 550));
-      // The band is revealed from its middle while each roll travels out along the ribbon's curve, thinning as the
-      // cloth leaves it. Band and rolls share one timing, so the rolls stay on the cut edge.
-      const unroll = { ...at(800, 1500), easing: 'cubic-bezier(.45, .05, .25, 1)' };
-      animate(piece('.bn-band'), [{ clipPath: 'inset(0% 50% 0% 50%)' }, { clipPath: 'inset(0% 0% 0% 0%)' }], unroll);
-      for (const [selector, dir] of [['.bn-roll-l', -1], ['.bn-roll-r', 1]]) {
-        const steps = 8;
-        animate(piece(selector), Array.from({ length: steps + 1 }, (_, k) => {
-          const p = k / steps;
-          const t = 0.5 + dir * 0.5 * p; // position along the band, 0 to 1
-          return {
-            offset: p,
-            opacity: p < 0.9 ? 1 : 1 - (p - 0.9) * 10,
-            transform: `translate(${104 + 392 * t}px, ${62 + 124 * t * (1 - t)}px) scaleX(${1.5 - 0.75 * p})`,
-          };
-        }), unroll);
-      }
-      animate(piece('.bn-tail-l'), [{ opacity: 0, transform: 'rotate(-38deg)' }, { opacity: 1, transform: 'none' }], at(2250, 650));
-      animate(piece('.bn-tail-r'), [{ opacity: 0, transform: 'rotate(38deg)' }, { opacity: 1, transform: 'none' }], at(2250, 650));
-      for (const [selector, ms, sign] of [['.bn-jhumka-l', 2450, 1], ['.bn-jhumka-r', 2520, -1]]) {
-        animate(piece(selector), [
-          { opacity: 0, transform: `rotate(${24 * sign}deg)`, easing: 'ease-in-out' },
-          { opacity: 1, transform: `rotate(${-12 * sign}deg)`, offset: 0.3, easing: 'ease-in-out' },
-          { transform: `rotate(${6 * sign}deg)`, offset: 0.55, easing: 'ease-in-out' },
-          { transform: `rotate(${-2.5 * sign}deg)`, offset: 0.78, easing: 'ease-in-out' },
-          { opacity: 1, transform: 'rotate(0deg)' },
-        ], { ...at(ms, 1150), easing: 'linear' });
-      }
-      // The lettering: the pen outlines each letter left to right, then the ink fills in.
-      const write = at(2700, 1900);
-      animate(piece('.bn-text'), [
-        { clipPath: 'inset(-20% 100% -20% 0%)' },
-        { clipPath: 'inset(-20% 0% -20% 0%)', offset: 0.72 },
-        { clipPath: 'inset(-20% 0% -20% 0%)' },
-      ], { ...write, easing: 'linear' });
-      animate(piece('.bn-text text'), [
-        { stroke: '#782f43', strokeWidth: 0.7, strokeDasharray: 360, strokeDashoffset: 360, fillOpacity: 0 },
-        { stroke: '#782f43', strokeWidth: 0.7, strokeDasharray: 360, strokeDashoffset: 0, fillOpacity: 0, offset: 0.72 },
-        { stroke: '#782f43', strokeWidth: 0, strokeDasharray: 360, strokeDashoffset: 0, fillOpacity: 1 },
-      ], { ...write, easing: 'linear' });
-
-      // Then everything else populates around it.
-      animate(piece('.card-art-top'), [{ opacity: 0, transform: 'translateY(-10px)' }, { opacity: 1, transform: 'none' }], { ...at(4500, 1200), easing: 'ease-out' });
-      animate(piece('.card-art-bottom'), [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { ...at(4650, 1200), easing: 'ease-out' });
-      animate(piece('.invitation-rules'), [{ clipPath: 'inset(50% 50% 50% 50%)' }, { clipPath: 'inset(0% 0% 0% 0%)' }], { ...at(4600, 950), easing: 'cubic-bezier(.4, 0, .2, 1)' });
-      for (const [selector, ms] of [['.eyebrow', 4900], ['.couple-names', 5000], ['.wedding-date', 5150], ['.wedding-location', 5230]]) {
-        animate(piece(selector), fadeUp, at(ms, 650));
-      }
-      for (const [selector, ms] of [['.countdown', 5600], ['.cd-done', 5600], ['.invitation-actions', 5750]]) {
-        animate(piece(selector), fadeUp, at(ms, 600));
-      }
       // A single bounded timer, just after the last animation ends, also settles the page if a tab was backgrounded.
       const end = Math.max(...animations.map((a) => a.effect.getComputedTiming().endTime));
       finishTimer = window.setTimeout(() => finishOpening(), end + 50);
@@ -253,16 +163,6 @@
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
     if (state === 'opening') finishOpening();
-    else if (calendar.open) {
-      calendar.open = false;
-      calendar.querySelector('summary').focus();
-    }
-  });
-  document.addEventListener('click', (event) => {
-    if (!calendar.contains(event.target)) calendar.open = false;
-  });
-  calendar.addEventListener('click', (event) => {
-    if (event.target.closest('a')) calendar.open = false;
   });
   window.addEventListener('resize', () => {
     // Mobile toolbars change only the height; a real width change mid-opening settles the page.
@@ -275,11 +175,6 @@
   motionPreference.addEventListener('change', () => {
     if (motionPreference.matches && state === 'opening') finishOpening();
   });
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) renderCountdown();
-  });
-
-  renderCountdown();
   // Enhance only after all controls work. Without JS (or without clip-path paths), the full invitation is visible.
   if (!window.CSS || !CSS.supports('clip-path', 'path("M0 0H1V1Z")')) {
     delete root.dataset.state;

@@ -18,6 +18,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var
 
 /* ---------- The envelope: a fixed full-screen cover ---------- */
 .experience{flex:1;display:flex;justify-content:center;align-items:flex-start;padding:clamp(12px,4svh,44px) clamp(10px,4vw,40px) 0;min-width:0}
+@media(min-width:761px){:root{--chrome:150px}}
 .cover{position:fixed;inset:0;z-index:20;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
 .envelope-button{position:absolute;inset:0;display:block;width:100%;height:100%;padding:0;border:0;background:none;color:inherit;cursor:pointer;perspective:max(1100px,150vh);perspective-origin:50% 40%}
 .envelope-button:focus-visible{outline-offset:-10px}
@@ -44,68 +45,32 @@ html[data-state="opening"] .invitation{pointer-events:none}
 .skip-button{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px);z-index:30;min-height:44px;padding:9px 14px;border:0;background:none;color:var(--muted);font:inherit;font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
 .skip-button span[aria-hidden]{margin-left:4px;color:var(--gold)}
 
-/* ---------- The invitation card ---------- */
-.invitation{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:min(100%,560px);margin:0 auto;padding:clamp(22px,5vw,40px) clamp(18px,5.5vw,46px) clamp(30px,6vw,46px);text-align:center;isolation:isolate}
-.invitation-sheet{position:absolute;inset:0;z-index:-1;background:var(--grain),var(--card);box-shadow:0 34px 70px -40px #4d302370,0 2px 10px -6px #4d302333;pointer-events:none}
-/* The photo bands fill the top and bottom of the card; the spacers keep the words in the clear middle band between them. */
-.card-art{position:absolute;left:0;z-index:-1;display:block;width:100%;pointer-events:none}
-.card-art img{display:block;width:100%;height:auto}
-.card-art-top{top:0;-webkit-mask-image:linear-gradient(#000 94%,#0000 100%);mask-image:linear-gradient(#000 94%,#0000 100%)}
-.card-art-bottom{bottom:0;-webkit-mask-image:linear-gradient(#0000 0,#000 6%);mask-image:linear-gradient(#0000 0,#000 6%)}
-.invitation::before,.invitation::after{content:'';flex:none;width:100%}
-.invitation::before{aspect-ratio:600/207}
-.invitation::after{aspect-ratio:600/310}
+/* ---------- The invitation card: the couple's artwork, whole ---------- */
+.invitation{position:relative;width:min(100%,620px,(100svh - var(--chrome,116px)) * .667);margin:0 auto;isolation:isolate}
+.card-face,.card-face img{display:block;width:100%;height:auto}
+.card-face img{box-shadow:0 34px 70px -40px #4d302370,0 2px 10px -6px #4d302333}
+
 /* ---------- The card, gently alive: water, sky and petals ---------- */
-.ambient{position:absolute;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-/* Sky: a breath of haze crossing each band, far too slow to catch in the act. */
-.cloud{position:absolute;left:-40%;width:180%;opacity:0;background:radial-gradient(60% 100% at 30% 50%,#fffdf8bf,#fffdf800 70%),radial-gradient(45% 100% at 68% 45%,#fff6e6a6,#fff6e600 72%)}
-.cloud-peaks{top:4%;height:22%}
-.cloud-city{bottom:6%;height:20%}
+/* Laid over the artwork, never altering it. Positions are fractions of the card, measured off the painting:
+   the river runs from 90% down, the sky behind the skyline sits between 55% and 80%. */
+.ambient{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+/* Sky: a breath of haze crossing, far too slow to catch in the act. */
+.cloud{position:absolute;left:-40%;width:180%;opacity:0;background:radial-gradient(60% 100% at 30% 50%,#fffdf8a6,#fffdf800 70%),radial-gradient(45% 100% at 68% 45%,#fff6e68c,#fff6e600 72%)}
+.cloud-sky{top:57%;height:20%}
+.cloud-high{top:64%;height:16%}
 /* Water: the river's own shimmer, drifting sideways and breathing. */
-.water{position:absolute;left:-6%;right:-6%;bottom:0;height:5.5%;opacity:0;
-  -webkit-mask-image:linear-gradient(#0000,#000 38%,#000 88%,#0000);mask-image:linear-gradient(#0000,#000 38%,#000 88%,#0000)}
-.water span{position:absolute;inset:0;background:repeating-linear-gradient(#fff0 0 5px,#fffaf0a6 5px 6px,#fff0 6px 13px)}
-.water span:nth-child(2){background:repeating-linear-gradient(#fff0 0 8px,#ffeed199 8px 9px,#fff0 9px 21px)}
-.water span:nth-child(3){background:repeating-linear-gradient(#fff0 0 11px,#fff7e680 11px 13px,#fff0 13px 31px)}
-/* Petals: a handful, never a shower, each falling at its own pace. */
+.water{position:absolute;left:17%;right:17%;bottom:2%;height:8%;opacity:0;
+  -webkit-mask-image:linear-gradient(#0000,#000 30%,#000 86%,#0000),linear-gradient(to right,#0000,#000 12%,#000 88%,#0000);
+  mask-image:linear-gradient(#0000,#000 30%,#000 86%,#0000),linear-gradient(to right,#0000,#000 12%,#000 88%,#0000);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.water span{position:absolute;inset:0;background:repeating-linear-gradient(#fff0 0 5px,#fffaf08c 5px 6px,#fff0 6px 13px)}
+.water span:nth-child(2){background:repeating-linear-gradient(#fff0 0 8px,#ffeed180 8px 9px,#fff0 9px 21px)}
+.water span:nth-child(3){background:repeating-linear-gradient(#fff0 0 11px,#fff7e666 11px 13px,#fff0 13px 31px)}
+/* Petals: a handful, never a shower, each falling at its own pace, and kept out of the lettering's column. */
 .petals i{position:absolute;top:-8%;width:15px;height:11px;border-radius:64% 36% 60% 40%/58% 62% 38% 42%;
-  background:radial-gradient(120% 120% at 30% 25%,#f0cdd0,#d79aa6 55%,#bd7f8d);opacity:0}
+  background:radial-gradient(120% 120% at 30% 25%,#f4ced6,#e2a3b3 55%,#cf8496);opacity:0}
 /* The nearest two blur very slightly, the way a petal close to the eye would. */
-.petals i:nth-child(3),.petals i:nth-child(7){filter:blur(1.1px)}
-.invitation-rules{position:absolute;inset:9px;width:calc(100% - 18px);height:calc(100% - 18px);overflow:visible;pointer-events:none}
-.invitation-rules rect{fill:none;stroke:var(--gold);stroke-width:1.2;vector-effect:non-scaling-stroke;opacity:.6}
-.invitation-rules rect+rect{stroke-width:.8;opacity:.4}
-.banner{display:block;width:calc(100% + 20px);max-width:540px;height:auto;margin:0 -10px 2px;overflow:visible}
-.bn-band,.bn-tail,.bn-text,.bn-jhumka{transform-box:fill-box}
-.bn-band,.bn-text{transform-origin:50% 50%}
-.bn-tail-l{transform-origin:100% 0}
-.bn-tail-r{transform-origin:0 0}
-.bn-jhumka{transform-origin:50% 0}
-.bn-roll{opacity:0}
-.eyebrow{margin:4px 0 0;padding-left:.34em;font-size:.72rem;line-height:2;letter-spacing:.34em;text-transform:uppercase;color:var(--muted)}
-.eyebrow span{display:block}
-.couple-names{margin:6px 0 0;font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(2.5rem,11vw,3.7rem);line-height:1.05;letter-spacing:-.01em;color:var(--burgundy);text-wrap:balance}
-.couple-names em{font-size:.78em;color:var(--gold);padding-inline:.04em}
-.couple-names:focus{outline:none}
-.wedding-date{margin:18px 0 0;padding-left:.28em;font-size:.78rem;letter-spacing:.28em;text-transform:uppercase;color:var(--ink)}
-.wedding-location{margin:4px 0 0;font-family:var(--serif);font-style:italic;font-size:1.22rem;color:var(--muted)}
-.countdown{display:flex;justify-content:center;margin:22px 0 0}
-.cd-cell{display:flex;flex-direction:column;align-items:center;min-width:4.6rem;margin:0;padding-inline:clamp(10px,3.4vw,22px)}
-.cd-cell+.cd-cell{border-left:1px solid var(--line)}
-.cd-num{font-family:var(--serif);font-style:italic;font-size:2.3rem;line-height:1;color:var(--burgundy);font-variant-numeric:lining-nums tabular-nums}
-.cd-label{margin-top:6px;padding-left:.24em;font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
-.cd-done{margin:22px 0 0;font-family:var(--serif);font-style:italic;font-size:1.45rem;color:var(--burgundy)}
-.invitation-actions{align-self:stretch;display:flex;justify-content:center;margin-top:24px}
-.calendar{position:relative;width:min(100%,260px);z-index:3}
-.calendar-trigger{list-style:none;display:flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:12px 24px 12px calc(24px + .2em);border-radius:999px;background:linear-gradient(#8a3850,#6e283b);color:#fbf3e6;box-shadow:inset 0 0 0 1px #e0c07f99,inset 0 0 0 3px #6e283b,inset 0 0 0 4px #e0c07f40,0 12px 24px -14px #6e283bcc;font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap;cursor:pointer;transition:filter .2s}
-.calendar-trigger::-webkit-details-marker{display:none}
-.calendar-trigger:hover,.calendar[open] .calendar-trigger{filter:brightness(1.1)}
-.chevron{flex-shrink:0;color:#e6cd92;transition:transform .2s}
-.calendar[open] .chevron{transform:rotate(180deg)}
-.calendar-options{margin-top:10px;padding:5px;background:#fffcf7;border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 35px #4d302314;text-align:left}
-.calendar-options a{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:46px;padding:10px 14px;border-radius:10px;color:var(--ink);font-size:.88rem;text-decoration:none}
-.calendar-options a:hover{background:#f1e9dd}
-.calendar-options a>span[aria-hidden]{color:var(--gold)}
+.petals i:nth-child(4),.petals i:nth-child(9){filter:blur(1.1px)}
 
 /* ---------- Footer ---------- */
 .page-footer{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 17px;padding:22px 16px calc(env(safe-area-inset-bottom,0px) + 22px);color:var(--muted);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase}
@@ -113,22 +78,23 @@ html[data-state="opening"] .invitation{pointer-events:none}
 .replay-button{display:inline-flex;align-items:center;min-height:44px;margin-block:-14px;background:none;border:0;color:var(--muted);font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;padding:6px 2px;transition:color .2s}
 .replay-button::before{content:'◇';content:'◇' / '';color:var(--gold);margin-right:17px}
 .replay-button:hover{color:var(--burgundy)}
-html[data-state="opened"] .cloud-peaks{animation:cloud-drift 96s linear infinite}
-html[data-state="opened"] .cloud-city{animation:cloud-drift 124s linear -40s infinite}
+html[data-state="opened"] .cloud-sky{animation:cloud-drift 104s linear infinite}
+html[data-state="opened"] .cloud-high{animation:cloud-drift 137s linear -46s infinite}
 html[data-state="opened"] .water{opacity:1}
 html[data-state="opened"] .water span{animation:ripple 19s linear infinite}
 html[data-state="opened"] .water span:nth-child(2){animation-duration:27s;animation-direction:reverse}
 html[data-state="opened"] .water span:nth-child(3){animation-duration:38s}
 html[data-state="opened"] .petals i{animation:petal-fall var(--dur,34s) linear var(--delay,0s) infinite}
-.petals i:nth-child(1){left:7%;--dur:34s;--delay:-21s;--sway:-26px;--spin:200deg;transform:scale(0.86)}
-.petals i:nth-child(2){left:19%;--dur:41s;--delay:-16s;--sway:22px;--spin:-260deg;transform:scale(1.02)}
-.petals i:nth-child(3){left:31%;--dur:37s;--delay:-26s;--sway:-18px;--spin:180deg;transform:scale(1.18)}
-.petals i:nth-child(4){left:44%;--dur:45s;--delay:-19s;--sway:26px;--spin:-210deg;transform:scale(0.70)}
-.petals i:nth-child(5){left:56%;--dur:39s;--delay:-23s;--sway:-30px;--spin:240deg;transform:scale(0.86)}
-.petals i:nth-child(6){left:67%;--dur:43s;--delay:-17s;--sway:20px;--spin:-190deg;transform:scale(1.02)}
-.petals i:nth-child(7){left:78%;--dur:36s;--delay:-25s;--sway:-22px;--spin:260deg;transform:scale(1.18)}
-.petals i:nth-child(8){left:88%;--dur:47s;--delay:-20s;--sway:28px;--spin:-170deg;transform:scale(0.70)}
-.petals i:nth-child(9){left:96%;--dur:33s;--delay:-22s;--sway:-16px;--spin:230deg;transform:scale(0.86)}
+.petals i:nth-child(1){left:4%;--dur:38s;--delay:-9s;--sway:22px;--spin:210deg;transform:scale(0.82)}
+.petals i:nth-child(2){left:11%;--dur:46s;--delay:-27s;--sway:-26px;--spin:-240deg;transform:scale(1.0)}
+.petals i:nth-child(3){left:17%;--dur:35s;--delay:-14s;--sway:18px;--spin:180deg;transform:scale(0.72)}
+.petals i:nth-child(4){left:23%;--dur:50s;--delay:-33s;--sway:-20px;--spin:260deg;transform:scale(1.12)}
+.petals i:nth-child(5){left:31%;--dur:41s;--delay:-5s;--sway:24px;--spin:-200deg;transform:scale(0.9)}
+.petals i:nth-child(6){left:69%;--dur:44s;--delay:-19s;--sway:-22px;--spin:230deg;transform:scale(0.95)}
+.petals i:nth-child(7){left:76%;--dur:37s;--delay:-30s;--sway:26px;--spin:-180deg;transform:scale(0.78)}
+.petals i:nth-child(8){left:83%;--dur:48s;--delay:-11s;--sway:-18px;--spin:250deg;transform:scale(1.08)}
+.petals i:nth-child(9){left:90%;--dur:39s;--delay:-24s;--sway:20px;--spin:-220deg;transform:scale(0.86)}
+.petals i:nth-child(10){left:96%;--dur:43s;--delay:-2s;--sway:-24px;--spin:190deg;transform:scale(0.74)}
 @keyframes cloud-drift{0%{opacity:0;transform:translateX(-12%)}18%{opacity:.5}82%{opacity:.5}100%{opacity:0;transform:translateX(12%)}}
 @keyframes ripple{0%{transform:translate3d(0,0,0);opacity:.55}50%{transform:translate3d(-14px,1px,0);opacity:.8}100%{transform:translate3d(-28px,0,0);opacity:.55}}
 @keyframes petal-fall{0%{opacity:0;transform:translate3d(0,0,0) rotate(0deg)}9%{opacity:.62}
@@ -136,7 +102,6 @@ html[data-state="opened"] .petals i{animation:petal-fall var(--dur,34s) linear v
   70%{transform:translate3d(calc(var(--sway,18px) * .8),78%,0) rotate(calc(var(--spin,220deg) * .7))}91%{opacity:.5}100%{opacity:0;transform:translate3d(var(--sway,18px),118%,0) rotate(var(--spin,220deg))}}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
-@media(max-width:480px){.eyebrow{font-size:.68rem;letter-spacing:.28em}.wedding-date{font-size:.72rem;letter-spacing:.22em}.wedding-location{font-size:1.14rem}.cd-num{font-size:2rem}.cd-cell{min-width:4.1rem}}
-@media(max-width:360px){.couple-names{font-size:2.3rem}.cd-cell{padding-inline:8px}.page-footer{letter-spacing:.09em}}
-@media(min-width:761px) and (max-height:860px){.experience{padding-top:14px}.invitation{padding-block:18px 26px}.countdown{margin-top:16px}.invitation-actions{margin-top:18px}.page-footer{padding-block:14px}}
+@media(max-width:360px){.page-footer{letter-spacing:.09em}}
+@media(min-width:761px) and (max-height:860px){.experience{padding-top:14px}.page-footer{padding-block:14px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

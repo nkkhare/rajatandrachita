@@ -1,6 +1,6 @@
 # Rajat & Rachita · Save the Date
 
-A responsive wedding invitation for **Saturday, May 15, 2027**, in **Philadelphia, Pennsylvania**.
+A responsive wedding save-the-date for **May 14–15, 2027**, in **Philadelphia, Pennsylvania**.
 
 ## Website
 
@@ -22,12 +22,12 @@ Open <http://127.0.0.1:4173>. No package installation or build step is required.
 
 ## Experience
 
-- Guests land on a full-screen envelope: smooth ivory paper, a flap with a rounded tip, an embossed script "R&R" monogram, and "Tap to open". Tapping it lifts the flap, the envelope drops away, and the invitation rises into view, blank. The "Save the Date" ribbon comes first, drawn as a gold outline: it unrolls from the middle, its tails and gold jhumka tassels fall into place, and the lettering writes itself on. Then the photos, frame, names, date, countdown and calendar button arrive (about 11.5 seconds in all).
+- Guests land on a full-screen envelope: smooth ivory paper, a flap with a rounded tip, an embossed script "R&R" monogram, and "Tap to open". Tapping it lifts the flap, the envelope drops away, and the card rises into view (about six seconds in all).
 - The reveal supports skipping (the **Skip** control or Escape), replay (in the footer), keyboard input, and reduced motion.
 - Once the card has settled it stays gently alive: the river shimmers, haze drifts across the mountains and the city, and a few petals fall. All of it sits behind the words, and reduced motion turns it off.
-- The invitation is a centered portrait card: "We are getting married", "Rajat & Rachita", "Saturday, May 15, 2027", Philadelphia, and a live countdown to the day, set between two watercolors: across the top, the peaks and pine forest cut from the couple's own crest; along the bottom, their Philadelphia painting: Independence Hall, City Hall's tower, the skyline between them and the river. Flowers cut from the crest frame the words in the middle. On the wedding day the countdown reads "Today's the day"; afterwards it's hidden.
-- **Add to calendar** offers Google Calendar and a downloadable Apple/Outlook-compatible event. The event is all-day on May 15, 2027; May 16 is its exclusive end date.
-- Without JavaScript, the complete invitation and calendar links are available immediately (the countdown needs JavaScript).
+- The invitation is the couple's own painted card, shown whole: "Save the Date", "Rajat & Rachita", "May 14 - 15, 2027", "Philadelphia, Pennsylvania" and "Invitation to follow", framed in blossom and gold over the Philadelphia skyline and the river.
+- Once it has settled the card stays gently alive: the river shimmers, haze drifts behind the skyline, and petals fall. All of it is laid over the artwork without altering it, and reduced motion turns it off.
+- Without JavaScript, the card is shown immediately.
 - Fonts and images are served locally. No analytics, storage, audio, guest data, or external runtime dependencies are used. Google Calendar is opened only when the guest selects it.
 - The experience is modeled on The Digital Yes invitations; see `research/the-digital-yes.md`.
 
@@ -35,7 +35,7 @@ Open <http://127.0.0.1:4173>. No package installation or build step is required.
 
 - `dist/index.html`: accessible content, the envelope, the inline "Save the Date" banner, and calendar links.
 - `dist/styles.css`: responsive layout, typography, the envelope layers and interaction styling.
-- `dist/invitation.js`: envelope geometry, the opening/replay animation, the countdown, and accessibility behavior.
+- `dist/invitation.js`: envelope geometry, the opening/replay animation, and accessibility behavior.
 - `dist/rajat-and-rachita.ics`: downloadable all-day event.
 - `dist/assets/`: the card's photo bands (`art/`, WebP and JPEG), local fonts, and their licenses.
 - `art-src/card-art/`: copies the couple's paintings in and bakes the card's art from crops of them (`fetch.py`, then `bake.py`; `paint.js` softens the upscaling).
