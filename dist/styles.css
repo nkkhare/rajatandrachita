@@ -63,11 +63,11 @@ html[data-state="opening"] .invitation{pointer-events:none}
   -webkit-mask-image:linear-gradient(#0000,#000 30%,#000 86%,#0000),linear-gradient(to right,#0000,#000 12%,#000 88%,#0000);
   mask-image:linear-gradient(#0000,#000 30%,#000 86%,#0000),linear-gradient(to right,#0000,#000 12%,#000 88%,#0000);
   -webkit-mask-composite:source-in;mask-composite:intersect}
-.water span{position:absolute;inset:0;background:repeating-linear-gradient(#fff0 0 5px,#fffaf08c 5px 6px,#fff0 6px 13px)}
-.water span:nth-child(2){background:repeating-linear-gradient(#fff0 0 8px,#ffeed180 8px 9px,#fff0 9px 21px)}
-.water span:nth-child(3){background:repeating-linear-gradient(#fff0 0 11px,#fff7e666 11px 13px,#fff0 13px 31px)}
+.water span{position:absolute;inset:0;background:repeating-linear-gradient(#fff0 0 5px,#fff8ecd9 5px 7px,#fff0 6px 13px)}
+.water span:nth-child(2){background:repeating-linear-gradient(#fff0 0 8px,#ffeed1bf 8px 10px,#fff0 9px 21px)}
+.water span:nth-child(3){background:repeating-linear-gradient(#fff0 0 11px,#fff7e6a6 11px 14px,#fff0 13px 31px)}
 /* Petals: a handful, never a shower, each falling at its own pace, and kept out of the lettering's column. */
-.petals i{position:absolute;top:-8%;width:15px;height:11px;border-radius:64% 36% 60% 40%/58% 62% 38% 42%;
+.petals i{position:absolute;top:-10%;width:17px;height:13px;border-radius:64% 36% 60% 40%/58% 62% 38% 42%;
   background:radial-gradient(120% 120% at 30% 25%,#f4ced6,#e2a3b3 55%,#cf8496);opacity:0}
 /* The nearest two blur very slightly, the way a petal close to the eye would. */
 .petals i:nth-child(4),.petals i:nth-child(9){filter:blur(1.1px)}
@@ -78,28 +78,28 @@ html[data-state="opening"] .invitation{pointer-events:none}
 .replay-button{display:inline-flex;align-items:center;min-height:44px;margin-block:-14px;background:none;border:0;color:var(--muted);font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;padding:6px 2px;transition:color .2s}
 .replay-button::before{content:'◇';content:'◇' / '';color:var(--gold);margin-right:17px}
 .replay-button:hover{color:var(--burgundy)}
-html[data-state="opened"] .cloud-sky{animation:cloud-drift 104s linear infinite}
-html[data-state="opened"] .cloud-high{animation:cloud-drift 137s linear -46s infinite}
+html[data-state="opened"] .cloud-sky{animation:cloud-drift 52s linear infinite}
+html[data-state="opened"] .cloud-high{animation:cloud-drift 67s linear -23s infinite}
 html[data-state="opened"] .water{opacity:1}
-html[data-state="opened"] .water span{animation:ripple 19s linear infinite}
-html[data-state="opened"] .water span:nth-child(2){animation-duration:27s;animation-direction:reverse}
-html[data-state="opened"] .water span:nth-child(3){animation-duration:38s}
+html[data-state="opened"] .water span{animation:ripple 9s linear infinite}
+html[data-state="opened"] .water span:nth-child(2){animation-duration:13s;animation-direction:reverse}
+html[data-state="opened"] .water span:nth-child(3){animation-duration:17s}
 html[data-state="opened"] .petals i{animation:petal-fall var(--dur,34s) linear var(--delay,0s) infinite}
-.petals i:nth-child(1){left:4%;--dur:38s;--delay:-9s;--sway:22px;--spin:210deg;transform:scale(0.82)}
-.petals i:nth-child(2){left:11%;--dur:46s;--delay:-27s;--sway:-26px;--spin:-240deg;transform:scale(1.0)}
-.petals i:nth-child(3){left:17%;--dur:35s;--delay:-14s;--sway:18px;--spin:180deg;transform:scale(0.72)}
-.petals i:nth-child(4){left:23%;--dur:50s;--delay:-33s;--sway:-20px;--spin:260deg;transform:scale(1.12)}
-.petals i:nth-child(5){left:31%;--dur:41s;--delay:-5s;--sway:24px;--spin:-200deg;transform:scale(0.9)}
-.petals i:nth-child(6){left:69%;--dur:44s;--delay:-19s;--sway:-22px;--spin:230deg;transform:scale(0.95)}
-.petals i:nth-child(7){left:76%;--dur:37s;--delay:-30s;--sway:26px;--spin:-180deg;transform:scale(0.78)}
-.petals i:nth-child(8){left:83%;--dur:48s;--delay:-11s;--sway:-18px;--spin:250deg;transform:scale(1.08)}
-.petals i:nth-child(9){left:90%;--dur:39s;--delay:-24s;--sway:20px;--spin:-220deg;transform:scale(0.86)}
-.petals i:nth-child(10){left:96%;--dur:43s;--delay:-2s;--sway:-24px;--spin:190deg;transform:scale(0.74)}
-@keyframes cloud-drift{0%{opacity:0;transform:translateX(-12%)}18%{opacity:.5}82%{opacity:.5}100%{opacity:0;transform:translateX(12%)}}
-@keyframes ripple{0%{transform:translate3d(0,0,0);opacity:.55}50%{transform:translate3d(-14px,1px,0);opacity:.8}100%{transform:translate3d(-28px,0,0);opacity:.55}}
-@keyframes petal-fall{0%{opacity:0;transform:translate3d(0,0,0) rotate(0deg)}9%{opacity:.62}
+.petals i:nth-child(1){left:4%;--dur:16.0s;--delay:-3.8s;--sway:22px;--spin:210deg;transform:scale(0.82)}
+.petals i:nth-child(2){left:11%;--dur:19.3s;--delay:-11.3s;--sway:-26px;--spin:-240deg;transform:scale(1.0)}
+.petals i:nth-child(3){left:17%;--dur:14.7s;--delay:-5.9s;--sway:18px;--spin:180deg;transform:scale(0.72)}
+.petals i:nth-child(4){left:23%;--dur:21.0s;--delay:-13.9s;--sway:-20px;--spin:260deg;transform:scale(1.12)}
+.petals i:nth-child(5){left:31%;--dur:17.2s;--delay:-2.1s;--sway:24px;--spin:-200deg;transform:scale(0.9)}
+.petals i:nth-child(6){left:69%;--dur:18.5s;--delay:-8.0s;--sway:-22px;--spin:230deg;transform:scale(0.95)}
+.petals i:nth-child(7){left:76%;--dur:15.5s;--delay:-12.6s;--sway:26px;--spin:-180deg;transform:scale(0.78)}
+.petals i:nth-child(8){left:83%;--dur:20.2s;--delay:-4.6s;--sway:-18px;--spin:250deg;transform:scale(1.08)}
+.petals i:nth-child(9){left:90%;--dur:16.4s;--delay:-10.1s;--sway:20px;--spin:-220deg;transform:scale(0.86)}
+.petals i:nth-child(10){left:96%;--dur:18.1s;--delay:-0.8s;--sway:-24px;--spin:190deg;transform:scale(0.74)}
+@keyframes cloud-drift{0%{opacity:0;transform:translateX(-14%)}20%{opacity:.85}80%{opacity:.85}100%{opacity:0;transform:translateX(14%)}}
+@keyframes ripple{0%{transform:translate3d(0,0,0) scaleY(1);opacity:.5}50%{transform:translate3d(-13px,1px,0) scaleY(1.08);opacity:.95}100%{transform:translate3d(-26px,0,0) scaleY(1);opacity:.5}}
+@keyframes petal-fall{0%{opacity:0;transform:translate3d(0,0,0) rotate(0deg)}7%{opacity:.85}
   38%{transform:translate3d(calc(var(--sway,18px) * -.7),42%,0) rotate(calc(var(--spin,220deg) * .35))}
-  70%{transform:translate3d(calc(var(--sway,18px) * .8),78%,0) rotate(calc(var(--spin,220deg) * .7))}91%{opacity:.5}100%{opacity:0;transform:translate3d(var(--sway,18px),118%,0) rotate(var(--spin,220deg))}}
+  70%{transform:translate3d(calc(var(--sway,18px) * .8),78%,0) rotate(calc(var(--spin,220deg) * .7))}91%{opacity:.7}100%{opacity:0;transform:translate3d(var(--sway,18px),118%,0) rotate(var(--spin,220deg))}}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 @media(max-width:360px){.page-footer{letter-spacing:.09em}}
