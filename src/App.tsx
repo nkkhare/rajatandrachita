@@ -9,6 +9,7 @@ export function App() {
   const imageRef = useRef<HTMLImageElement>(null);
   const waterRef = useRef<HTMLCanvasElement>(null);
   const cloudsRef = useRef<HTMLCanvasElement>(null);
+  const petalsRef = useRef<HTMLCanvasElement>(null);
   const openingRequested = useRef(false);
 
   const openEnvelope = () => {
@@ -48,7 +49,8 @@ export function App() {
     const image = imageRef.current;
     const waterCanvas = waterRef.current;
     const cloudsCanvas = cloudsRef.current;
-    if (!image || !waterCanvas || !cloudsCanvas) return;
+    const petalsCanvas = petalsRef.current;
+    if (!image || !waterCanvas || !cloudsCanvas || !petalsCanvas) return;
 
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
     let disposed = false;
@@ -59,7 +61,7 @@ export function App() {
       const currentGeneration = ++generation;
       stopAnimation?.();
       stopAnimation = undefined;
-      if (motionPreference.matches || document.hidden || !image || !waterCanvas || !cloudsCanvas) return;
+      if (motionPreference.matches || document.hidden || !image || !waterCanvas || !cloudsCanvas || !petalsCanvas) return;
 
       if (!image.complete || image.naturalWidth === 0) {
         await new Promise<void>((resolve) => {
@@ -71,7 +73,7 @@ export function App() {
 
       const { createSceneAnimation } = await import('./animation/scene');
       if (disposed || currentGeneration !== generation || motionPreference.matches || document.hidden) return;
-      stopAnimation = createSceneAnimation(image, waterCanvas, cloudsCanvas);
+      stopAnimation = createSceneAnimation(image, waterCanvas, cloudsCanvas, petalsCanvas);
     }
 
     const handleChange = () => { void start(); };
@@ -110,6 +112,7 @@ export function App() {
           <canvas ref={cloudsRef} className="invitation__clouds" aria-hidden="true" />
           <Countdown />
           <canvas ref={waterRef} className="invitation__water" aria-hidden="true" />
+          <canvas ref={petalsRef} className="invitation__petals" aria-hidden="true" />
         </div>
       </EnvelopeIntro>
     </main>

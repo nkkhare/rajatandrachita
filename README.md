@@ -1,6 +1,6 @@
 # Rachita & Rajat · Save the Date
 
-An animated presentation of the 1024×1536 Philadelphia save-the-date artwork. Guests open a soft pink, wax-sealed envelope to reveal the card. Once it settles, the live countdown, river shimmer, and a slow cloud drift bring the invitation to life.
+An animated presentation of the 1024×1536 Philadelphia save-the-date artwork. Guests open a soft pink, wax-sealed envelope to reveal the card. Once it settles, the live countdown, river shimmer, slow cloud drift, and falling petals bring the invitation to life.
 
 ## Run locally
 
@@ -18,12 +18,13 @@ Open the URL printed by Vite. `npm run build` creates a production site in `dist
 3. The supplied PNG with a live SVG countdown over its printed countdown box.
 4. A canvas cloud drift, masked to the open sky beside the lettering (`src/animation/clouds.ts`).
 5. A canvas water overlay, clipped to an editable polygon below the bridge (`src/animation/water.ts`).
+6. Lightweight canvas petals falling across the card (`src/animation/petals.ts`).
 
 The opening follows the reference intro's timing:
 - Tap anywhere and the lid tips toward the viewer over 3.6 s (CSS `rotateX` with about four screen-heights of perspective).
 - The envelope fades out over the last 0.8 s.
 - After 0.2 s, the card fades up 20 px over 0.8 s.
 
-The envelope uses `closed → opening → revealed` states, and repeat taps are ignored once it starts opening. The countdown targets midnight in Philadelphia on May 14, 2027 and updates on minute boundaries. Water and clouds start only at `revealed`, use `requestAnimationFrame`, and stop when the tab is hidden. Reduced-motion visitors get a short fade to a static card.
+The envelope uses `closed → opening → revealed` states, and repeat taps are ignored once it starts opening. The countdown targets midnight in Philadelphia on May 14, 2027 and updates on minute boundaries. Water, clouds, and petals start only at `revealed`, use `requestAnimationFrame`, and stop when the tab is hidden. Reduced-motion visitors get a short fade to a static card.
 
 For visual tuning, set `DEBUG_WATER` in `src/animation/water.ts` or `DEBUG_CLOUDS` in `src/animation/clouds.ts` to exaggerate the motion and outline the masks. Leave both set to `false` for production.
