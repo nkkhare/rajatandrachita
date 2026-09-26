@@ -1,0 +1,79 @@
+:root {
+  font-family: Georgia, serif;
+  color-scheme: light;
+  background: #eac5bb;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { min-width: 320px; min-height: 100%; margin: 0; }
+
+body { overflow-x: hidden; }
+
+.scene {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  overflow: clip;
+  background: #eac5bb;
+}
+
+.scene__background {
+  position: fixed;
+  z-index: -1;
+  inset: -48px;
+  background: linear-gradient(#efd5cc38, #b4768938), url('/save-the-date.png') center center / cover no-repeat;
+  filter: blur(30px) saturate(.8);
+  transform: scale(1.04);
+  pointer-events: none;
+}
+
+.invitation {
+  position: relative;
+  width: min(100vw, 63.333svh);
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background: #eac5bb;
+  box-shadow: 0 15px 55px #51352c2b;
+}
+
+.invitation__art { display: block; width: 100%; height: 100%; }
+
+.invitation__water {
+  position: absolute;
+  top: 89.84375%; /* source image y=1380 of 1536 */
+  left: 0;
+  width: 100%;
+  height: 10.15625%;
+  pointer-events: none;
+}
+
+.scene__petals {
+  position: fixed;
+  z-index: 2;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  pointer-events: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .invitation { width: 100vw; box-shadow: none; }
+  .scene__background { filter: blur(28px) saturate(.82); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .invitation__water, .scene__petals { display: none; }
+}

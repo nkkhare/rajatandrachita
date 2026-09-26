@@ -1,51 +1,35 @@
-name: Deploy wedding invitation to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
-    paths:
-      - 'dist/**'
-      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out the invitation
-        uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          persist-credentials: false
-
-      - name: Validate static entry point and JavaScript
-        run: |
-          test -s dist/index.html
-          node --check dist/invitation.js
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v6.0.0
-
-      - name: Upload the invitation
-        uses: actions/upload-pages-artifact@v5.0.0
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5.0.1
+      - id: deployment
+        uses: actions/deploy-pages@v4
