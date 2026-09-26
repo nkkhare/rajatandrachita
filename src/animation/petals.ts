@@ -60,6 +60,7 @@ const SPRITES = [
 
 export class PetalField {
   private context: CanvasRenderingContext2D | null;
+  private resizeObserver: ResizeObserver;
   private petals: Petal[] = [];
   private width = 0;
   private height = 0;
@@ -67,8 +68,8 @@ export class PetalField {
 
   constructor(private canvas: HTMLCanvasElement) {
     this.context = canvas.getContext('2d', { alpha: true });
-    this.resize = this.resize.bind(this);
-    window.addEventListener('resize', this.resize, { passive: true });
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(canvas.parentElement ?? canvas);
     this.resize();
   }
 
@@ -77,10 +78,7 @@ export class PetalField {
     const foreground = depth > 0.87;
     const background = depth < 0.3;
     const size = foreground ? random(24, 37) : background ? random(9, 15) : random(14, 25);
-    const side = Math.random();
-    const fromLeft = side < 0.12;
-    const fromRight = side > 0.88;
-    const originX = fromLeft ? random(-25, 8) : fromRight ? random(this.width - 8, this.width + 25) : random(0, this.width);
+    const originX = random(0, this.width);
 
     return {
       originX,
@@ -88,7 +86,7 @@ export class PetalField {
       age: initial ? 0 : -random(0, 2.2),
       size,
       speed: foreground ? random(53, 83) : background ? random(24, 39) : random(36, 61),
-      drift: fromLeft ? random(5, 14) : fromRight ? random(-14, -5) : random(-8, 8),
+      drift: random(-8, 8),
       sway: random(9, foreground ? 34 : 24),
       swayRate: random(0.5, 1.25),
       phase: random(0, Math.PI * 2),
@@ -101,18 +99,19 @@ export class PetalField {
   }
 
   private resize() {
+    const rect = this.canvas.getBoundingClientRect();
     // Petals are intentionally soft. A capped backing resolution avoids
     // clearing millions of unnecessary pixels on high-density phones.
     this.pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
+    this.width = rect.width;
+    this.height = rect.height;
     this.canvas.width = Math.round(this.width * this.pixelRatio);
     this.canvas.height = Math.round(this.height * this.pixelRatio);
     this.context?.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
 
     const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
     const lowPower = (memory !== undefined && memory <= 4) || (navigator.hardwareConcurrency || 4) <= 4;
-    const count = lowPower ? (this.width < 600 ? 9 : 12) : (this.width < 600 ? 13 : 17);
+    const count = lowPower ? (this.width < 430 ? 8 : 11) : (this.width < 430 ? 11 : 15);
     this.petals = Array.from({ length: count }, () => this.createPetal(true));
   }
 
@@ -156,7 +155,7 @@ export class PetalField {
   }
 
   dispose() {
-    window.removeEventListener('resize', this.resize);
+    this.resizeObserver.disconnect();
     this.context?.clearRect(0, 0, this.width, this.height);
   }
 }
