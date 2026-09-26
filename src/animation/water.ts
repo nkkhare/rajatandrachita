@@ -39,9 +39,10 @@ function waveOffset(y: number, seconds: number) {
       + 3.2 * Math.sin(seconds * -3.05 + row * 0.282)
       + 1.6 * Math.sin(seconds * 1.42 + row * 0.49);
   }
-  return 1.5 * Math.sin(seconds * 0.37 + row * 0.105)
-    + 1.0 * Math.sin(seconds * -0.61 + row * 0.247)
-    + 0.5 * Math.sin(seconds * 0.23 + row * 0.473);
+  return 2.35 * Math.sin(seconds * 0.47 + row * 0.102)
+    + 1.3 * Math.sin(seconds * -0.72 + row * 0.235)
+    + 0.72 * Math.sin(seconds * 0.31 + row * 0.438)
+    + 0.35 * Math.sin(seconds * -1.03 + row * 0.612);
 }
 
 function drawLightShimmer(context: CanvasRenderingContext2D, seconds: number, pixelsToSource: number) {
@@ -51,16 +52,18 @@ function drawLightShimmer(context: CanvasRenderingContext2D, seconds: number, pi
   const right: Array<[number, number]> = [];
   for (let y = 0; y <= WATER_BAND_HEIGHT; y += 6) {
     const shift = waveOffset(WATER_BAND_TOP + y, seconds) * pixelsToSource * 0.5;
-    const center = 403 + shift + 7 * Math.sin(seconds * 0.28);
-    const width = 90 + y * 0.34;
+    const center = 403 + shift + 9 * Math.sin(seconds * 0.31);
+    const width = 75 + y * 0.43
+      + 6 * Math.sin(y * 0.17 + seconds * 0.63);
     left.push([center - width, y]);
     right.push([center + width, y]);
   }
 
   context.save();
   context.globalCompositeOperation = 'screen';
-  context.globalAlpha = (DEBUG_WATER ? 0.085 : 0.025)
-    * (0.85 + 0.15 * Math.sin(seconds * (DEBUG_WATER ? 1.4 : 0.48)));
+  context.globalAlpha = (DEBUG_WATER ? 0.13 : 0.078)
+    * (0.76 + 0.24 * Math.sin(seconds * (DEBUG_WATER ? 1.4 : 0.57))
+      * Math.sin(seconds * 0.22 + 0.7));
   const glow = context.createLinearGradient(275, 0, 555, 0);
   glow.addColorStop(0, 'rgba(255, 221, 162, 0)');
   glow.addColorStop(0.45, 'rgba(255, 216, 139, 1)');
@@ -122,8 +125,8 @@ export class WaterRenderer {
       const sourceY = WATER_BAND_TOP + localY;
       const bankFade = Math.max(0, Math.min(1, (sourceY - 1390) / 24));
       const offset = waveOffset(sourceY, seconds) * pixelsToSource * bankFade;
-      const stretch = 1 + (DEBUG_WATER ? 0.004 : 0.001)
-        * Math.sin(seconds * (DEBUG_WATER ? 2.0 : 0.39) + localY * 0.13);
+      const stretch = 1 + (DEBUG_WATER ? 0.004 : 0.0017)
+        * Math.sin(seconds * (DEBUG_WATER ? 2.0 : 0.43) + localY * 0.13);
       const width = IMAGE_WIDTH * stretch;
       context.drawImage(this.image,
         0, sourceY, IMAGE_WIDTH, height,

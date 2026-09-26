@@ -75,9 +75,9 @@ export class PetalField {
 
   private createPetal(initial: boolean): Petal {
     const depth = Math.random();
-    const foreground = depth > 0.87;
-    const background = depth < 0.3;
-    const size = foreground ? random(24, 37) : background ? random(9, 15) : random(14, 25);
+    const foreground = depth > 0.9;
+    const background = depth < 0.32;
+    const size = foreground ? random(23, 31) : background ? random(9, 14) : random(13, 22);
     const originX = random(0, this.width);
 
     return {
@@ -85,7 +85,7 @@ export class PetalField {
       originY: initial ? random(-this.height * 0.12, this.height + 20) : random(-90, -size),
       age: initial ? 0 : -random(0, 2.2),
       size,
-      speed: foreground ? random(53, 83) : background ? random(24, 39) : random(36, 61),
+      speed: foreground ? random(60, 90) : background ? random(31, 46) : random(43, 68),
       drift: random(-8, 8),
       sway: random(9, foreground ? 34 : 24),
       swayRate: random(0.5, 1.25),
@@ -111,7 +111,7 @@ export class PetalField {
 
     const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
     const lowPower = (memory !== undefined && memory <= 4) || (navigator.hardwareConcurrency || 4) <= 4;
-    const count = lowPower ? (this.width < 430 ? 8 : 11) : (this.width < 430 ? 11 : 15);
+    const count = lowPower ? (this.width < 430 ? 8 : 10) : (this.width < 430 ? 10 : 13);
     this.petals = Array.from({ length: count }, () => this.createPetal(true));
   }
 
@@ -147,7 +147,7 @@ export class PetalField {
       context.translate(x, y);
       context.rotate(rotation);
       context.scale(flutter, 1);
-      context.globalAlpha = petal.opacity;
+      context.globalAlpha = petal.opacity * Math.min(1, seconds / 1.2);
       if (petal.blur > 0) context.filter = `blur(${petal.blur}px)`;
       context.drawImage(petal.sprite, -petal.size / 2, -petal.size * 0.7, petal.size, petal.size * 1.4);
       context.restore();
