@@ -3,8 +3,8 @@
 export const DEBUG_WATER = false;
 
 const IMAGE_WIDTH = 1024;
-const WATER_BAND_TOP = 1380;
-const WATER_BAND_HEIGHT = 156;
+const WATER_BAND_TOP = 1400;
+const WATER_BAND_HEIGHT = 136;
 const STRIP_HEIGHT = 3; // source-image pixels
 
 // Points are in the original 1024 × 1536 artwork coordinate system.
@@ -12,12 +12,12 @@ const STRIP_HEIGHT = 3; // source-image pixels
 // traces this same polygon. The top follows the bank below the bridge and
 // the narrowing sides avoid the foreground flowers.
 export const WATER_MASK_POINTS: ReadonlyArray<readonly [number, number]> = [
-  [122, 1407], [158, 1398], [222, 1392], [318, 1388],
-  [429, 1385], [540, 1385], [654, 1386], [766, 1390],
-  [853, 1396], [925, 1406],
-  [915, 1423], [897, 1444], [870, 1465], [840, 1487],
-  [813, 1511], [784, 1536], [342, 1536], [313, 1514],
-  [278, 1491], [235, 1468], [191, 1444], [153, 1423],
+  [118, 1412], [166, 1409], [260, 1407], [365, 1408],
+  [475, 1410], [590, 1410], [710, 1408], [820, 1408],
+  [906, 1413], [900, 1431], [886, 1450], [861, 1471],
+  [832, 1492], [805, 1515], [780, 1536], [330, 1536],
+  [304, 1516], [272, 1494], [235, 1472], [196, 1451],
+  [158, 1432],
 ];
 
 function maskPath() {
@@ -39,10 +39,10 @@ function waveOffset(y: number, seconds: number) {
       + 3.2 * Math.sin(seconds * -3.05 + row * 0.282)
       + 1.6 * Math.sin(seconds * 1.42 + row * 0.49);
   }
-  return 2.35 * Math.sin(seconds * 0.47 + row * 0.102)
-    + 1.3 * Math.sin(seconds * -0.72 + row * 0.235)
-    + 0.72 * Math.sin(seconds * 0.31 + row * 0.438)
-    + 0.35 * Math.sin(seconds * -1.03 + row * 0.612);
+  return 2.65 * Math.sin(seconds * 0.47 + row * 0.102)
+    + 1.48 * Math.sin(seconds * -0.72 + row * 0.235)
+    + 0.82 * Math.sin(seconds * 0.31 + row * 0.438)
+    + 0.38 * Math.sin(seconds * -1.03 + row * 0.612);
 }
 
 function drawLightShimmer(context: CanvasRenderingContext2D, seconds: number, pixelsToSource: number) {
@@ -52,8 +52,8 @@ function drawLightShimmer(context: CanvasRenderingContext2D, seconds: number, pi
   const right: Array<[number, number]> = [];
   for (let y = 0; y <= WATER_BAND_HEIGHT; y += 6) {
     const shift = waveOffset(WATER_BAND_TOP + y, seconds) * pixelsToSource * 0.5;
-    const center = 403 + shift + 9 * Math.sin(seconds * 0.31);
-    const width = 75 + y * 0.43
+    const center = 420 + shift + 9 * Math.sin(seconds * 0.31);
+    const width = 82 + y * 0.43
       + 6 * Math.sin(y * 0.17 + seconds * 0.63);
     left.push([center - width, y]);
     right.push([center + width, y]);
@@ -61,10 +61,10 @@ function drawLightShimmer(context: CanvasRenderingContext2D, seconds: number, pi
 
   context.save();
   context.globalCompositeOperation = 'screen';
-  context.globalAlpha = (DEBUG_WATER ? 0.13 : 0.078)
+  context.globalAlpha = (DEBUG_WATER ? 0.13 : 0.10)
     * (0.76 + 0.24 * Math.sin(seconds * (DEBUG_WATER ? 1.4 : 0.57))
       * Math.sin(seconds * 0.22 + 0.7));
-  const glow = context.createLinearGradient(275, 0, 555, 0);
+  const glow = context.createLinearGradient(285, 0, 570, 0);
   glow.addColorStop(0, 'rgba(255, 221, 162, 0)');
   glow.addColorStop(0.45, 'rgba(255, 216, 139, 1)');
   glow.addColorStop(1, 'rgba(255, 221, 162, 0)');
@@ -123,7 +123,7 @@ export class WaterRenderer {
     for (let localY = 0; localY < WATER_BAND_HEIGHT; localY += STRIP_HEIGHT) {
       const height = Math.min(STRIP_HEIGHT, WATER_BAND_HEIGHT - localY);
       const sourceY = WATER_BAND_TOP + localY;
-      const bankFade = Math.max(0, Math.min(1, (sourceY - 1390) / 24));
+      const bankFade = Math.max(0, Math.min(1, (sourceY - 1407) / 20));
       const offset = waveOffset(sourceY, seconds) * pixelsToSource * bankFade;
       const stretch = 1 + (DEBUG_WATER ? 0.004 : 0.0017)
         * Math.sin(seconds * (DEBUG_WATER ? 2.0 : 0.43) + localY * 0.13);

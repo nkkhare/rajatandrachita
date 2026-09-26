@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { EnvelopeIntro, REVEAL_DURATION_MS, type InvitationState } from './EnvelopeIntro';
+import { Countdown } from './Countdown';
 
 const imageUrl = `${import.meta.env.BASE_URL}save-the-date.png`;
 
@@ -97,10 +98,11 @@ export function App() {
             src={imageUrl}
             width="1024"
             height="1536"
-            alt="Floral save-the-date invitation for Rachita and Rajat, May 14–15, 2027, Philadelphia, Pennsylvania. Invitation to follow."
+            alt="Save-the-date invitation for Rachita and Rajat, May 14–15, 2027, with the Philadelphia skyline at sunset. Invitation to follow."
             decoding="async"
             fetchPriority="high"
           />
+          <Countdown />
           <canvas ref={waterRef} className="invitation__water" aria-hidden="true" />
           <canvas ref={petalsRef} className="invitation__petals" aria-hidden="true" />
         </div>
