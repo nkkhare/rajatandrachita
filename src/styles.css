@@ -45,7 +45,7 @@ body { overflow-x: hidden; }
   background: #eac5bb;
   box-shadow: 0 15px 55px #51352c2b;
   transform-origin: center;
-  will-change: transform, clip-path, opacity;
+  will-change: transform, opacity;
 }
 
 .invitation__art { display: block; width: 100%; height: 100%; }
@@ -70,12 +70,13 @@ body { overflow-x: hidden; }
   pointer-events: none;
 }
 
-.invitation__petals {
+.invitation__clouds {
   position: absolute;
-  z-index: 3;
-  inset: 0;
+  z-index: 1;
+  top: 22.135417%; /* source image y=340 of 1536 */
+  left: 0;
   width: 100%;
-  height: 100%;
+  height: 37.760417%;
   pointer-events: none;
 }
 
@@ -95,5 +96,5 @@ body { overflow-x: hidden; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .invitation__water, .invitation__petals { display: none; }
+  .invitation__water, .invitation__clouds { display: none; }
 }

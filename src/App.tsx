@@ -8,7 +8,7 @@ export function App() {
   const [invitationState, setInvitationState] = useState<InvitationState>('closed');
   const imageRef = useRef<HTMLImageElement>(null);
   const waterRef = useRef<HTMLCanvasElement>(null);
-  const petalsRef = useRef<HTMLCanvasElement>(null);
+  const cloudsRef = useRef<HTMLCanvasElement>(null);
   const openingRequested = useRef(false);
 
   const openEnvelope = () => {
@@ -33,12 +33,22 @@ export function App() {
     return () => window.clearTimeout(timer);
   }, [invitationState]);
 
+  // The envelope covers the screen until the card is revealed; keep the page
+  // behind it from scrolling in the meantime.
+  useEffect(() => {
+    if (invitationState === 'revealed') return;
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = 'hidden';
+    return () => { root.style.overflow = previous; };
+  }, [invitationState]);
+
   useEffect(() => {
     if (invitationState !== 'revealed') return;
     const image = imageRef.current;
     const waterCanvas = waterRef.current;
-    const petalsCanvas = petalsRef.current;
-    if (!image || !waterCanvas || !petalsCanvas) return;
+    const cloudsCanvas = cloudsRef.current;
+    if (!image || !waterCanvas || !cloudsCanvas) return;
 
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
     let disposed = false;
@@ -49,7 +59,7 @@ export function App() {
       const currentGeneration = ++generation;
       stopAnimation?.();
       stopAnimation = undefined;
-      if (motionPreference.matches || document.hidden || !image || !waterCanvas || !petalsCanvas) return;
+      if (motionPreference.matches || document.hidden || !image || !waterCanvas || !cloudsCanvas) return;
 
       if (!image.complete || image.naturalWidth === 0) {
         await new Promise<void>((resolve) => {
@@ -61,7 +71,7 @@ export function App() {
 
       const { createSceneAnimation } = await import('./animation/scene');
       if (disposed || currentGeneration !== generation || motionPreference.matches || document.hidden) return;
-      stopAnimation = createSceneAnimation(image, waterCanvas, petalsCanvas);
+      stopAnimation = createSceneAnimation(image, waterCanvas, cloudsCanvas);
     }
 
     const handleChange = () => { void start(); };
@@ -86,11 +96,6 @@ export function App() {
         <div
           className="invitation"
           aria-hidden={invitationState !== 'revealed'}
-          onAnimationEnd={(event) => {
-            if (event.target === event.currentTarget && invitationState === 'opening') {
-              setInvitationState('revealed');
-            }
-          }}
         >
           <img
             ref={imageRef}
@@ -102,9 +107,9 @@ export function App() {
             decoding="async"
             fetchPriority="high"
           />
+          <canvas ref={cloudsRef} className="invitation__clouds" aria-hidden="true" />
           <Countdown />
           <canvas ref={waterRef} className="invitation__water" aria-hidden="true" />
-          <canvas ref={petalsRef} className="invitation__petals" aria-hidden="true" />
         </div>
       </EnvelopeIntro>
     </main>

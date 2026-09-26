@@ -1,6 +1,6 @@
 # Rachita & Rajat · Save the Date
 
-An animated presentation of the updated 1024×1536 Philadelphia save-the-date artwork. Guests tap a CSS-built envelope to reveal the card. Once it settles, the live countdown, river shimmer, and canvas petals bring the invitation to life.
+An animated presentation of the 1024×1536 Philadelphia save-the-date artwork. Guests open a soft pink, wax-sealed envelope to reveal the card. Once it settles, the live countdown, river shimmer, and a slow cloud drift bring the invitation to life.
 
 ## Run locally
 
@@ -13,12 +13,17 @@ Open the URL printed by Vite. `npm run build` creates a production site in `dist
 
 ## Layers
 
-1. Blurred copy of the image outside the card.
-2. Ivory envelope back, flap, front, and seal around the same card that becomes the final invitation.
-3. Supplied PNG with the 2:3 portrait ratio and a live SVG countdown over its printed countdown box.
-4. Canvas water overlay clipped to an editable polygon below the bridge and inside the floral corners.
-5. Lightweight animated canvas petals clipped to the invitation container; no static petal overlay is added.
+1. Blurred copy of the artwork behind the card.
+2. Full-screen envelope (`src/EnvelopeIntro.tsx`): the pink paper's tooth comes from SVG turbulence and lighting filters. The side and bottom flaps stay still while the lid, carrying the burgundy R&R wax seal (`src/WaxSeal.tsx`), flips open on a hinge at the top of the screen.
+3. The supplied PNG with a live SVG countdown over its printed countdown box.
+4. A canvas cloud drift, masked to the open sky beside the lettering (`src/animation/clouds.ts`).
+5. A canvas water overlay, clipped to an editable polygon below the bridge (`src/animation/water.ts`).
 
-The envelope uses `closed → opening → revealed` states. The countdown targets midnight in Philadelphia on May 14, 2027 and updates on minute boundaries. Water and petals start only at `revealed`, use `requestAnimationFrame`, and stop when the tab is hidden. Reduced-motion visitors get a short envelope fade and a static card.
+The opening follows the reference intro's timing:
+- Tap anywhere and the lid tips toward the viewer over 3.6 s (CSS `rotateX` with about four screen-heights of perspective).
+- The envelope fades out over the last 0.8 s.
+- After 0.2 s, the card fades up 20 px over 0.8 s.
 
-For visual tuning, set `DEBUG_ENVELOPE` in `src/EnvelopeIntro.tsx` to slow and label the envelope layers, or set `DEBUG_WATER` in `src/animation/water.ts` to outline the editable `WATER_MASK_POINTS` and exaggerate the river displacement. Leave both set to `false` for production.
+The envelope uses `closed → opening → revealed` states, and repeat taps are ignored once it starts opening. The countdown targets midnight in Philadelphia on May 14, 2027 and updates on minute boundaries. Water and clouds start only at `revealed`, use `requestAnimationFrame`, and stop when the tab is hidden. Reduced-motion visitors get a short fade to a static card.
+
+For visual tuning, set `DEBUG_WATER` in `src/animation/water.ts` or `DEBUG_CLOUDS` in `src/animation/clouds.ts` to exaggerate the motion and outline the masks. Leave both set to `false` for production.
