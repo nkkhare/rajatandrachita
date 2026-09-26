@@ -23,6 +23,7 @@ const LID_ANGLE: ReadonlyArray<readonly [number, number]> = [
   [2.75, 48.1], [3, 51.9], [3.25, 55.3], [LID_SECONDS, 59.6],
 ];
 const PERSPECTIVE_HEIGHTS = 4.06;
+const SEAL_MAX_RISE = 0.1 + Math.tan((62 * Math.PI) / 180);
 
 // Envelope geometry in a coordinate space 960 units tall; the width follows
 // the viewport so the envelope fills the screen without stretching.
@@ -84,6 +85,13 @@ export function renderEnvelopeFrame(element: HTMLElement, seconds: number) {
   style.setProperty('--lid-shadow-shift', `${(0.4 + lift * 2.6).toFixed(3)}%`);
   style.setProperty('--lid-shadow-opacity', (0.34 - lift * 0.16).toFixed(3));
   style.setProperty('--lid-sheen', (lift * 0.55).toFixed(3));
+  style.setProperty('--seal-tilt', clamp(lift * 1.1).toFixed(3));
+  // How far the seal's face stands off its base in the lid's own plane: the
+  // wax depth seen at this angle (tan θ undoes the lid's foreshortening),
+  // plus a sliver at rest so the closed seal already reads as raised.
+  const rise = 0.1 + Math.tan((angle * Math.PI) / 180);
+  style.setProperty('--seal-rise', rise.toFixed(4));
+  style.setProperty('--seal-band', (rise / SEAL_MAX_RISE).toFixed(4));
   style.setProperty('--hint-opacity', (1 - clamp(seconds / 0.35)).toFixed(3));
   style.setProperty('--envelope-opacity', (1 - easeInOut((seconds - fadeStart) / FADE_SECONDS)).toFixed(3));
   style.setProperty('--backdrop-opacity', easeInOut((seconds - LID_SECONDS) / 0.8).toFixed(3));
@@ -139,7 +147,7 @@ function geometry(width: number) {
   const reach = (H + 60 - 519) / 0.92;
   const bottom = `M${cx - 66 - reach} ${H + 60} L${cx - 66} 519 C${cx - 36} 491 ${cx + 36} 491 ${cx + 66} 519`
     + ` L${cx + 66 + reach} ${H + 60} Z`;
-  return { cx, lid, leftSide, rightSide, bottom };
+  return { lid, leftSide, rightSide, bottom };
 }
 
 type Props = {
@@ -216,7 +224,7 @@ export function EnvelopeIntro({ state, onOpen, children }: Props) {
   };
 
   const width = (H * viewport.width) / viewport.height;
-  const { cx, lid, leftSide, rightSide, bottom } = geometry(width);
+  const { lid, leftSide, rightSide, bottom } = geometry(width);
   const viewBox = `0 0 ${width.toFixed(2)} ${H}`;
 
   return (
@@ -277,19 +285,19 @@ export function EnvelopeIntro({ state, onOpen, children }: Props) {
           </svg>
         </div>
 
+        {/* The sheen and the seal are separate layers inside the lid, so the
+            changing light and the seal's rising face never repaint the paper. */}
         <div className="envelope__lid">
           <svg viewBox={viewBox} preserveAspectRatio="none">
             <path d={lid} fill={TONES.lid} filter="url(#paper-lid)" />
             <path d={lid} fill="url(#envelope-light)" />
-            <WaxSeal cx={cx} cy={SEAL_Y} size={SEAL_SIZE} />
           </svg>
-        </div>
-
-        {/* Kept on its own layer so the changing light never repaints the paper. */}
-        <div className="envelope__lid envelope__lid-sheen">
-          <svg viewBox={viewBox} preserveAspectRatio="none">
-            <path d={lid} fill="url(#lid-sheen)" />
-          </svg>
+          <div className="envelope__lid-sheen">
+            <svg viewBox={viewBox} preserveAspectRatio="none">
+              <path d={lid} fill="url(#lid-sheen)" />
+            </svg>
+          </div>
+          <WaxSeal size={(SEAL_SIZE / H) * viewport.height} top={`${((SEAL_Y / H) * 100).toFixed(3)}%`} />
         </div>
       </div>
       <button

@@ -4,6 +4,9 @@
   --lid-shadow-shift: .4%;
   --lid-shadow-opacity: .5;
   --lid-sheen: 0;
+  --seal-tilt: 0;
+  --seal-rise: .1;
+  --seal-band: .03;
   --hint-opacity: 1;
   --envelope-opacity: 1;
   --backdrop-opacity: 0;
@@ -55,7 +58,9 @@
 .envelope__base,
 .envelope__lid,
 .envelope__lid-shadow,
-.envelope__lid svg,
+.envelope__lid-sheen,
+.envelope__lid > svg,
+.envelope__lid-sheen svg,
 .envelope__lid-shadow svg {
   position: absolute;
   inset: 0;
@@ -80,7 +85,55 @@
   will-change: transform, opacity;
 }
 
-.envelope__lid-sheen { opacity: var(--lid-sheen); pointer-events: none; }
+.envelope__lid-sheen {
+  will-change: opacity;
+  opacity: var(--lid-sheen);
+  pointer-events: none;
+}
+
+/* The wax seal. Its face rises off the base by the projected wax depth as
+   the lid tips; the wall band fills the gap so the seal's side shows. */
+.seal {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.seal__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.seal__face {
+  transform: translateY(calc(var(--seal-rise) * var(--seal-depth) * -1));
+  will-change: transform;
+}
+
+.seal__face--tilted {
+  opacity: var(--seal-tilt);
+  will-change: transform, opacity;
+}
+
+/* Spans the seal's widest point, from the base's centre line up to the
+   face's; the base and face blobs round off its ends. */
+.seal__wall {
+  position: absolute;
+  left: 5.6%;
+  width: 90.5%;
+  bottom: 50%;
+  height: calc(var(--seal-depth) * 1.98);
+  transform-origin: 50% 100%;
+  transform: scaleY(var(--seal-band));
+  background:
+    linear-gradient(90deg, #ffffff14, #0000 30%, #0000 70%, #00000024),
+    linear-gradient(#5a1020, #6a1628);
+  will-change: transform;
+}
 
 .envelope__hint {
   position: absolute;
