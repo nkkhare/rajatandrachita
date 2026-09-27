@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import monogramUrl from './assets/embossed-rr.webp';
 import { WaxSeal, WaxSealDefs } from './WaxSeal';
 import './envelope.css';
@@ -23,7 +23,7 @@ const LID_ANGLE: ReadonlyArray<readonly [number, number]> = [
   [2.75, 48.1], [3, 51.9], [3.25, 55.3], [LID_SECONDS, 59.6],
 ];
 const PERSPECTIVE_HEIGHTS = 4.06;
-const SEAL_TILT_SHARE = 0.2;
+const SEAL_MAX_RISE = 0.1 + Math.tan((62 * Math.PI) / 180);
 
 // Envelope geometry in a coordinate space 960 units tall; the width follows
 // the viewport so the envelope fills the screen without stretching.
@@ -86,9 +86,15 @@ export function renderEnvelopeFrame(element: HTMLElement, seconds: number) {
   style.setProperty('--lid-shadow-opacity', (0.34 - lift * 0.16).toFixed(3));
   style.setProperty('--lid-sheen', (lift * 0.55).toFixed(3));
   style.setProperty('--seal-tilt', clamp(lift * 1.1).toFixed(3));
-  // The seal follows the lid's hinge but turns back toward the viewer,
-  // keeping only a fifth of the lid's tilt so it never flattens.
-  style.setProperty('--seal-counter', `${(-angle * (1 - SEAL_TILT_SHARE)).toFixed(3)}deg`);
+  // How far the seal's face stands off its base in the lid's own plane: the
+  // wax depth seen at this angle (tan θ undoes the lid's foreshortening),
+  // plus a sliver at rest so the closed seal already reads as raised.
+  const rise = 0.1 + Math.tan((angle * Math.PI) / 180);
+  style.setProperty('--seal-rise', rise.toFixed(4));
+  style.setProperty('--seal-band', (rise / SEAL_MAX_RISE).toFixed(4));
+  // The reference seal is domed, so it holds its height a little longer
+  // than the flat lid; this matches its measured proportions as it tips.
+  style.setProperty('--seal-stretch', (1 + 0.17 * lift ** 3).toFixed(4));
   style.setProperty('--hint-opacity', (1 - clamp(seconds / 0.35)).toFixed(3));
   style.setProperty('--envelope-opacity', (1 - easeInOut((seconds - fadeStart) / FADE_SECONDS)).toFixed(3));
   style.setProperty('--backdrop-opacity', easeInOut((seconds - LID_SECONDS) / 0.8).toFixed(3));
@@ -282,8 +288,8 @@ export function EnvelopeIntro({ state, onOpen, children }: Props) {
           </svg>
         </div>
 
-        {/* The sheen is its own layer so the changing light never repaints
-            the paper texture. */}
+        {/* The sheen and the seal are separate layers inside the lid, so the
+            changing light and the seal's rising face never repaint the paper. */}
         <div className="envelope__lid">
           <svg viewBox={viewBox} preserveAspectRatio="none">
             <path d={lid} fill={TONES.lid} filter="url(#paper-lid)" />
@@ -294,14 +300,7 @@ export function EnvelopeIntro({ state, onOpen, children }: Props) {
               <path d={lid} fill="url(#lid-sheen)" />
             </svg>
           </div>
-        </div>
-
-        {/* Hinged exactly like the lid, then carried out to the lid's tip. */}
-        <div
-          className="envelope__seal-anchor"
-          style={{ '--seal-y': `${((SEAL_Y / H) * viewport.height).toFixed(2)}px` } as CSSProperties}
-        >
-          <WaxSeal size={(SEAL_SIZE / H) * viewport.height} />
+          <WaxSeal size={(SEAL_SIZE / H) * viewport.height} top={`${((SEAL_Y / H) * 100).toFixed(3)}%`} />
         </div>
       </div>
       <button
