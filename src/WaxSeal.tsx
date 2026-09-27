@@ -1,16 +1,13 @@
 import type { CSSProperties } from 'react';
 import monogramUrl from './assets/embossed-rr.webp';
 
-// The seal has real thickness. As the lid tips toward the viewer, the
-// embossed face rises off its base by the wax's depth (projected for the lid
-// angle), and a band of darker wax fills the gap, so the side wall comes into
-// view instead of the seal flattening like a sticker. The face is a greyscale
-// height map (white = raised wax) lit by SVG lighting filters; a second
-// lighting pass, faded in as the lid tilts, slides the highlights across it.
-// Every layer is rasterised once and only moved, so the flip never repaints.
+// The seal rides the lid but keeps facing the viewer, so it stays a round,
+// embossed disc through the whole opening instead of flattening into an oval.
+// The face is a greyscale height map (white = raised wax) lit by SVG lighting
+// filters; a second lighting pass, faded in as the lid lifts, slides the
+// highlights across it. Layers are rasterised once and only transformed.
 const SEAL_RADIUS = 120;
 const VIEW_BOX = '-132 -132 264 264';
-export const SEAL_DEPTH_RATIO = 0.11; // wax thickness as a fraction of the seal's width
 
 function blobPath() {
   const steps = 216;
@@ -69,14 +66,6 @@ export function WaxSealDefs() {
       <filter id="monogram-height" colorInterpolationFilters="sRGB">
         <feColorMatrix values="0 0 0 0 .97  0 0 0 0 .97  0 0 0 0 .97  0 0 0 1 0" />
       </filter>
-      {/* The seal's side: shaded under the face's overhang, then catching a
-          little light bounced off the paper just above the contact line. */}
-      <linearGradient id="wax-wall" x1="0" y1="0" x2="0" y2="1">
-        <stop offset=".5" stopColor="#5e1222" />
-        <stop offset=".8" stopColor="#74192c" />
-        <stop offset=".93" stopColor="#95364a" />
-        <stop offset="1" stopColor="#4d0d1b" />
-      </linearGradient>
     </>
   );
 }
@@ -100,29 +89,20 @@ function Face({ filter }: { filter: string }) {
   );
 }
 
-type Props = { size: number; top: string };
+type Props = { size: number };
 
-export function WaxSeal({ size, top }: Props) {
+export function WaxSeal({ size }: Props) {
   const box = size * (264 / 240);
-  const style = {
-    width: `${box}px`,
-    height: `${box}px`,
-    top,
-    '--seal-depth': `${(size * SEAL_DEPTH_RATIO).toFixed(2)}px`,
-  } as CSSProperties;
+  const style: CSSProperties = { width: `${box}px`, height: `${box}px` };
 
   return (
     <div className="seal" style={style}>
       <svg className="seal__layer" viewBox={VIEW_BOX}>
         <ellipse cx="5" cy="9" rx="114" ry="110" fill="#4a1622" opacity=".24" filter="url(#wax-shadow)" />
         <ellipse cx="1" cy="3" rx="117" ry="115" fill="#4a1622" opacity=".22" filter="url(#wax-shadow)" />
-        <path d={BLOB} fill="url(#wax-wall)" />
-      </svg>
-      <div className="seal__wall" />
-      <svg className="seal__layer seal__face" viewBox={VIEW_BOX}>
         <Face filter="wax-relief" />
       </svg>
-      <svg className="seal__layer seal__face seal__face--tilted" viewBox={VIEW_BOX}>
+      <svg className="seal__layer seal__layer--tilted" viewBox={VIEW_BOX}>
         <Face filter="wax-relief-tilted" />
       </svg>
     </div>
