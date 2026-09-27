@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { EnvelopeIntro, REVEAL_DURATION_MS, type InvitationState } from './EnvelopeIntro';
 import { Countdown } from './Countdown';
+import { MusicToggle } from './MusicToggle';
+import { Soundtrack } from './soundtrack';
 
 const imageUrl = `${import.meta.env.BASE_URL}save-the-date.png`;
+const soundtrack = new Soundtrack();
 
 export function App() {
   const [invitationState, setInvitationState] = useState<InvitationState>('closed');
@@ -94,7 +97,7 @@ export function App() {
     <main className="scene">
       <div className="scene__background" aria-hidden="true" />
       <h1 className="visually-hidden">Save the date for Rachita and Rajat, May 14–15, 2027, in Philadelphia, Pennsylvania. Invitation to follow.</h1>
-      <EnvelopeIntro state={invitationState} onOpen={openEnvelope}>
+      <EnvelopeIntro state={invitationState} onOpen={openEnvelope} onTap={() => soundtrack.start()}>
         <div
           className="invitation"
           aria-hidden={invitationState !== 'revealed'}
@@ -115,6 +118,7 @@ export function App() {
           <canvas ref={petalsRef} className="invitation__petals" aria-hidden="true" />
         </div>
       </EnvelopeIntro>
+      <MusicToggle soundtrack={soundtrack} visible={invitationState === 'revealed'} />
     </main>
   );
 }

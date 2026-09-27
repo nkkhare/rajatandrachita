@@ -37,34 +37,36 @@ export function Countdown() {
 
   const values = [remaining.days, remaining.hours, remaining.minutes];
   const labels = ['DAYS', 'HOURS', 'MINUTES'];
-  const centers = [91, 273, 455];
+  const centers = [59.5, 178, 296.5];
 
+  // A compact, secondary panel (about two-thirds the width of the printed
+  // box it replaced) so the names, flowers, and skyline stay the focus.
   return (
     <svg
       className="invitation__countdown"
-      viewBox="0 0 546 122"
+      viewBox="0 0 356 110"
       preserveAspectRatio="none"
       role="timer"
       aria-label={`${remaining.days} days, ${remaining.hours} hours, ${remaining.minutes} minutes until May 14, 2027`}
     >
       <defs>
-        <radialGradient id="countdown-paper" cx="50%" cy="35%" r="75%">
-          <stop offset="0%" stopColor="#ffe4c6" />
-          <stop offset="62%" stopColor="#fbd4bf" />
-          <stop offset="100%" stopColor="#f5c3b6" />
+        <radialGradient id="countdown-paper" cx="50%" cy="35%" r="80%">
+          <stop offset="0%" stopColor="#fff8f1" stopOpacity=".86" />
+          <stop offset="100%" stopColor="#fbe9df" stopOpacity=".78" />
         </radialGradient>
       </defs>
       <path
-        d="M13 1 H264 L273 9 L282 1 H533 C533 14 538 21 545 26 V96 C538 101 533 109 533 121 H13 C13 109 8 101 1 96 V26 C8 21 13 14 13 1 Z"
+        d="M10 1 H169 L178 8 L187 1 H346 C346 11 350 17 355 20 V90 C350 93 346 99 346 109 H10 C10 99 6 93 1 90 V20 C6 17 10 11 10 1 Z"
         fill="url(#countdown-paper)"
-        stroke="#754619"
-        strokeWidth="1.5"
+        stroke="#c9ad76"
+        strokeOpacity=".8"
+        strokeWidth="1"
       />
-      <path d="M182 22 V100 M364 22 V100" stroke="#9b6635" strokeWidth="1.2" />
+      <path d="M118.7 24 V86 M237.3 24 V86" stroke="#cdb383" strokeOpacity=".7" strokeWidth=".8" />
       {centers.map((x, index) => (
-        <g key={labels[index]} fill="#8d1034" textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif">
-          <text x={x} y="67" fontSize="57" fontWeight="400">{values[index]}</text>
-          <text x={x} y="100" fontSize="19" letterSpacing="3">{labels[index]}</text>
+        <g key={labels[index]} textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif">
+          <text x={x} y="60" fontSize="40" fill="#7c3a4b">{values[index]}</text>
+          <text x={x} y="87" fontSize="12.5" letterSpacing="2.6" fill="#a4855a">{labels[index]}</text>
         </g>
       ))}
     </svg>

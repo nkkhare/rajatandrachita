@@ -156,10 +156,12 @@ function geometry(width: number) {
 type Props = {
   state: InvitationState;
   onOpen: () => void;
+  /** Runs synchronously inside the guest's tap (e.g. to start audio). */
+  onTap?: () => void;
   children: ReactNode;
 };
 
-export function EnvelopeIntro({ state, onOpen, children }: Props) {
+export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
   const experienceRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const pendingOpen = useRef(false);
@@ -182,11 +184,14 @@ export function EnvelopeIntro({ state, onOpen, children }: Props) {
   useEffect(() => {
     let cancelled = false;
     const invitation = experienceRef.current?.querySelector<HTMLImageElement>('.invitation__art');
-    void Promise.all([
+    const decoded = Promise.all([
       preload(monogramUrl),
       invitation?.decode().catch(() => undefined) ?? Promise.resolve(),
       import('./animation/scene').catch(() => undefined),
-    ]).then(() => {
+    ]);
+    // Never leave a guest's tap waiting: some browsers defer decoding.
+    const timeout = new Promise((resolve) => window.setTimeout(resolve, 2500));
+    void Promise.race([decoded, timeout]).then(() => {
       if (!cancelled) setAssetsReady(true);
     });
     return () => { cancelled = true; };
@@ -222,6 +227,11 @@ export function EnvelopeIntro({ state, onOpen, children }: Props) {
 
   const requestOpen = () => {
     if (state !== 'closed') return;
+    try {
+      onTap?.();
+    } catch {
+      // Extras such as music must never stop the envelope from opening.
+    }
     if (assetsReady) onOpen();
     else pendingOpen.current = true;
   };
