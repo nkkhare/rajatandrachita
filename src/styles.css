@@ -23,7 +23,7 @@ body { overflow-x: hidden; }
   position: fixed;
   z-index: -1;
   inset: -48px;
-  background: linear-gradient(#efd5cc38, #b4768938), url('/save-the-date-lavender.png') center / cover no-repeat;
+  background: linear-gradient(#efd5cc38, #b4768938), url('/save-the-date-gold-v2.png') center / cover no-repeat;
   filter: blur(30px) saturate(.8);
   transform: scale(1.04);
   pointer-events: none;
