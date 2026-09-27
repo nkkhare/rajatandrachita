@@ -55,7 +55,7 @@ export function Countdown() {
         </radialGradient>
       </defs>
       <path
-        d="M13 1 H264 L273 9 L282 1 H533 C533 14 538 21 545 26 V96 C538 101 533 109 533 121 H13 C13 109 8 101 1 96 V26 C8 21 13 14 13 1 Z"
+        d="M13 1 H533 C533 14 538 21 545 26 V96 C538 101 533 109 533 121 H13 C13 109 8 101 1 96 V26 C8 21 13 14 13 1 Z"
         fill="url(#countdown-paper)"
         stroke="#754619"
         strokeWidth="1.5"
