@@ -15,7 +15,7 @@ Open the URL printed by Vite. `npm run build` creates a production site in `dist
 
 1. Blurred copy of the artwork behind the card.
 2. Full-screen envelope (`src/EnvelopeIntro.tsx`): the pink paper's tooth comes from SVG turbulence and lighting filters. The side and bottom flaps stay still while the lid, carrying the burgundy R&R wax seal (`src/WaxSeal.tsx`), flips open on a hinge at the top of the screen.
-3. The artwork PNG (`public/save-the-date-sunset.png`): the sky inside the arch and its clouds come from the colour reference, the lettering uses its antique-gold and gold-brown tones, and the printed countdown box is retouched out. On top, the live SVG countdown uses the original design at 80% size.
+3. The artwork PNG (`public/save-the-date-sunset-v2.png`): the sky inside the arch and its clouds come from the colour reference, the lettering uses its antique-gold and gold-brown tones, and the printed countdown box is retouched out. On top, the live SVG countdown uses the original design at 80% size.
 4. A canvas cloud drift, masked to the open sky beside the lettering (`src/animation/clouds.ts`).
 5. A canvas water overlay, clipped to an editable polygon below the bridge (`src/animation/water.ts`).
 6. Lightweight canvas petals falling across the card (`src/animation/petals.ts`).
