@@ -63,7 +63,7 @@ export function Countdown() {
       <path d="M182 22 V100 M364 22 V100" stroke="#9b6635" strokeWidth="1.2" />
       {centers.map((x, index) => (
         <g key={labels[index]} fill="#8d1034" textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif">
-          <text x={x} y="67" fontSize="57" fontWeight="400">{values[index]}</text>
+          <text x={x} y="64" fontSize="45.6" fontWeight="400">{values[index]}</text>
           <text x={x} y="100" fontSize="19" letterSpacing="3">{labels[index]}</text>
         </g>
       ))}
