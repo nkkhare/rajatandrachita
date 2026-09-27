@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import monogramUrl from './assets/embossed-rr.webp';
 import { WaxSeal, WaxSealDefs } from './WaxSeal';
+import { DamaskDefs, LaceDefs, LaceTrim } from './EnvelopeDecor';
 import './envelope.css';
 
 export type InvitationState = 'closed' | 'opening' | 'revealed';
@@ -29,11 +30,13 @@ const SEAL_MAX_RISE = 0.1 + Math.tan((62 * Math.PI) / 180);
 // the viewport so the envelope fills the screen without stretching.
 const H = 960;
 const LID_TIP_Y = 545;
-const LID_SLOPE = 0.917;
+const LID_SLOPE = 0.8;
 const SIDE_MEET_Y = 567;
 const SIDE_SLOPE = 1.119;
-const SEAL_Y = 501;
-const SEAL_SIZE = 240;
+const BOTTOM_TIP_Y = 541;
+const BOTTOM_SLOPE = 0.115;
+const SEAL_Y = 545;   // on the point of the lid, as in the reference
+const SEAL_SIZE = 217;
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 const easeInOut = (value: number) => {
@@ -108,10 +111,10 @@ function preload(url: string) {
   return image.decode().catch(() => undefined);
 }
 
-// Soft blush paper. Each panel is a slightly different shade, as folded paper
-// catches the light differently. The tooth of the paper is generated
+// Powder-blue paper. Each panel is a slightly different shade, as folded
+// paper catches the light differently. The tooth of the paper is generated
 // (seamless at any screen size) and lit from the upper left.
-const TONES = { lid: '#f6dcd8', side: '#f1d2cd', bottom: '#efcec9' } as const;
+const TONES = { lid: '#dde6f0', side: '#ccd5df', bottom: '#c6d0dc' } as const;
 
 function PaperFilter({ id, seed, width }: { id: string; seed: number; width: number }) {
   // The region is the visible screen only; the panel paths reach far beyond it.
@@ -147,10 +150,13 @@ function geometry(width: number) {
   const sideY = SIDE_MEET_Y - SIDE_SLOPE * far;
   const leftSide = `M${cx - far} ${sideY} L${cx} ${SIDE_MEET_Y} L${cx} ${H + 60} L${cx - far} ${H + 60} Z`;
   const rightSide = `M${cx + far} ${sideY} L${cx} ${SIDE_MEET_Y} L${cx} ${H + 60} L${cx + far} ${H + 60} Z`;
-  const reach = (H + 60 - 519) / 0.92;
-  const bottom = `M${cx - 66 - reach} ${H + 60} L${cx - 66} 519 C${cx - 36} 491 ${cx + 36} 491 ${cx + 66} 519`
-    + ` L${cx + 66 + reach} ${H + 60} Z`;
-  return { lid, leftSide, rightSide, bottom };
+  // A very shallow V meeting under the seal.
+  const bottomY = BOTTOM_TIP_Y + BOTTOM_SLOPE * far;
+  const bottom = `M${cx - far} ${bottomY} L${cx} ${BOTTOM_TIP_Y} L${cx + far} ${bottomY}`
+    + ` L${cx + far} ${H + 60 + far} L${cx - far} ${H + 60 + far} Z`;
+  // The lace follows the lid's edges from its point out past the screen edge.
+  const laceAngle = (Math.atan(LID_SLOPE) * 180) / Math.PI;
+  return { cx, lid, leftSide, rightSide, bottom, laceAngle };
 }
 
 type Props = {
@@ -237,7 +243,8 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
   };
 
   const width = (H * viewport.width) / viewport.height;
-  const { lid, leftSide, rightSide, bottom } = geometry(width);
+  const { cx, lid, leftSide, rightSide, bottom, laceAngle } = geometry(width);
+  const laceLength = Math.hypot(width / 2 + 60, (width / 2 + 60) * LID_SLOPE);
   const viewBox = `0 0 ${width.toFixed(2)} ${H}`;
 
   return (
@@ -254,19 +261,19 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
             <PaperFilter id="paper-base" seed={3} width={width} />
             <PaperFilter id="paper-lid" seed={11} width={width} />
             <linearGradient id="envelope-inside" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#e6d2cf" />
-              <stop offset=".35" stopColor="#f0e2df" />
-              <stop offset=".6" stopColor="#f7eeec" />
+              <stop offset="0" stopColor="#c3cdd9" />
+              <stop offset=".35" stopColor="#d7dfe8" />
+              <stop offset=".6" stopColor="#e6ecf2" />
             </linearGradient>
             <linearGradient id="lid-sheen" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#fff9f7" stopOpacity=".9" />
-              <stop offset=".55" stopColor="#fff9f7" stopOpacity=".25" />
-              <stop offset="1" stopColor="#b88a88" stopOpacity=".35" />
+              <stop offset="0" stopColor="#f7faff" stopOpacity=".9" />
+              <stop offset=".55" stopColor="#f7faff" stopOpacity=".25" />
+              <stop offset="1" stopColor="#8ea0b8" stopOpacity=".35" />
             </linearGradient>
             <radialGradient id="envelope-light" cx=".3" cy=".18" r="1.1">
               <stop offset="0" stopColor="#fff" stopOpacity=".16" />
               <stop offset=".6" stopColor="#fff" stopOpacity="0" />
-              <stop offset="1" stopColor="#5c2c33" stopOpacity=".1" />
+              <stop offset="1" stopColor="#2e3d55" stopOpacity=".16" />
             </radialGradient>
             <filter id="fold-shadow" filterUnits="userSpaceOnUse" x="-8" y="-8" width={(width + 16).toFixed(1)} height={H + 16}>
               <feGaussianBlur stdDeviation="3.2" />
@@ -274,27 +281,32 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
             <filter id="lid-shadow-blur" filterUnits="userSpaceOnUse" x="-8" y="-8" width={(width + 16).toFixed(1)} height={H + 16}>
               <feGaussianBlur stdDeviation="7" />
             </filter>
+            <DamaskDefs width={width} height={H} />
+            <LaceDefs />
+            <clipPath id="clip-lid"><path d={lid} /></clipPath>
+            <clipPath id="clip-flaps"><path d={leftSide} /><path d={rightSide} /><path d={bottom} /></clipPath>
             <WaxSealDefs />
           </defs>
         </svg>
 
         <svg className="envelope__base" viewBox={viewBox} preserveAspectRatio="none">
           <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#envelope-inside)" />
-          <path d={leftSide} fill="#6d3a40" opacity=".22" filter="url(#fold-shadow)" transform="translate(0 3)" />
-          <path d={rightSide} fill="#6d3a40" opacity=".22" filter="url(#fold-shadow)" transform="translate(0 3)" />
+          <path d={leftSide} fill="#3b4a60" opacity=".22" filter="url(#fold-shadow)" transform="translate(0 3)" />
+          <path d={rightSide} fill="#3b4a60" opacity=".22" filter="url(#fold-shadow)" transform="translate(0 3)" />
           <g filter="url(#paper-base)">
             <path d={leftSide} fill={TONES.side} />
             <path d={rightSide} fill={TONES.side} />
           </g>
-          <path d={bottom} fill="#6d3a40" opacity=".26" filter="url(#fold-shadow)" transform="translate(0 -2)" />
+          <path d={bottom} fill="#3b4a60" opacity=".24" filter="url(#fold-shadow)" transform="translate(0 -2)" />
           <path d={bottom} fill={TONES.bottom} filter="url(#paper-base)" />
+          <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#damask)" filter="url(#emboss)" clipPath="url(#clip-flaps)" />
           <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#envelope-light)" />
         </svg>
         <p className="envelope__hint">Tap to open</p>
 
         <div className="envelope__lid-shadow">
           <svg viewBox={viewBox} preserveAspectRatio="none">
-            <path d={lid} fill="#8e5860" filter="url(#lid-shadow-blur)" />
+            <path d={lid} fill="#4e5f78" filter="url(#lid-shadow-blur)" />
           </svg>
         </div>
 
@@ -303,7 +315,10 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
         <div className="envelope__lid">
           <svg viewBox={viewBox} preserveAspectRatio="none">
             <path d={lid} fill={TONES.lid} filter="url(#paper-lid)" />
+            <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#damask)" filter="url(#emboss)" clipPath="url(#clip-lid)" />
             <path d={lid} fill="url(#envelope-light)" />
+            <g transform={`translate(${cx} ${LID_TIP_Y}) rotate(${180 + laceAngle})`}><LaceTrim length={laceLength} /></g>
+            <g transform={`translate(${cx} ${LID_TIP_Y}) rotate(${-laceAngle})`}><LaceTrim length={laceLength} /></g>
           </svg>
           <div className="envelope__lid-sheen">
             <svg viewBox={viewBox} preserveAspectRatio="none">

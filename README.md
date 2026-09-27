@@ -1,6 +1,6 @@
 # Rachita & Rajat · Save the Date
 
-An animated presentation of the 1024×1536 Philadelphia save-the-date artwork. Guests open a soft pink, wax-sealed envelope to reveal the card. Once it settles, the live countdown, river shimmer, slow cloud drift, and falling petals bring the invitation to life.
+An animated presentation of the 1024×1536 Philadelphia save-the-date artwork. Guests open a powder-blue, lace-trimmed, wax-sealed envelope to reveal the card. Once it settles, the live countdown, river shimmer, slow cloud drift, and falling petals bring the invitation to life.
 
 ## Run locally
 
@@ -14,7 +14,7 @@ Open the URL printed by Vite. `npm run build` creates a production site in `dist
 ## Layers
 
 1. Blurred copy of the artwork behind the card.
-2. Full-screen envelope (`src/EnvelopeIntro.tsx`): the pink paper's tooth comes from SVG turbulence and lighting filters. The side and bottom flaps stay still while the lid, carrying the burgundy R&R wax seal (`src/WaxSeal.tsx`), flips open on a hinge at the top of the screen.
+2. Full-screen envelope (`src/EnvelopeIntro.tsx`) in the Bridgerton style: powder-blue paper with blind-embossed damask, dusty-blue lace and satin ribbon along the lid (`src/EnvelopeDecor.tsx`), and a pearl-ivory R&R wax seal with rose garlands (`src/WaxSeal.tsx`). The side and bottom flaps stay still while the lid flips open on a hinge at the top of the screen.
 3. The artwork PNG (`public/save-the-date-sunset-v3.png`): the sky inside the arch and its clouds come from the colour reference, the lettering uses its antique-gold and gold-brown tones, and the printed countdown box is retouched out. On top, the live SVG countdown uses the original design at 80% size.
 4. A canvas cloud drift, masked to the open sky beside the lettering (`src/animation/clouds.ts`).
 5. A canvas water overlay, clipped to an editable polygon below the bridge (`src/animation/water.ts`).

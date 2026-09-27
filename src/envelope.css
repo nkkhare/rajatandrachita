@@ -45,7 +45,7 @@
   z-index: 10;
   inset: 0;
   overflow: hidden;
-  background: #ecdcd9;
+  background: #d7dfe8;
   opacity: var(--envelope-opacity);
   perspective-origin: 50% 50%;
   pointer-events: none;
@@ -132,23 +132,24 @@
   transform-origin: 50% 100%;
   transform: scaleY(var(--seal-band));
   background:
-    linear-gradient(90deg, #ffffff1f, #0000 35%, #0000 65%, #0000001a),
-    linear-gradient(#6e2416, #7f2e1d);
+    linear-gradient(90deg, #ffffff33, #0000 35%, #0000 65%, #0000000f),
+    linear-gradient(#cdbfac, #ddd1bf);
   will-change: transform;
 }
 
 .envelope__hint {
   position: absolute;
-  bottom: calc(9.5% + env(safe-area-inset-bottom));
+  bottom: calc(64px + env(safe-area-inset-bottom));
   left: 0;
   right: 0;
   margin: 0;
-  color: #9a6a70;
-  opacity: calc(.8 * var(--hint-opacity));
-  font: 400 clamp(11px, 1.55vh, 15px) Georgia, 'Times New Roman', serif;
-  letter-spacing: .38em;
+  color: rgb(250 248 245 / .8);
+  opacity: var(--hint-opacity);
+  font: 400 12px 'Cormorant Garamond', Georgia, serif;
+  letter-spacing: 3px;
   text-align: center;
   text-transform: uppercase;
+  text-shadow: 0 1px 3px rgb(52 68 92 / .45);
   will-change: opacity;
 }
 
