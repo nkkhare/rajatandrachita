@@ -23,7 +23,7 @@ body { overflow-x: hidden; }
   position: fixed;
   z-index: -1;
   inset: -48px;
-  background: linear-gradient(#efd5cc38, #b4768938), url('/save-the-date.png') center / cover no-repeat;
+  background: linear-gradient(#efd5cc38, #b4768938), url('/save-the-date-champagne.png') center / cover no-repeat;
   filter: blur(30px) saturate(.8);
   transform: scale(1.04);
   pointer-events: none;
@@ -53,10 +53,12 @@ body { overflow-x: hidden; }
 .invitation__countdown {
   position: absolute;
   z-index: 1;
-  left: 32.617188%;  /* source image x=334 of 1024 */
-  top: 58.789063%;   /* source image y=903 of 1536 */
-  width: 34.765625%; /* 356 px: ~35% narrower than the printed box */
-  height: 7.161458%; /* 110 px */
+  /* The original countdown design at 80% size: centred where the printed
+     box was, with its top edge still meeting the lotus above it. */
+  left: 28.671875%;  /* source image x=293.6 of 1024 */
+  top: 58.59375%;    /* source image y=900 of 1536 */
+  width: 42.65625%;  /* 436.8 px = 80% of 546 */
+  height: 6.354167%; /* 97.6 px = 80% of 122 */
   pointer-events: none;
 }
 
