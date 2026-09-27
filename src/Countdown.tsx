@@ -48,23 +48,22 @@ export function Countdown() {
       aria-label={`${remaining.days} days, ${remaining.hours} hours, ${remaining.minutes} minutes until May 14, 2027`}
     >
       <defs>
-        <radialGradient id="countdown-paper" cx="50%" cy="35%" r="75%">
-          <stop offset="0%" stopColor="#ffe4c6" />
-          <stop offset="62%" stopColor="#fbd4bf" />
-          <stop offset="100%" stopColor="#f5c3b6" />
+        <radialGradient id="countdown-paper" cx="50%" cy="40%" r="75%">
+          <stop offset="0%" stopColor="#fff4ea" stopOpacity=".42" />
+          <stop offset="100%" stopColor="#fbe3d6" stopOpacity=".3" />
         </radialGradient>
       </defs>
       <path
         d="M13 1 H533 C533 14 538 21 545 26 V96 C538 101 533 109 533 121 H13 C13 109 8 101 1 96 V26 C8 21 13 14 13 1 Z"
         fill="url(#countdown-paper)"
-        stroke="#754619"
+        stroke="#b07a5a"
         strokeWidth="1.5"
       />
-      <path d="M182 22 V100 M364 22 V100" stroke="#9b6635" strokeWidth="1.2" />
+      <path d="M182 22 V100 M364 22 V100" stroke="#b98463" strokeWidth="1.2" />
       {centers.map((x, index) => (
-        <g key={labels[index]} fill="#8d1034" textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif">
-          <text x={x} y="64" fontSize="45.6" fontWeight="400">{values[index]}</text>
-          <text x={x} y="100" fontSize="19" letterSpacing="3">{labels[index]}</text>
+        <g key={labels[index]} textAnchor="middle" fontFamily="Georgia, 'Times New Roman', serif">
+          <text x={x} y="64" fontSize="45.6" fontWeight="400" fill="#a05253">{values[index]}</text>
+          <text x={x} y="100" fontSize="19" letterSpacing="3" fill="#b06e6c">{labels[index]}</text>
         </g>
       ))}
     </svg>
