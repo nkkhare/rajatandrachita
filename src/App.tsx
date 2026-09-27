@@ -4,7 +4,7 @@ import { Countdown } from './Countdown';
 import { MusicToggle } from './MusicToggle';
 import { Soundtrack } from './soundtrack';
 
-const imageUrl = `${import.meta.env.BASE_URL}save-the-date-sunset-v2.png`;
+const imageUrl = `${import.meta.env.BASE_URL}save-the-date-sunset-v3.png`;
 const soundtrack = new Soundtrack();
 
 export function App() {
