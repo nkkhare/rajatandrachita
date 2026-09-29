@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { EnvelopeIntro, REVEAL_DURATION_MS, type InvitationState } from './EnvelopeIntro';
 import { Countdown } from './Countdown';
+import { FlowerBreeze } from './FlowerBreeze';
 import { MusicToggle } from './MusicToggle';
 import { Soundtrack } from './soundtrack';
 
@@ -33,7 +34,7 @@ export function App() {
     if (invitationState !== 'opening') return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const timer = window.setTimeout(() => setInvitationState('revealed'),
-      reduced ? 240 : REVEAL_DURATION_MS + 120);
+      reduced ? 1900 : REVEAL_DURATION_MS + 120);
     return () => window.clearTimeout(timer);
   }, [invitationState]);
 
@@ -115,6 +116,7 @@ export function App() {
           <canvas ref={cloudsRef} className="invitation__clouds" aria-hidden="true" />
           <Countdown />
           <canvas ref={waterRef} className="invitation__water" aria-hidden="true" />
+          <FlowerBreeze />
           <canvas ref={petalsRef} className="invitation__petals" aria-hidden="true" />
         </div>
       </EnvelopeIntro>

@@ -6,16 +6,19 @@ import './envelope.css';
 
 export type InvitationState = 'closed' | 'opening' | 'revealed';
 
-// Timing follows the reference intro: the lid lifts for 3.58 s, the envelope
-// fades out over the final 0.8 s, then the card fades up 20 px over 0.8 s
-// after a 0.2 s pause.
-// The whole sequence runs 15% faster than the reference.
+// The lid lifts as in the reference intro, 15% faster. Then, after a short
+// pause, one slow cross-dissolve: the envelope fades away over 1.8 s while the
+// whole invitation fades in over 3.5 s, easing in and out, with an almost
+// imperceptible settle from 98.8% to full size. The flowers start to stir
+// toward the end of the fade.
 const SPEED = 0.85;
 const LID_SECONDS = 3.583 * SPEED;
-const FADE_SECONDS = 0.8 * SPEED;
-const CARD_DELAY_SECONDS = 0.2 * SPEED;
-const CARD_SECONDS = 0.8 * SPEED;
-const TOTAL_SECONDS = LID_SECONDS + CARD_DELAY_SECONDS + CARD_SECONDS;
+const PAUSE_SECONDS = 0.3;
+const ENVELOPE_FADE_SECONDS = 1.8;
+const CARD_SECONDS = 3.5;
+const REVEAL_START = LID_SECONDS + PAUSE_SECONDS;
+const BREEZE_START = REVEAL_START + CARD_SECONDS * 0.65;
+const TOTAL_SECONDS = REVEAL_START + CARD_SECONDS;
 export const REVEAL_DURATION_MS = Math.round(TOTAL_SECONDS * 1000);
 
 // Lid angle (degrees) over time, fitted to the reference seal's position,
@@ -41,23 +44,8 @@ function envelopeSize(screenWidth: number, screenHeight: number) {
 }
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
-const easeInOut = (value: number) => {
-  const t = clamp(value);
-  return t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-};
-// CSS `ease`, the default tween the reference uses for its fade-up.
-function ease(value: number) {
-  const x = clamp(value);
-  let lo = 0;
-  let hi = 1;
-  for (let i = 0; i < 20; i++) {
-    const t = (lo + hi) / 2;
-    const bx = 3 * (1 - t) ** 2 * t * 0.25 + 3 * (1 - t) * t * t * 0.25 + t ** 3;
-    if (bx < x) lo = t; else hi = t;
-  }
-  const t = (lo + hi) / 2;
-  return 3 * (1 - t) ** 2 * t * 0.1 + 3 * (1 - t) * t * t + t ** 3;
-}
+// Sine ease-in-out: slow to start, slow to settle.
+const easeInOut = (value: number) => 0.5 - 0.5 * Math.cos(Math.PI * clamp(value));
 
 function lidAngle(seconds: number) {
   const s = Math.min(Math.max(seconds, 0), LID_SECONDS);
@@ -81,9 +69,7 @@ function lidAngle(seconds: number) {
 export function renderEnvelopeFrame(element: HTMLElement, seconds: number) {
   const angle = lidAngle(seconds);
   const lift = angle / 60;
-  const fadeStart = LID_SECONDS - FADE_SECONDS;
-  const cardStart = LID_SECONDS + CARD_DELAY_SECONDS;
-  const card = ease((seconds - cardStart) / CARD_SECONDS);
+  const card = easeInOut((seconds - REVEAL_START) / CARD_SECONDS);
   const style = element.style;
   style.setProperty('--lid-angle', `${angle.toFixed(3)}deg`);
   style.setProperty('--lid-shadow-angle', `${(angle * 0.62).toFixed(3)}deg`);
@@ -93,10 +79,12 @@ export function renderEnvelopeFrame(element: HTMLElement, seconds: number) {
   style.setProperty('--lid-sheen', (lift * 0.55).toFixed(3));
   // The flap's resting shadow on the envelope fades as the flap lifts away.
   style.setProperty('--rest-shadow', (1 - clamp(lift * 2.2)).toFixed(3));
-  style.setProperty('--envelope-opacity', (1 - easeInOut((seconds - fadeStart) / FADE_SECONDS)).toFixed(3));
-  style.setProperty('--backdrop-opacity', easeInOut((seconds - LID_SECONDS) / FADE_SECONDS).toFixed(3));
+  style.setProperty('--envelope-opacity', (1 - easeInOut((seconds - REVEAL_START) / ENVELOPE_FADE_SECONDS)).toFixed(3));
+  // The whole invitation scene (card and its background) fades in together.
+  style.setProperty('--backdrop-opacity', card.toFixed(3));
   style.setProperty('--card-opacity', card.toFixed(3));
-  style.setProperty('--card-shift', `${(20 * (1 - card)).toFixed(2)}px`);
+  style.setProperty('--card-scale', (0.988 + 0.012 * card).toFixed(4));
+  element.dataset.breeze = seconds >= BREEZE_START ? 'on' : 'off';
 }
 
 function preload(url: string) {

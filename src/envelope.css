@@ -8,27 +8,28 @@
   --envelope-opacity: 1;
   --backdrop-opacity: 0;
   --card-opacity: 0;
-  --card-shift: 20px;
+  --card-scale: .988;
 }
 
-/* A blush wash sits between the page and the envelope until the card
-   arrives, so the fade-out never reveals a half-drawn page. */
+/* The envelope's warm backdrop stays behind everything while the invitation
+   fades in over it, so the envelope's fade-out never reveals anything else
+   and there is never a blank or mismatched frame. */
 .experience::before {
   content: '';
   position: fixed;
   z-index: 1;
   inset: 0;
-  background: #fbf1ef;
+  background: radial-gradient(ellipse at 55% 45%, #e4d5cb 0%, #d9c9c0 62%, #cdbcb3 100%);
   opacity: calc(1 - var(--backdrop-opacity));
   pointer-events: none;
 }
 
-.experience[data-state="revealed"]::before { display: none; }
+.experience[data-state="revealed"]::before { opacity: 0; visibility: hidden; }
 
 .experience[data-state="closed"] .invitation,
 .experience[data-state="opening"] .invitation {
   opacity: var(--card-opacity);
-  transform: translateY(var(--card-shift));
+  transform: scale(var(--card-scale));
 }
 
 .experience[data-state="revealed"] .invitation {
@@ -121,7 +122,13 @@
 .envelope__hit-area:focus-visible { outline: 3px solid #b99a5e; outline-offset: -8px; }
 .experience[data-state="revealed"] .envelope__hit-area { display: none; }
 
+/* Reduced motion: no flip, no scale, no sway; just a gentle cross-fade. */
 @media (prefers-reduced-motion: reduce) {
-  .experience[data-state="opening"] .envelope-scene { opacity: 0; transition: opacity .4s ease-out; }
-  .experience[data-state="opening"] .invitation { opacity: 1; transform: none; transition: opacity .4s ease-out; }
+  .envelope-scene { transition: opacity .9s ease-in-out; }
+  .invitation { transition: opacity 1.8s ease-in-out; }
+  .experience::before { transition: opacity 1.8s ease-in-out, visibility 0s 1.8s; }
+  .experience[data-state="opening"] .envelope-scene { opacity: 0; }
+  .experience[data-state="opening"] .invitation,
+  .experience[data-state="revealed"] .invitation { opacity: 1; transform: none; }
+  .experience[data-state="opening"]::before { opacity: 0; }
 }

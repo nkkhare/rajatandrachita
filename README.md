@@ -20,12 +20,10 @@ Open the URL printed by Vite. `npm run build` creates a production site in `dist
 5. A canvas water overlay, clipped to an editable polygon below the bridge (`src/animation/water.ts`).
 6. Lightweight canvas petals falling across the card (`src/animation/petals.ts`).
 
-The opening follows the reference intro's timing:
-- Tap anywhere and the lid tips toward the viewer over 3.0 s (CSS `rotateX` with about four envelope-heights of perspective).
-- The envelope fades out over the last 0.68 s.
-- After 0.17 s, the card fades up 20 px over 0.68 s.
-
-These timings are 15% faster than the reference.
+The opening sequence:
+- Tap anywhere and the flap tips toward the viewer over 3.0 s (15% faster than the reference).
+- After a 0.3 s pause, the envelope fades away over 1.8 s while the whole invitation scene fades in over 3.5 s, with a sine ease-in-out and an almost imperceptible scale from 98.8% to 100%.
+- Late in the fade, the corner flowers begin to sway (`src/FlowerBreeze.tsx`, `src/flowers.css`). They are pixel-exact cut-outs of the artwork's own flowers in `src/assets/flowers/`. Each group is anchored at its corner or edge and moves under about 0.6° and 1 px, with its own timing.
 
 The envelope uses `closed → opening → revealed` states, and repeat taps are ignored once it starts opening. The countdown targets midnight in Philadelphia on May 14, 2027 and updates on minute boundaries. Water, clouds, and petals start only at `revealed`, use `requestAnimationFrame`, and stop when the tab is hidden. Reduced-motion visitors get a short fade to a static card.
 

@@ -1,0 +1,73 @@
+/* The corner flowers stirring in a very light breeze. Each group is anchored
+   where it grows from (its corner or the card's edge), so the stems barely
+   move and the outer blossoms move a little more. Durations, delays,
+   directions, and distances all differ so no two groups ever sway together.
+   Each animation starts from rest, so nothing jumps when it begins. */
+.flowers {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flowers__group {
+  position: absolute;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform;
+}
+
+.flowers__group--top-left { transform-origin: 0 0; }
+.flowers__group--top-right { transform-origin: 100% 0; }
+.flowers__group--left { transform-origin: 0 100%; }
+.flowers__group--right { transform-origin: 100% 100%; }
+.flowers__group--bottom-left { transform-origin: 0 100%; }
+.flowers__group--bottom-right { transform-origin: 100% 100%; }
+
+.experience[data-breeze="on"] .flowers__group--top-left { animation: breeze-top-left 3.4s ease-in-out .1s infinite alternate both; }
+.experience[data-breeze="on"] .flowers__group--top-right { animation: breeze-top-right 3.9s ease-in-out .9s infinite alternate both; }
+.experience[data-breeze="on"] .flowers__group--left { animation: breeze-left 2.9s ease-in-out 1.6s infinite alternate both; }
+.experience[data-breeze="on"] .flowers__group--right { animation: breeze-right 3.2s ease-in-out .5s infinite alternate both; }
+.experience[data-breeze="on"] .flowers__group--bottom-left { animation: breeze-bottom-left 4.1s ease-in-out 1.2s infinite alternate both; }
+.experience[data-breeze="on"] .flowers__group--bottom-right { animation: breeze-bottom-right 3.6s ease-in-out 2.1s infinite alternate both; }
+
+@keyframes breeze-top-left {
+  0% { transform: none; }
+  40% { transform: rotate(-.45deg) translate(.6px, .4px); }
+  100% { transform: rotate(.35deg) translate(-.4px, 1.2px) scale(1.003); }
+}
+
+@keyframes breeze-top-right {
+  0% { transform: none; }
+  55% { transform: rotate(.55deg) translate(-.8px, .6px); }
+  100% { transform: rotate(-.25deg) translate(.5px, 1px) scale(.997); }
+}
+
+@keyframes breeze-left {
+  0% { transform: none; }
+  45% { transform: rotate(.3deg) translate(.4px, 0); }
+  100% { transform: rotate(-.2deg) translate(.8px, -.4px); }
+}
+
+@keyframes breeze-right {
+  0% { transform: none; }
+  50% { transform: rotate(-.35deg) translate(-.5px, .2px); }
+  100% { transform: rotate(.15deg) translate(-.9px, -.3px); }
+}
+
+@keyframes breeze-bottom-left {
+  0% { transform: none; }
+  35% { transform: rotate(.4deg) translate(.5px, -.3px); }
+  100% { transform: rotate(-.3deg) translate(1px, -.8px) scale(1.004); }
+}
+
+@keyframes breeze-bottom-right {
+  0% { transform: none; }
+  60% { transform: rotate(-.5deg) translate(-.6px, -.5px); }
+  100% { transform: rotate(.25deg) translate(-1.1px, -.2px) scale(.996); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience .flowers__group { animation: none !important; }
+}
