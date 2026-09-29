@@ -25,7 +25,7 @@ The opening sequence:
 - The envelope fades out over the last 0.68 s of the lift, as before, while the whole invitation scene fades in over 4.4 s, with a sine ease-in-out and an almost imperceptible scale from 98.8% to 100%.
 - Late in the fade, the corner flowers begin to sway (`src/FlowerBreeze.tsx`, `src/flowers.css`). They are pixel-exact cut-outs of the artwork's own flowers in `src/assets/flowers/`. Each group is anchored at its corner or edge and moves under about 0.6° and 1 px, with its own timing.
 
-The envelope uses `closed → opening → revealed` states, and repeat taps are ignored once it starts opening. The countdown targets midnight in Philadelphia on May 14, 2027 and updates on minute boundaries. Water, clouds, and petals start as the invitation begins to fade in (so they fade in with it), use `requestAnimationFrame`, and stop when the tab is hidden. Reduced-motion visitors get a short fade to a static card.
+The envelope uses `closed → opening → revealed` states, and repeat taps are ignored once it starts opening. The countdown targets midnight in Philadelphia on May 14, 2027 and updates on minute boundaries. Water and clouds start as the invitation begins to fade in; petals start once it is fully visible, drifting in from the top; use `requestAnimationFrame`, and stop when the tab is hidden. Reduced-motion visitors get a short fade to a static card.
 
 ## Music
 

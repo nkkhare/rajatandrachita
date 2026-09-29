@@ -10,9 +10,10 @@ const soundtrack = new Soundtrack();
 
 export function App() {
   const [invitationState, setInvitationState] = useState<InvitationState>('closed');
-  // The petals, water, and clouds start as soon as the invitation begins to
-  // fade in, so they appear with it rather than after it.
+  // The water and clouds start as soon as the invitation begins to fade in, so
+  // they appear with it; the petals start once it is fully visible.
   const [ambient, setAmbient] = useState(false);
+  const openedAt = useRef(0);
   const imageRef = useRef<HTMLImageElement>(null);
   const waterRef = useRef<HTMLCanvasElement>(null);
   const cloudsRef = useRef<HTMLCanvasElement>(null);
@@ -36,6 +37,7 @@ export function App() {
   useEffect(() => {
     if (invitationState === 'revealed') { setAmbient(true); return; }
     if (invitationState !== 'opening') return;
+    openedAt.current = performance.now();
     const timer = window.setTimeout(() => setAmbient(true), INVITATION_FADE_START_MS);
     return () => window.clearTimeout(timer);
   }, [invitationState]);
@@ -87,7 +89,9 @@ export function App() {
 
       const { createSceneAnimation } = await import('./animation/scene');
       if (disposed || currentGeneration !== generation || motionPreference.matches || document.hidden) return;
-      stopAnimation = createSceneAnimation(image, waterCanvas, cloudsCanvas, petalsCanvas);
+      // Petals wait until the invitation has fully faded in.
+      const petalsDelay = Math.max(0, openedAt.current + REVEAL_DURATION_MS - performance.now());
+      stopAnimation = createSceneAnimation(image, waterCanvas, cloudsCanvas, petalsCanvas, petalsDelay);
     }
 
     const handleChange = () => { void start(); };

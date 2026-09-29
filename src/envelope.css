@@ -1,8 +1,5 @@
 .experience {
   --lid-angle: 0deg;
-  --lid-shadow-angle: 0deg;
-  --lid-shadow-shift: .4%;
-  --lid-shadow-opacity: 0;
   --lid-sheen: 0;
   --rest-shadow: 1;
   --envelope-opacity: 1;
@@ -64,10 +61,8 @@
 
 .envelope__base,
 .envelope__lid,
-.envelope__lid-shadow,
 .envelope__lid-sheen,
-.envelope__lid img,
-.envelope__lid-shadow img {
+.envelope__lid img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -84,16 +79,6 @@
   backface-visibility: hidden;
   will-change: transform;
 }
-
-/* The flap's shadow on the envelope as it lifts. */
-.envelope__lid-shadow {
-  transform-origin: 50% 0;
-  transform: translateY(var(--lid-shadow-shift)) rotateX(var(--lid-shadow-angle));
-  opacity: var(--lid-shadow-opacity);
-  will-change: transform, opacity;
-}
-
-.envelope__lid-shadow img { filter: brightness(0) blur(6px); }
 
 .envelope__rest-shadow { opacity: var(--rest-shadow); will-change: opacity; }
 

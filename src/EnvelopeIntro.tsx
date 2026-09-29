@@ -77,10 +77,6 @@ export function renderEnvelopeFrame(element: HTMLElement, seconds: number) {
   const card = easeSine((seconds - REVEAL_START) / CARD_SECONDS);
   const style = element.style;
   style.setProperty('--lid-angle', `${angle.toFixed(3)}deg`);
-  style.setProperty('--lid-shadow-angle', `${(angle * 0.62).toFixed(3)}deg`);
-  style.setProperty('--lid-shadow-shift', `${(0.4 + lift * 2.6).toFixed(3)}%`);
-  // Zero at rest (the artwork's own shadow is showing), growing as the flap lifts.
-  style.setProperty('--lid-shadow-opacity', (0.28 * clamp(lift * 3) * (1 - 0.4 * lift)).toFixed(3));
   style.setProperty('--lid-sheen', (lift * 0.55).toFixed(3));
   // The flap's resting shadow on the envelope fades as the flap lifts away.
   style.setProperty('--rest-shadow', (1 - clamp(lift * 2.2)).toFixed(3));
@@ -201,9 +197,6 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
         >
           <img className="envelope__base" src={bodyUrl} alt="" draggable={false} />
           <img className="envelope__base envelope__rest-shadow" src={flapShadowUrl} alt="" draggable={false} />
-          <div className="envelope__lid-shadow">
-            <img src={flapUrl} alt="" draggable={false} />
-          </div>
           {/* The sheen is its own layer so the changing light never repaints
               the flap. */}
           <div className="envelope__lid">

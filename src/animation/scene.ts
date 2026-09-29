@@ -7,10 +7,13 @@ export function createSceneAnimation(
   waterCanvas: HTMLCanvasElement,
   cloudsCanvas: HTMLCanvasElement,
   petalsCanvas: HTMLCanvasElement,
+  petalsDelayMs = 0,
 ) {
   const water = new WaterRenderer(image, waterCanvas);
   const clouds = new CloudRenderer(image, cloudsCanvas);
-  const petals = new PetalField(petalsCanvas);
+  // The petals begin to fall only once the invitation is fully visible.
+  const petalsAt = performance.now() + petalsDelayMs;
+  let petals: PetalField | undefined;
   let frameId = 0;
   let previous = performance.now();
 
@@ -19,7 +22,8 @@ export function createSceneAnimation(
     previous = now;
     water.render(now / 1000);
     clouds.render(now / 1000);
-    petals.render(deltaSeconds, now / 1000);
+    if (!petals && now >= petalsAt) petals = new PetalField(petalsCanvas);
+    petals?.render(deltaSeconds, now / 1000);
     frameId = requestAnimationFrame(frame);
   };
   frameId = requestAnimationFrame(frame);
@@ -28,6 +32,6 @@ export function createSceneAnimation(
     cancelAnimationFrame(frameId);
     water.dispose();
     clouds.dispose();
-    petals.dispose();
+    petals?.dispose();
   };
 }
