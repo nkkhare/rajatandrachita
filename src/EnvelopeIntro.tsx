@@ -6,17 +6,16 @@ import './envelope.css';
 
 export type InvitationState = 'closed' | 'opening' | 'revealed';
 
-// The lid lifts as in the reference intro, 15% faster. Then, after a short
-// pause, one slow cross-dissolve: the envelope fades away over 1.8 s while the
-// whole invitation fades in over 3.5 s, easing in and out, with an almost
-// imperceptible settle from 98.8% to full size. The flowers start to stir
-// toward the end of the fade.
+// The lid lifts as in the reference intro, 15% faster, and the envelope fades
+// out over the last part of the lift while the flap is still moving. As it
+// starts to fade, the whole invitation begins a slow fade in (4.4 s, easing in
+// and out) with an almost imperceptible settle from 98.8% to full size. The
+// flowers start to stir toward the end of that fade.
 const SPEED = 0.85;
 const LID_SECONDS = 3.583 * SPEED;
-const PAUSE_SECONDS = 0.3;
-const ENVELOPE_FADE_SECONDS = 1.8;
-const CARD_SECONDS = 3.5;
-const REVEAL_START = LID_SECONDS + PAUSE_SECONDS;
+const ENVELOPE_FADE_SECONDS = 0.8 * SPEED;
+const CARD_SECONDS = 3.5 * 1.25;
+const REVEAL_START = LID_SECONDS - ENVELOPE_FADE_SECONDS;
 const BREEZE_START = REVEAL_START + CARD_SECONDS * 0.65;
 const TOTAL_SECONDS = REVEAL_START + CARD_SECONDS;
 export const REVEAL_DURATION_MS = Math.round(TOTAL_SECONDS * 1000);
@@ -44,8 +43,12 @@ function envelopeSize(screenWidth: number, screenHeight: number) {
 }
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
-// Sine ease-in-out: slow to start, slow to settle.
-const easeInOut = (value: number) => 0.5 - 0.5 * Math.cos(Math.PI * clamp(value));
+const easeInOut = (value: number) => {
+  const t = clamp(value);
+  return t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+};
+// Sine ease-in-out for the invitation: slow to start, slow to settle.
+const easeSine = (value: number) => 0.5 - 0.5 * Math.cos(Math.PI * clamp(value));
 
 function lidAngle(seconds: number) {
   const s = Math.min(Math.max(seconds, 0), LID_SECONDS);
@@ -69,7 +72,7 @@ function lidAngle(seconds: number) {
 export function renderEnvelopeFrame(element: HTMLElement, seconds: number) {
   const angle = lidAngle(seconds);
   const lift = angle / 60;
-  const card = easeInOut((seconds - REVEAL_START) / CARD_SECONDS);
+  const card = easeSine((seconds - REVEAL_START) / CARD_SECONDS);
   const style = element.style;
   style.setProperty('--lid-angle', `${angle.toFixed(3)}deg`);
   style.setProperty('--lid-shadow-angle', `${(angle * 0.62).toFixed(3)}deg`);
