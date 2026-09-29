@@ -2,13 +2,9 @@
   --lid-angle: 0deg;
   --lid-shadow-angle: 0deg;
   --lid-shadow-shift: .4%;
-  --lid-shadow-opacity: .5;
+  --lid-shadow-opacity: 0;
   --lid-sheen: 0;
-  --seal-tilt: 0;
-  --seal-rise: .1;
-  --seal-band: .03;
-  --seal-stretch: 1;
-  --hint-opacity: 1;
+  --rest-shadow: 1;
   --envelope-opacity: 1;
   --backdrop-opacity: 0;
   --card-opacity: 0;
@@ -45,7 +41,8 @@
   z-index: 10;
   inset: 0;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 45%, #fbf7fb 0%, #efe8f2 70%, #e6dcea 100%);
+  /* the warm neutral backdrop of the approved envelope artwork */
+  background: radial-gradient(ellipse at 55% 45%, #e4d5cb 0%, #d9c9c0 62%, #cdbcb3 100%);
   opacity: var(--envelope-opacity);
   pointer-events: none;
   will-change: opacity;
@@ -53,18 +50,14 @@
 
 .experience[data-state="revealed"] .envelope-scene { visibility: hidden; }
 
-.envelope__defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
-/* A free-standing envelope in true proportions, centred (size set in JS). */
+/* The envelope: the approved artwork as two layers, centred (size set in JS). */
 .envelope__body {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  overflow: hidden;
-  border-radius: 3px;
-  background: #d9d0e3;
-  box-shadow: 0 2px 6px #3e33531f, 0 18px 40px #3e335329;
+  box-shadow: 0 2px 4px #5a463c26, 0 12px 26px #5a463c29;
   perspective-origin: 50% 50%;
 }
 
@@ -72,18 +65,18 @@
 .envelope__lid,
 .envelope__lid-shadow,
 .envelope__lid-sheen,
-.envelope__lid > svg,
-.envelope__lid-sheen svg,
-.envelope__lid-shadow svg {
+.envelope__lid img,
+.envelope__lid-shadow img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
-/* The lid hinges on the top edge of the screen and tips toward the viewer,
-   as in the reference. Its shadow falls on the envelope beneath it. */
+/* The flap hinges on the envelope's top edge and tips toward the viewer. */
 .envelope__lid {
   transform-origin: 50% 0;
   transform: rotateX(var(--lid-angle));
@@ -91,6 +84,7 @@
   will-change: transform;
 }
 
+/* The flap's shadow on the envelope as it lifts. */
 .envelope__lid-shadow {
   transform-origin: 50% 0;
   transform: translateY(var(--lid-shadow-shift)) rotateX(var(--lid-shadow-angle));
@@ -98,68 +92,14 @@
   will-change: transform, opacity;
 }
 
+.envelope__lid-shadow img { filter: brightness(0) blur(6px); }
+
+.envelope__rest-shadow { opacity: var(--rest-shadow); will-change: opacity; }
+
 .envelope__lid-sheen {
-  will-change: opacity;
+  background: linear-gradient(135deg, #fffdfce6, #fffdfc40 55%, #8a768c59);
   opacity: var(--lid-sheen);
   pointer-events: none;
-}
-
-/* The wax seal. Its face rises off the base by the projected wax depth as
-   the lid tips; the wall band fills the gap so the seal's side shows. */
-.seal {
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%, -50%) scaleY(var(--seal-stretch));
-  pointer-events: none;
-  will-change: transform;
-}
-
-.seal__layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  overflow: visible;
-}
-
-.seal__face {
-  transform: translateY(calc(var(--seal-rise) * var(--seal-depth) * -1));
-  will-change: transform;
-}
-
-.seal__face--tilted {
-  opacity: var(--seal-tilt);
-  will-change: transform, opacity;
-}
-
-/* Spans the seal's widest point, from the base's centre line up to the
-   face's; the base and face blobs round off its ends. */
-.seal__wall {
-  position: absolute;
-  left: 5.6%;
-  width: 90.5%;
-  bottom: 50%;
-  height: calc(var(--seal-depth) * 1.98);
-  transform-origin: 50% 100%;
-  transform: scaleY(var(--seal-band));
-  background:
-    linear-gradient(90deg, #ffffff33, #0000 35%, #0000 65%, #0000000f),
-    linear-gradient(#cdbfac, #ddd1bf);
-  will-change: transform;
-}
-
-.envelope__hint {
-  position: absolute;
-  left: 0;
-  right: 0;
-  margin: 0;
-  color: #8a7ea3;
-  opacity: var(--hint-opacity);
-  font: 400 12px 'Cormorant Garamond', Georgia, serif;
-  letter-spacing: 3px;
-  text-align: center;
-  text-transform: uppercase;
   will-change: opacity;
 }
 
@@ -178,7 +118,7 @@
 }
 
 .envelope__hit-area:disabled { pointer-events: none; }
-.envelope__hit-area:focus-visible { outline: 3px solid #9e3043; outline-offset: -8px; }
+.envelope__hit-area:focus-visible { outline: 3px solid #b99a5e; outline-offset: -8px; }
 .experience[data-state="revealed"] .envelope__hit-area { display: none; }
 
 @media (prefers-reduced-motion: reduce) {

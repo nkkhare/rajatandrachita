@@ -1,7 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import monogramUrl from './assets/embossed-rr.webp';
-import { WaxSeal, WaxSealDefs } from './WaxSeal';
-import { DamaskDefs, LaceDefs, LaceTrim } from './EnvelopeDecor';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import bodyUrl from './assets/envelope-body.webp';
+import flapUrl from './assets/envelope-flap.webp';
+import flapShadowUrl from './assets/envelope-flap-shadow.webp';
 import './envelope.css';
 
 export type InvitationState = 'closed' | 'opening' | 'revealed';
@@ -27,27 +27,18 @@ const LID_ANGLE: ReadonlyArray<readonly [number, number]> = ([
   [2.75, 48.1], [3, 51.9], [3.25, 55.3], [3.583, 59.6],
 ] as const).map(([t, angle]) => [t * SPEED, angle] as const);
 const PERSPECTIVE_HEIGHTS = 4.06;
-const SEAL_MAX_RISE = 0.1 + Math.tan((62 * Math.PI) / 180);
 
-// A whole envelope in true proportions (1.4 : 1), drawn in a coordinate space
-// 960 units tall. The lid runs from the two top corners to its point; the side
-// flaps tuck under it from the side edges; the bottom flap rises from the two
-// bottom corners to a point under the seal.
-const H = 960;
-const ENVELOPE_RATIO = 1.4;
-const W = H * ENVELOPE_RATIO;
-const LID_TIP_Y = 545;
-const SIDE_MEET_Y = 470;
-const BOTTOM_TIP_Y = 565;
-// About a quarter of the screen's area, as before, but never wider than 90%
-// of the screen or taller than 80% of it.
+// The envelope is the approved artwork itself, split into two layers: the
+// body (with the paper under the flap painted in) and the flap, which carries
+// its gold border, filigree, and soft shadow, and hinges on the top edge.
+const ENVELOPE_RATIO = 1427 / 863;
+// About a quarter of the screen's area, but never wider than 90% of the
+// screen or taller than 80% of it.
 function envelopeSize(screenWidth: number, screenHeight: number) {
   let width = Math.sqrt(0.25 * screenWidth * screenHeight * ENVELOPE_RATIO);
   width = Math.min(width, screenWidth * 0.9, screenHeight * 0.8 * ENVELOPE_RATIO);
   return { width, height: width / ENVELOPE_RATIO };
 }
-const SEAL_Y = 545;   // on the point of the lid, as in the reference
-const SEAL_SIZE = 217;
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 const easeInOut = (value: number) => {
@@ -97,19 +88,11 @@ export function renderEnvelopeFrame(element: HTMLElement, seconds: number) {
   style.setProperty('--lid-angle', `${angle.toFixed(3)}deg`);
   style.setProperty('--lid-shadow-angle', `${(angle * 0.62).toFixed(3)}deg`);
   style.setProperty('--lid-shadow-shift', `${(0.4 + lift * 2.6).toFixed(3)}%`);
-  style.setProperty('--lid-shadow-opacity', (0.34 - lift * 0.16).toFixed(3));
+  // Zero at rest (the artwork's own shadow is showing), growing as the flap lifts.
+  style.setProperty('--lid-shadow-opacity', (0.28 * clamp(lift * 3) * (1 - 0.4 * lift)).toFixed(3));
   style.setProperty('--lid-sheen', (lift * 0.55).toFixed(3));
-  style.setProperty('--seal-tilt', clamp(lift * 1.1).toFixed(3));
-  // How far the seal's face stands off its base in the lid's own plane: the
-  // wax depth seen at this angle (tan θ undoes the lid's foreshortening),
-  // plus a sliver at rest so the closed seal already reads as raised.
-  const rise = 0.1 + Math.tan((angle * Math.PI) / 180);
-  style.setProperty('--seal-rise', rise.toFixed(4));
-  style.setProperty('--seal-band', (rise / SEAL_MAX_RISE).toFixed(4));
-  // The reference seal is domed, so it holds its height a little longer
-  // than the flat lid; this matches its measured proportions as it tips.
-  style.setProperty('--seal-stretch', (1 + 0.17 * lift ** 3).toFixed(4));
-  style.setProperty('--hint-opacity', (1 - clamp(seconds / (0.35 * SPEED))).toFixed(3));
+  // The flap's resting shadow on the envelope fades as the flap lifts away.
+  style.setProperty('--rest-shadow', (1 - clamp(lift * 2.2)).toFixed(3));
   style.setProperty('--envelope-opacity', (1 - easeInOut((seconds - fadeStart) / FADE_SECONDS)).toFixed(3));
   style.setProperty('--backdrop-opacity', easeInOut((seconds - LID_SECONDS) / FADE_SECONDS).toFixed(3));
   style.setProperty('--card-opacity', card.toFixed(3));
@@ -120,53 +103,6 @@ function preload(url: string) {
   const image = new Image();
   image.src = url;
   return image.decode().catch(() => undefined);
-}
-
-// Light lavender paper, taken from the sky of the invitation. Each panel is a
-// slightly different shade, as folded paper catches the light differently. The tooth of the paper is generated
-// (seamless at any screen size) and lit from the upper left.
-const TONES = { lid: '#ddd3e6', side: '#d0c5db', bottom: '#cabfd6' } as const;
-
-function PaperFilter({ id, seed, width }: { id: string; seed: number; width: number }) {
-  // The region is the visible screen only; the panel paths reach far beyond it.
-  return (
-    <filter
-      id={id}
-      filterUnits="userSpaceOnUse"
-      x="-8"
-      y="-8"
-      width={(width + 16).toFixed(1)}
-      height={H + 16}
-      colorInterpolationFilters="sRGB"
-    >
-      <feTurbulence type="fractalNoise" baseFrequency="0.38" numOctaves="2" seed={seed} result="grain" />
-      <feGaussianBlur in="grain" stdDeviation="0.45" result="tooth" />
-      <feTurbulence type="fractalNoise" baseFrequency="0.009 0.016" numOctaves="3" seed={seed + 5} result="cloud" />
-      <feComposite in="tooth" in2="cloud" operator="arithmetic" k2="0.55" k3="0.7" result="surface" />
-      <feDiffuseLighting in="surface" surfaceScale="0.95" diffuseConstant="1.19" lightingColor="#ffffff" result="light">
-        <feDistantLight azimuth="235" elevation="58" />
-      </feDiffuseLighting>
-      <feComposite in="SourceGraphic" in2="light" operator="arithmetic" k1="1" result="paper" />
-      <feComposite in="paper" in2="SourceAlpha" operator="in" />
-    </filter>
-  );
-}
-
-function geometry() {
-  const cx = W / 2;
-  const far = 3;                                   // extend lines past the envelope's edges
-  const lidSlope = LID_TIP_Y / cx;                 // meets the top corners exactly
-  const lidY = (d: number) => LID_TIP_Y - lidSlope * d;
-  const lid = `M${cx - cx * far} ${lidY(cx * far)} L${cx - 16} ${lidY(16)} Q${cx} ${LID_TIP_Y + 3} ${cx + 16} ${lidY(16)}`
-    + ` L${cx + cx * far} ${lidY(cx * far)} Z`;
-  // The side flaps meet in the middle and run on down under the bottom flap.
-  const leftSide = `M-60 -60 L${cx} ${SIDE_MEET_Y} L${cx} ${H + 60} L-60 ${H + 60} Z`;
-  const rightSide = `M${W + 60} -60 L${cx} ${SIDE_MEET_Y} L${cx} ${H + 60} L${W + 60} ${H + 60} Z`;
-  const bottom = `M0 ${H} L${cx} ${BOTTOM_TIP_Y} L${W} ${H} L${W + 60} ${H + 60} L-60 ${H + 60} Z`;
-  // The lace follows the lid's edges from its point to each top corner.
-  const laceAngle = (Math.atan(lidSlope) * 180) / Math.PI;
-  const laceLength = Math.hypot(cx, LID_TIP_Y) + 20;
-  return { cx, lid, leftSide, rightSide, bottom, laceAngle, laceLength };
 }
 
 type Props = {
@@ -201,7 +137,7 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
     let cancelled = false;
     const invitation = experienceRef.current?.querySelector<HTMLImageElement>('.invitation__art');
     const decoded = Promise.all([
-      preload(monogramUrl),
+      preload(bodyUrl), preload(flapUrl), preload(flapShadowUrl),
       invitation?.decode().catch(() => undefined) ?? Promise.resolve(),
       import('./animation/scene').catch(() => undefined),
     ]);
@@ -252,9 +188,10 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
     else pendingOpen.current = true;
   };
 
-  const width = W;
-  const { cx, lid, leftSide, rightSide, bottom, laceAngle, laceLength } = geometry();
-  const viewBox = `0 0 ${W} ${H}`;
+  const flapMask: CSSProperties = {
+    WebkitMaskImage: `url(${flapUrl})`, maskImage: `url(${flapUrl})`,
+    WebkitMaskSize: '100% 100%', maskSize: '100% 100%',
+  };
 
   return (
     <div ref={experienceRef} className="experience" data-state={state}>
@@ -269,77 +206,18 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
             perspective: `${(PERSPECTIVE_HEIGHTS * viewport.height).toFixed(1)}px`,
           }}
         >
-          <svg className="envelope__defs" width="0" height="0" focusable="false">
-            <defs>
-              <PaperFilter id="paper-base" seed={3} width={width} />
-              <PaperFilter id="paper-lid" seed={11} width={width} />
-              <linearGradient id="envelope-inside" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#c6bbd3" />
-                <stop offset=".35" stopColor="#d9d0e3" />
-                <stop offset=".6" stopColor="#e8e2ef" />
-              </linearGradient>
-              <linearGradient id="lid-sheen" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#fbf8ff" stopOpacity=".9" />
-                <stop offset=".55" stopColor="#fbf8ff" stopOpacity=".25" />
-                <stop offset="1" stopColor="#9d90b3" stopOpacity=".35" />
-              </linearGradient>
-              <radialGradient id="envelope-light" cx=".3" cy=".18" r="1.1">
-                <stop offset="0" stopColor="#fff" stopOpacity=".16" />
-                <stop offset=".6" stopColor="#fff" stopOpacity="0" />
-                <stop offset="1" stopColor="#3e3353" stopOpacity=".16" />
-              </radialGradient>
-              <filter id="fold-shadow" filterUnits="userSpaceOnUse" x="-8" y="-8" width={(width + 16).toFixed(1)} height={H + 16}>
-                <feGaussianBlur stdDeviation="3.2" />
-              </filter>
-              <filter id="lid-shadow-blur" filterUnits="userSpaceOnUse" x="-8" y="-8" width={(width + 16).toFixed(1)} height={H + 16}>
-                <feGaussianBlur stdDeviation="7" />
-              </filter>
-              <DamaskDefs width={width} height={H} />
-              <LaceDefs />
-              <clipPath id="clip-lid"><path d={lid} /></clipPath>
-              <clipPath id="clip-flaps"><path d={leftSide} /><path d={rightSide} /><path d={bottom} /></clipPath>
-              <WaxSealDefs />
-            </defs>
-          </svg>
-
-          <svg className="envelope__base" viewBox={viewBox} preserveAspectRatio="none">
-            <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#envelope-inside)" />
-            <path d={leftSide} fill="#453a5c" opacity=".22" filter="url(#fold-shadow)" transform="translate(0 3)" />
-            <path d={rightSide} fill="#453a5c" opacity=".22" filter="url(#fold-shadow)" transform="translate(0 3)" />
-            <g filter="url(#paper-base)">
-              <path d={leftSide} fill={TONES.side} />
-              <path d={rightSide} fill={TONES.side} />
-            </g>
-            <path d={bottom} fill="#453a5c" opacity=".24" filter="url(#fold-shadow)" transform="translate(0 -2)" />
-            <path d={bottom} fill={TONES.bottom} filter="url(#paper-base)" />
-            <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#damask)" filter="url(#emboss)" clipPath="url(#clip-flaps)" />
-            <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#envelope-light)" />
-          </svg>
+          <img className="envelope__base" src={bodyUrl} alt="" draggable={false} />
+          <img className="envelope__base envelope__rest-shadow" src={flapShadowUrl} alt="" draggable={false} />
           <div className="envelope__lid-shadow">
-            <svg viewBox={viewBox} preserveAspectRatio="none">
-              <path d={lid} fill="#54496c" filter="url(#lid-shadow-blur)" />
-            </svg>
+            <img src={flapUrl} alt="" draggable={false} />
           </div>
-
-          {/* The sheen and the seal are separate layers inside the lid, so the
-              changing light and the seal's rising face never repaint the paper. */}
+          {/* The sheen is its own layer so the changing light never repaints
+              the flap. */}
           <div className="envelope__lid">
-            <svg viewBox={viewBox} preserveAspectRatio="none">
-              <path d={lid} fill={TONES.lid} filter="url(#paper-lid)" />
-              <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#damask)" filter="url(#emboss)" clipPath="url(#clip-lid)" />
-              <path d={lid} fill="url(#envelope-light)" />
-              <g transform={`translate(${cx} ${LID_TIP_Y}) rotate(${180 + laceAngle})`}><LaceTrim length={laceLength} /></g>
-              <g transform={`translate(${cx} ${LID_TIP_Y}) rotate(${-laceAngle})`}><LaceTrim length={laceLength} /></g>
-            </svg>
-            <div className="envelope__lid-sheen">
-              <svg viewBox={viewBox} preserveAspectRatio="none">
-                <path d={lid} fill="url(#lid-sheen)" />
-              </svg>
-            </div>
-            <WaxSeal size={(SEAL_SIZE / H) * viewport.height} top={`${((SEAL_Y / H) * 100).toFixed(3)}%`} />
+            <img src={flapUrl} alt="" draggable={false} />
+            <div className="envelope__lid-sheen" style={flapMask} />
           </div>
         </div>
-        <p className="envelope__hint" style={{ top: `calc(50% + ${(viewport.height / 2 + 24).toFixed(1)}px)` }}>Tap to open</p>
       </div>
       <button
         className="envelope__hit-area"
