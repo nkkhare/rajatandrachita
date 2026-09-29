@@ -113,14 +113,14 @@ export class PetalField {
     const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
     const lowPower = (memory !== undefined && memory <= 4) || (navigator.hardwareConcurrency || 4) <= 4;
     const count = lowPower ? (this.width < 430 ? 8 : 10) : (this.width < 430 ? 10 : 13);
-    // The first time, the petals start just above the card and drift in from
-    // the top (the first right away, the rest staggered), so they begin to fall
-    // rather than appearing mid-air. Later resizes keep them spread out.
-    const entering = !this.entered;
+    // Set the petals up once: they all start just above the card and fall in
+    // from the very top (the first right away, the rest staggered). A resize
+    // (the observer also fires once on start) only rescales where they are.
+    if (this.entered || this.width <= 0) return;
     this.entered = true;
     this.petals = Array.from({ length: count }, (_, index) => {
-      const petal = this.createPetal(!entering);
-      if (entering) petal.age = index === 0 ? 0 : -random(0, 2.6);
+      const petal = this.createPetal(false);
+      petal.age = index === 0 ? 0 : -random(0, 2.6);
       return petal;
     });
   }
