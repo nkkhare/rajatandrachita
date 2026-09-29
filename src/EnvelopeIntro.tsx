@@ -9,20 +9,23 @@ export type InvitationState = 'closed' | 'opening' | 'revealed';
 // Timing follows the reference intro: the lid lifts for 3.58 s, the envelope
 // fades out over the final 0.8 s, then the card fades up 20 px over 0.8 s
 // after a 0.2 s pause.
-const LID_SECONDS = 3.583;
-const FADE_SECONDS = 0.8;
-const CARD_DELAY_SECONDS = 0.2;
-const TOTAL_SECONDS = LID_SECONDS + CARD_DELAY_SECONDS + 0.8;
+// The whole sequence runs 15% faster than the reference.
+const SPEED = 0.85;
+const LID_SECONDS = 3.583 * SPEED;
+const FADE_SECONDS = 0.8 * SPEED;
+const CARD_DELAY_SECONDS = 0.2 * SPEED;
+const CARD_SECONDS = 0.8 * SPEED;
+const TOTAL_SECONDS = LID_SECONDS + CARD_DELAY_SECONDS + CARD_SECONDS;
 export const REVEAL_DURATION_MS = Math.round(TOTAL_SECONDS * 1000);
 
 // Lid angle (degrees) over time, fitted to the reference seal's position,
 // foreshortening, and growth: the lid hinges on the top edge of the screen
 // and tips toward the viewer with a perspective of ~4 screen heights.
-const LID_ANGLE: ReadonlyArray<readonly [number, number]> = [
+const LID_ANGLE: ReadonlyArray<readonly [number, number]> = ([
   [0, 0], [0.25, 7.2], [0.5, 13.2], [0.75, 17.8], [1, 21.9], [1.25, 26.1],
   [1.5, 30.1], [1.75, 33.9], [2, 37.6], [2.25, 41.3], [2.5, 44.8],
-  [2.75, 48.1], [3, 51.9], [3.25, 55.3], [LID_SECONDS, 59.6],
-];
+  [2.75, 48.1], [3, 51.9], [3.25, 55.3], [3.583, 59.6],
+] as const).map(([t, angle]) => [t * SPEED, angle] as const);
 const PERSPECTIVE_HEIGHTS = 4.06;
 const SEAL_MAX_RISE = 0.1 + Math.tan((62 * Math.PI) / 180);
 
@@ -81,7 +84,7 @@ export function renderEnvelopeFrame(element: HTMLElement, seconds: number) {
   const lift = angle / 60;
   const fadeStart = LID_SECONDS - FADE_SECONDS;
   const cardStart = LID_SECONDS + CARD_DELAY_SECONDS;
-  const card = ease((seconds - cardStart) / 0.8);
+  const card = ease((seconds - cardStart) / CARD_SECONDS);
   const style = element.style;
   style.setProperty('--lid-angle', `${angle.toFixed(3)}deg`);
   style.setProperty('--lid-shadow-angle', `${(angle * 0.62).toFixed(3)}deg`);
@@ -98,9 +101,9 @@ export function renderEnvelopeFrame(element: HTMLElement, seconds: number) {
   // The reference seal is domed, so it holds its height a little longer
   // than the flat lid; this matches its measured proportions as it tips.
   style.setProperty('--seal-stretch', (1 + 0.17 * lift ** 3).toFixed(4));
-  style.setProperty('--hint-opacity', (1 - clamp(seconds / 0.35)).toFixed(3));
+  style.setProperty('--hint-opacity', (1 - clamp(seconds / (0.35 * SPEED))).toFixed(3));
   style.setProperty('--envelope-opacity', (1 - easeInOut((seconds - fadeStart) / FADE_SECONDS)).toFixed(3));
-  style.setProperty('--backdrop-opacity', easeInOut((seconds - LID_SECONDS) / 0.8).toFixed(3));
+  style.setProperty('--backdrop-opacity', easeInOut((seconds - LID_SECONDS) / FADE_SECONDS).toFixed(3));
   style.setProperty('--card-opacity', card.toFixed(3));
   style.setProperty('--card-shift', `${(20 * (1 - card)).toFixed(2)}px`);
 }
@@ -111,10 +114,10 @@ function preload(url: string) {
   return image.decode().catch(() => undefined);
 }
 
-// Powder-blue paper. Each panel is a slightly different shade, as folded
-// paper catches the light differently. The tooth of the paper is generated
+// Light lavender paper, taken from the sky of the invitation. Each panel is a
+// slightly different shade, as folded paper catches the light differently. The tooth of the paper is generated
 // (seamless at any screen size) and lit from the upper left.
-const TONES = { lid: '#dde6f0', side: '#ccd5df', bottom: '#c6d0dc' } as const;
+const TONES = { lid: '#ddd3e6', side: '#d0c5db', bottom: '#cabfd6' } as const;
 
 function PaperFilter({ id, seed, width }: { id: string; seed: number; width: number }) {
   // The region is the visible screen only; the panel paths reach far beyond it.
@@ -169,21 +172,21 @@ type Props = {
 
 export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
   const experienceRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const pendingOpen = useRef(false);
   const [assetsReady, setAssetsReady] = useState(false);
   const [viewport, setViewport] = useState({ width: 390, height: 844 });
 
   useLayoutEffect(() => {
-    const scene = sceneRef.current;
-    if (!scene) return;
+    const body = bodyRef.current;
+    if (!body) return;
     const measure = () => {
-      const rect = scene.getBoundingClientRect();
+      const rect = body.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) setViewport({ width: rect.width, height: rect.height });
     };
     measure();
     const observer = new ResizeObserver(measure);
-    observer.observe(scene);
+    observer.observe(body);
     return () => observer.disconnect();
   }, []);
 
@@ -250,83 +253,84 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
   return (
     <div ref={experienceRef} className="experience" data-state={state}>
       {children}
-      <div
-        ref={sceneRef}
-        className="envelope-scene"
-        aria-hidden="true"
-        style={{ perspective: `${(PERSPECTIVE_HEIGHTS * viewport.height).toFixed(1)}px` }}
-      >
-        <svg className="envelope__defs" width="0" height="0" focusable="false">
-          <defs>
-            <PaperFilter id="paper-base" seed={3} width={width} />
-            <PaperFilter id="paper-lid" seed={11} width={width} />
-            <linearGradient id="envelope-inside" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#c3cdd9" />
-              <stop offset=".35" stopColor="#d7dfe8" />
-              <stop offset=".6" stopColor="#e6ecf2" />
-            </linearGradient>
-            <linearGradient id="lid-sheen" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#f7faff" stopOpacity=".9" />
-              <stop offset=".55" stopColor="#f7faff" stopOpacity=".25" />
-              <stop offset="1" stopColor="#8ea0b8" stopOpacity=".35" />
-            </linearGradient>
-            <radialGradient id="envelope-light" cx=".3" cy=".18" r="1.1">
-              <stop offset="0" stopColor="#fff" stopOpacity=".16" />
-              <stop offset=".6" stopColor="#fff" stopOpacity="0" />
-              <stop offset="1" stopColor="#2e3d55" stopOpacity=".16" />
-            </radialGradient>
-            <filter id="fold-shadow" filterUnits="userSpaceOnUse" x="-8" y="-8" width={(width + 16).toFixed(1)} height={H + 16}>
-              <feGaussianBlur stdDeviation="3.2" />
-            </filter>
-            <filter id="lid-shadow-blur" filterUnits="userSpaceOnUse" x="-8" y="-8" width={(width + 16).toFixed(1)} height={H + 16}>
-              <feGaussianBlur stdDeviation="7" />
-            </filter>
-            <DamaskDefs width={width} height={H} />
-            <LaceDefs />
-            <clipPath id="clip-lid"><path d={lid} /></clipPath>
-            <clipPath id="clip-flaps"><path d={leftSide} /><path d={rightSide} /><path d={bottom} /></clipPath>
-            <WaxSealDefs />
-          </defs>
-        </svg>
-
-        <svg className="envelope__base" viewBox={viewBox} preserveAspectRatio="none">
-          <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#envelope-inside)" />
-          <path d={leftSide} fill="#3b4a60" opacity=".22" filter="url(#fold-shadow)" transform="translate(0 3)" />
-          <path d={rightSide} fill="#3b4a60" opacity=".22" filter="url(#fold-shadow)" transform="translate(0 3)" />
-          <g filter="url(#paper-base)">
-            <path d={leftSide} fill={TONES.side} />
-            <path d={rightSide} fill={TONES.side} />
-          </g>
-          <path d={bottom} fill="#3b4a60" opacity=".24" filter="url(#fold-shadow)" transform="translate(0 -2)" />
-          <path d={bottom} fill={TONES.bottom} filter="url(#paper-base)" />
-          <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#damask)" filter="url(#emboss)" clipPath="url(#clip-flaps)" />
-          <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#envelope-light)" />
-        </svg>
-        <p className="envelope__hint">Tap to open</p>
-
-        <div className="envelope__lid-shadow">
-          <svg viewBox={viewBox} preserveAspectRatio="none">
-            <path d={lid} fill="#4e5f78" filter="url(#lid-shadow-blur)" />
+      <div className="envelope-scene" aria-hidden="true">
+        {/* The envelope itself: half the screen in each direction, centred. */}
+        <div
+          ref={bodyRef}
+          className="envelope__body"
+          style={{ perspective: `${(PERSPECTIVE_HEIGHTS * viewport.height).toFixed(1)}px` }}
+        >
+          <svg className="envelope__defs" width="0" height="0" focusable="false">
+            <defs>
+              <PaperFilter id="paper-base" seed={3} width={width} />
+              <PaperFilter id="paper-lid" seed={11} width={width} />
+              <linearGradient id="envelope-inside" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#c6bbd3" />
+                <stop offset=".35" stopColor="#d9d0e3" />
+                <stop offset=".6" stopColor="#e8e2ef" />
+              </linearGradient>
+              <linearGradient id="lid-sheen" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#fbf8ff" stopOpacity=".9" />
+                <stop offset=".55" stopColor="#fbf8ff" stopOpacity=".25" />
+                <stop offset="1" stopColor="#9d90b3" stopOpacity=".35" />
+              </linearGradient>
+              <radialGradient id="envelope-light" cx=".3" cy=".18" r="1.1">
+                <stop offset="0" stopColor="#fff" stopOpacity=".16" />
+                <stop offset=".6" stopColor="#fff" stopOpacity="0" />
+                <stop offset="1" stopColor="#3e3353" stopOpacity=".16" />
+              </radialGradient>
+              <filter id="fold-shadow" filterUnits="userSpaceOnUse" x="-8" y="-8" width={(width + 16).toFixed(1)} height={H + 16}>
+                <feGaussianBlur stdDeviation="3.2" />
+              </filter>
+              <filter id="lid-shadow-blur" filterUnits="userSpaceOnUse" x="-8" y="-8" width={(width + 16).toFixed(1)} height={H + 16}>
+                <feGaussianBlur stdDeviation="7" />
+              </filter>
+              <DamaskDefs width={width} height={H} />
+              <LaceDefs />
+              <clipPath id="clip-lid"><path d={lid} /></clipPath>
+              <clipPath id="clip-flaps"><path d={leftSide} /><path d={rightSide} /><path d={bottom} /></clipPath>
+              <WaxSealDefs />
+            </defs>
           </svg>
-        </div>
 
-        {/* The sheen and the seal are separate layers inside the lid, so the
-            changing light and the seal's rising face never repaint the paper. */}
-        <div className="envelope__lid">
-          <svg viewBox={viewBox} preserveAspectRatio="none">
-            <path d={lid} fill={TONES.lid} filter="url(#paper-lid)" />
-            <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#damask)" filter="url(#emboss)" clipPath="url(#clip-lid)" />
-            <path d={lid} fill="url(#envelope-light)" />
-            <g transform={`translate(${cx} ${LID_TIP_Y}) rotate(${180 + laceAngle})`}><LaceTrim length={laceLength} /></g>
-            <g transform={`translate(${cx} ${LID_TIP_Y}) rotate(${-laceAngle})`}><LaceTrim length={laceLength} /></g>
+          <svg className="envelope__base" viewBox={viewBox} preserveAspectRatio="none">
+            <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#envelope-inside)" />
+            <path d={leftSide} fill="#453a5c" opacity=".22" filter="url(#fold-shadow)" transform="translate(0 3)" />
+            <path d={rightSide} fill="#453a5c" opacity=".22" filter="url(#fold-shadow)" transform="translate(0 3)" />
+            <g filter="url(#paper-base)">
+              <path d={leftSide} fill={TONES.side} />
+              <path d={rightSide} fill={TONES.side} />
+            </g>
+            <path d={bottom} fill="#453a5c" opacity=".24" filter="url(#fold-shadow)" transform="translate(0 -2)" />
+            <path d={bottom} fill={TONES.bottom} filter="url(#paper-base)" />
+            <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#damask)" filter="url(#emboss)" clipPath="url(#clip-flaps)" />
+            <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#envelope-light)" />
           </svg>
-          <div className="envelope__lid-sheen">
+          <div className="envelope__lid-shadow">
             <svg viewBox={viewBox} preserveAspectRatio="none">
-              <path d={lid} fill="url(#lid-sheen)" />
+              <path d={lid} fill="#54496c" filter="url(#lid-shadow-blur)" />
             </svg>
           </div>
-          <WaxSeal size={(SEAL_SIZE / H) * viewport.height} top={`${((SEAL_Y / H) * 100).toFixed(3)}%`} />
+
+          {/* The sheen and the seal are separate layers inside the lid, so the
+              changing light and the seal's rising face never repaint the paper. */}
+          <div className="envelope__lid">
+            <svg viewBox={viewBox} preserveAspectRatio="none">
+              <path d={lid} fill={TONES.lid} filter="url(#paper-lid)" />
+              <rect x="-10" y="-10" width={width + 20} height={H + 20} fill="url(#damask)" filter="url(#emboss)" clipPath="url(#clip-lid)" />
+              <path d={lid} fill="url(#envelope-light)" />
+              <g transform={`translate(${cx} ${LID_TIP_Y}) rotate(${180 + laceAngle})`}><LaceTrim length={laceLength} /></g>
+              <g transform={`translate(${cx} ${LID_TIP_Y}) rotate(${-laceAngle})`}><LaceTrim length={laceLength} /></g>
+            </svg>
+            <div className="envelope__lid-sheen">
+              <svg viewBox={viewBox} preserveAspectRatio="none">
+                <path d={lid} fill="url(#lid-sheen)" />
+              </svg>
+            </div>
+            <WaxSeal size={(SEAL_SIZE / H) * viewport.height} top={`${((SEAL_Y / H) * 100).toFixed(3)}%`} />
+          </div>
         </div>
+        <p className="envelope__hint">Tap to open</p>
       </div>
       <button
         className="envelope__hit-area"

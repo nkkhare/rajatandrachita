@@ -147,8 +147,8 @@ export function WaxSeal({ size, top }: Props) {
   return (
     <div className="seal" style={style}>
       <svg className="seal__layer" viewBox={VIEW_BOX}>
-        <ellipse cx="5" cy="9" rx="114" ry="110" fill="#2f3c52" opacity=".24" filter="url(#wax-shadow)" />
-        <ellipse cx="1" cy="3" rx="117" ry="115" fill="#2f3c52" opacity=".2" filter="url(#wax-shadow)" />
+        <ellipse cx="5" cy="9" rx="114" ry="110" fill="#3e3353" opacity=".24" filter="url(#wax-shadow)" />
+        <ellipse cx="1" cy="3" rx="117" ry="115" fill="#3e3353" opacity=".2" filter="url(#wax-shadow)" />
         <path d={BLOB} fill="url(#wax-wall)" />
       </svg>
       <div className="seal__wall" />

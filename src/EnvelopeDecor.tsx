@@ -1,5 +1,5 @@
-// Decoration for the powder-blue envelope: a blind-embossed damask on every
-// panel, and a dusty-blue lace trim with a satin ribbon along the lid's edges.
+// Decoration for the lavender envelope: a blind-embossed damask on every
+// panel, and a dusty-lavender lace trim with a satin ribbon along the lid's edges.
 // Both are drawn as SVG and lit with lighting filters, so they read as paper
 // relief and real threads rather than flat illustration. Everything here is
 // static, rasterised once, and moved only with the lid.
@@ -98,7 +98,7 @@ export function DamaskDefs({ width, height }: { width: number; height: number })
           <feDistantLight azimuth="235" elevation="45" />
         </feDiffuseLighting>
         <feColorMatrix in="light" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  2.2 0 0 0 -1.556" result="highlight" />
-        <feColorMatrix in="light" values="0 0 0 0 .55  0 0 0 0 .62  0 0 0 0 .72  -1.1 0 0 0 .778" result="shade" />
+        <feColorMatrix in="light" values="0 0 0 0 .58  0 0 0 0 .52  0 0 0 0 .68  -1.1 0 0 0 .778" result="shade" />
         <feMerge>
           <feMergeNode in="shade" />
           <feMergeNode in="highlight" />
@@ -119,19 +119,19 @@ export function LaceDefs() {
   return (
     <>
       <pattern id="lace-net" patternUnits="userSpaceOnUse" width="5" height="5">
-        <path d="M0 2.5 L2.5 0 L5 2.5 L2.5 5 Z" fill="none" stroke="#cdd7e5" strokeWidth=".7" />
+        <path d="M0 2.5 L2.5 0 L5 2.5 L2.5 5 Z" fill="none" stroke="#d9d1e6" strokeWidth=".7" />
       </pattern>
       <linearGradient id="satin" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#7f8ea6" />
-        <stop offset=".3" stopColor="#bcc8d9" />
-        <stop offset=".5" stopColor="#eef3f9" />
-        <stop offset=".75" stopColor="#b3c0d2" />
-        <stop offset="1" stopColor="#7a89a1" />
+        <stop offset="0" stopColor="#8a7ea3" />
+        <stop offset=".3" stopColor="#c6bdd6" />
+        <stop offset=".5" stopColor="#f5f1fa" />
+        <stop offset=".75" stopColor="#bcb2cf" />
+        <stop offset="1" stopColor="#85799e" />
       </linearGradient>
       <filter id="lace-shadow" x="-5%" y="-60%" width="110%" height="220%" colorInterpolationFilters="sRGB">
         <feGaussianBlur in="SourceAlpha" stdDeviation="2.4" />
         <feOffset dx="1.5" dy="3" result="drop" />
-        <feFlood floodColor="#2f3f58" floodOpacity=".32" />
+        <feFlood floodColor="#3d3354" floodOpacity=".32" />
         <feComposite in2="drop" operator="in" result="shadow" />
         <feGaussianBlur in="SourceAlpha" stdDeviation="0.8" result="soft" />
         <feSpecularLighting in="soft" surfaceScale="2.4" specularConstant=".55" specularExponent="18" lightingColor="#ffffff" result="spec">
@@ -158,14 +158,14 @@ function Flower({ x, y, r, turn }: { x: number; y: number; r: number; turn: numb
   const innerRing = ring.map((a) => a + 180 / petals);
   return (
     <g transform={`translate(${x} ${y}) rotate(${turn})`}>
-      <path d={leafShape(r)} fill="#9aabc3" transform={`rotate(-150) translate(${r * 0.7} 0)`} />
-      <path d={leafShape(r)} fill="#9aabc3" transform={`rotate(30) translate(${r * 0.7} 0)`} />
-      {ring.map((a) => <path key={`s${a}`} d={petal(r)} fill="#7f91ab" transform={`translate(0.9 1.4) rotate(${a})`} />)}
-      {ring.map((a) => <path key={a} d={petal(r)} fill="#c7d2e2" stroke="#eef3fa" strokeWidth=".9" transform={`rotate(${a})`} />)}
-      {ring.map((a) => <path key={`h${a}`} d={`M${r * 0.3} 0 L${r * 0.8} 0`} stroke="#f7f9fd" strokeWidth=".8" strokeLinecap="round" transform={`rotate(${a - 8})`} />)}
-      {innerRing.map((a) => <path key={`i${a}`} d={petal(r * 0.62)} fill="#d6dfeb" stroke="#f4f7fb" strokeWidth=".7" transform={`rotate(${a})`} />)}
-      <circle r={r * 0.24} fill="#a8b7cc" stroke="#f1f5fa" strokeWidth=".8" />
-      <circle r={r * 0.1} cx={-r * 0.06} cy={-r * 0.06} fill="#eef3f9" />
+      <path d={leafShape(r)} fill="#a79cbe" transform={`rotate(-150) translate(${r * 0.7} 0)`} />
+      <path d={leafShape(r)} fill="#a79cbe" transform={`rotate(30) translate(${r * 0.7} 0)`} />
+      {ring.map((a) => <path key={`s${a}`} d={petal(r)} fill="#8a7ea6" transform={`translate(0.9 1.4) rotate(${a})`} />)}
+      {ring.map((a) => <path key={a} d={petal(r)} fill="#d2c9e1" stroke="#f4f0f9" strokeWidth=".9" transform={`rotate(${a})`} />)}
+      {ring.map((a) => <path key={`h${a}`} d={`M${r * 0.3} 0 L${r * 0.8} 0`} stroke="#faf8fd" strokeWidth=".8" strokeLinecap="round" transform={`rotate(${a - 8})`} />)}
+      {innerRing.map((a) => <path key={`i${a}`} d={petal(r * 0.62)} fill="#ddd6e9" stroke="#f7f4fb" strokeWidth=".7" transform={`rotate(${a})`} />)}
+      <circle r={r * 0.24} fill="#b0a6c7" stroke="#f5f2fa" strokeWidth=".8" />
+      <circle r={r * 0.1} cx={-r * 0.06} cy={-r * 0.06} fill="#f5f1fa" />
     </g>
   );
 }
@@ -203,14 +203,14 @@ export function LaceTrim({ length }: { length: number }) {
 
   return (
     <g filter="url(#lace-shadow)">
-      <path d={outline} fill="#9cafc8" />
+      <path d={outline} fill="#a89dc2" />
       <path d={outline} fill="url(#lace-net)" />
-      <path d={top} fill="none" stroke="#d0dae8" strokeWidth="3" />
-      <path d={bottom} fill="none" stroke="#d0dae8" strokeWidth="3" />
-      <path d={`M0 ${-inner + 4} H${length} M0 ${inner - 4} H${length}`} stroke="#b9c6d8" strokeWidth="1.4" strokeDasharray="3 2" />
-      <g fill="#e3eaf4">{picots.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="2.2" />)}</g>
+      <path d={top} fill="none" stroke="#d9d2e6" strokeWidth="3" />
+      <path d={bottom} fill="none" stroke="#d9d2e6" strokeWidth="3" />
+      <path d={`M0 ${-inner + 4} H${length} M0 ${inner - 4} H${length}`} stroke="#c2b9d4" strokeWidth="1.4" strokeDasharray="3 2" />
+      <g fill="#ebe6f2">{picots.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="2.2" />)}</g>
       <rect x="0" y="-6" width={length} height="12" fill="url(#satin)" />
-      <g fill="#a9b8cd" stroke="#dfe7f1" strokeWidth=".7">
+      <g fill="#b1a7c8" stroke="#e7e1ef" strokeWidth=".7">
         {bars.map((x) => <rect key={x} x={x} y="-7.5" width="7" height="15" rx="3" />)}
       </g>
       {flowers.map((f, i) => <Flower key={i} {...f} />)}

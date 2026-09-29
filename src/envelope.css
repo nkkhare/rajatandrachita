@@ -45,9 +45,8 @@
   z-index: 10;
   inset: 0;
   overflow: hidden;
-  background: #d7dfe8;
+  background: radial-gradient(ellipse at 50% 45%, #fbf7fb 0%, #efe8f2 70%, #e6dcea 100%);
   opacity: var(--envelope-opacity);
-  perspective-origin: 50% 50%;
   pointer-events: none;
   will-change: opacity;
 }
@@ -55,6 +54,20 @@
 .experience[data-state="revealed"] .envelope-scene { visibility: hidden; }
 
 .envelope__defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* A free-standing envelope: half the screen in each direction, centred. */
+.envelope__body {
+  position: absolute;
+  left: 25%;
+  top: 25%;
+  width: 50%;
+  height: 50%;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #d9d0e3;
+  box-shadow: 0 2px 6px #3e33531f, 0 18px 40px #3e335329;
+  perspective-origin: 50% 50%;
+}
 
 .envelope__base,
 .envelope__lid,
@@ -139,17 +152,16 @@
 
 .envelope__hint {
   position: absolute;
-  bottom: calc(64px + env(safe-area-inset-bottom));
+  top: calc(75% + 26px);
   left: 0;
   right: 0;
   margin: 0;
-  color: rgb(250 248 245 / .8);
+  color: #8a7ea3;
   opacity: var(--hint-opacity);
   font: 400 12px 'Cormorant Garamond', Georgia, serif;
   letter-spacing: 3px;
   text-align: center;
   text-transform: uppercase;
-  text-shadow: 0 1px 3px rgb(52 68 92 / .45);
   will-change: opacity;
 }
 
