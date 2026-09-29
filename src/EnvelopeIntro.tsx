@@ -19,6 +19,8 @@ const REVEAL_START = LID_SECONDS - ENVELOPE_FADE_SECONDS;
 const BREEZE_START = REVEAL_START + CARD_SECONDS * 0.65;
 const TOTAL_SECONDS = REVEAL_START + CARD_SECONDS;
 export const REVEAL_DURATION_MS = Math.round(TOTAL_SECONDS * 1000);
+/** When the invitation starts to fade in; its ambient motion starts then too. */
+export const INVITATION_FADE_START_MS = Math.round(REVEAL_START * 1000);
 
 // Lid angle (degrees) over time, fitted to the reference seal's position,
 // foreshortening, and growth: the lid hinges on the top edge of the screen

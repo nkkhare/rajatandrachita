@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { EnvelopeIntro, REVEAL_DURATION_MS, type InvitationState } from './EnvelopeIntro';
+import { EnvelopeIntro, INVITATION_FADE_START_MS, REVEAL_DURATION_MS, type InvitationState } from './EnvelopeIntro';
 import { Countdown } from './Countdown';
 import { FlowerBreeze } from './FlowerBreeze';
 import { MusicToggle } from './MusicToggle';
@@ -10,6 +10,9 @@ const soundtrack = new Soundtrack();
 
 export function App() {
   const [invitationState, setInvitationState] = useState<InvitationState>('closed');
+  // The petals, water, and clouds start as soon as the invitation begins to
+  // fade in, so they appear with it rather than after it.
+  const [ambient, setAmbient] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const waterRef = useRef<HTMLCanvasElement>(null);
   const cloudsRef = useRef<HTMLCanvasElement>(null);
@@ -31,6 +34,13 @@ export function App() {
   };
 
   useEffect(() => {
+    if (invitationState === 'revealed') { setAmbient(true); return; }
+    if (invitationState !== 'opening') return;
+    const timer = window.setTimeout(() => setAmbient(true), INVITATION_FADE_START_MS);
+    return () => window.clearTimeout(timer);
+  }, [invitationState]);
+
+  useEffect(() => {
     if (invitationState !== 'opening') return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const timer = window.setTimeout(() => setInvitationState('revealed'),
@@ -49,7 +59,7 @@ export function App() {
   }, [invitationState]);
 
   useEffect(() => {
-    if (invitationState !== 'revealed') return;
+    if (!ambient) return;
     const image = imageRef.current;
     const waterCanvas = waterRef.current;
     const cloudsCanvas = cloudsRef.current;
@@ -92,7 +102,7 @@ export function App() {
       motionPreference.removeEventListener('change', handleChange);
       document.removeEventListener('visibilitychange', handleChange);
     };
-  }, [invitationState]);
+  }, [ambient]);
 
   return (
     <main className="scene">
