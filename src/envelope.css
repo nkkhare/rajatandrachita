@@ -95,10 +95,6 @@
 
 .envelope__lid-shadow img { filter: brightness(0) blur(6px); }
 
-/* No shadow trails the flap while it opens. (At rest this layer is already
-   invisible, so the closed envelope is unchanged.) */
-.experience:not([data-state="closed"]) .envelope__lid-shadow { display: none; }
-
 .envelope__rest-shadow { opacity: var(--rest-shadow); will-change: opacity; }
 
 .envelope__lid-sheen {
