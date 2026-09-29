@@ -29,15 +29,23 @@ const LID_ANGLE: ReadonlyArray<readonly [number, number]> = ([
 const PERSPECTIVE_HEIGHTS = 4.06;
 const SEAL_MAX_RISE = 0.1 + Math.tan((62 * Math.PI) / 180);
 
-// Envelope geometry in a coordinate space 960 units tall; the width follows
-// the viewport so the envelope fills the screen without stretching.
+// A whole envelope in true proportions (1.4 : 1), drawn in a coordinate space
+// 960 units tall. The lid runs from the two top corners to its point; the side
+// flaps tuck under it from the side edges; the bottom flap rises from the two
+// bottom corners to a point under the seal.
 const H = 960;
+const ENVELOPE_RATIO = 1.4;
+const W = H * ENVELOPE_RATIO;
 const LID_TIP_Y = 545;
-const LID_SLOPE = 0.8;
-const SIDE_MEET_Y = 567;
-const SIDE_SLOPE = 1.119;
-const BOTTOM_TIP_Y = 541;
-const BOTTOM_SLOPE = 0.115;
+const SIDE_MEET_Y = 470;
+const BOTTOM_TIP_Y = 565;
+// About a quarter of the screen's area, as before, but never wider than 90%
+// of the screen or taller than 80% of it.
+function envelopeSize(screenWidth: number, screenHeight: number) {
+  let width = Math.sqrt(0.25 * screenWidth * screenHeight * ENVELOPE_RATIO);
+  width = Math.min(width, screenWidth * 0.9, screenHeight * 0.8 * ENVELOPE_RATIO);
+  return { width, height: width / ENVELOPE_RATIO };
+}
 const SEAL_Y = 545;   // on the point of the lid, as in the reference
 const SEAL_SIZE = 217;
 
@@ -144,22 +152,21 @@ function PaperFilter({ id, seed, width }: { id: string; seed: number; width: num
   );
 }
 
-function geometry(width: number) {
-  const cx = width / 2;
-  const far = 4000;
-  const lidY = (d: number) => LID_TIP_Y - LID_SLOPE * d;
-  const lid = `M${cx - far} ${lidY(far)} L${cx - 16} ${lidY(16)} Q${cx} ${LID_TIP_Y + 3} ${cx + 16} ${lidY(16)}`
-    + ` L${cx + far} ${lidY(far)} L${cx + far} -${far} L${cx - far} -${far} Z`;
-  const sideY = SIDE_MEET_Y - SIDE_SLOPE * far;
-  const leftSide = `M${cx - far} ${sideY} L${cx} ${SIDE_MEET_Y} L${cx} ${H + 60} L${cx - far} ${H + 60} Z`;
-  const rightSide = `M${cx + far} ${sideY} L${cx} ${SIDE_MEET_Y} L${cx} ${H + 60} L${cx + far} ${H + 60} Z`;
-  // A very shallow V meeting under the seal.
-  const bottomY = BOTTOM_TIP_Y + BOTTOM_SLOPE * far;
-  const bottom = `M${cx - far} ${bottomY} L${cx} ${BOTTOM_TIP_Y} L${cx + far} ${bottomY}`
-    + ` L${cx + far} ${H + 60 + far} L${cx - far} ${H + 60 + far} Z`;
-  // The lace follows the lid's edges from its point out past the screen edge.
-  const laceAngle = (Math.atan(LID_SLOPE) * 180) / Math.PI;
-  return { cx, lid, leftSide, rightSide, bottom, laceAngle };
+function geometry() {
+  const cx = W / 2;
+  const far = 3;                                   // extend lines past the envelope's edges
+  const lidSlope = LID_TIP_Y / cx;                 // meets the top corners exactly
+  const lidY = (d: number) => LID_TIP_Y - lidSlope * d;
+  const lid = `M${cx - cx * far} ${lidY(cx * far)} L${cx - 16} ${lidY(16)} Q${cx} ${LID_TIP_Y + 3} ${cx + 16} ${lidY(16)}`
+    + ` L${cx + cx * far} ${lidY(cx * far)} Z`;
+  // The side flaps meet in the middle and run on down under the bottom flap.
+  const leftSide = `M-60 -60 L${cx} ${SIDE_MEET_Y} L${cx} ${H + 60} L-60 ${H + 60} Z`;
+  const rightSide = `M${W + 60} -60 L${cx} ${SIDE_MEET_Y} L${cx} ${H + 60} L${W + 60} ${H + 60} Z`;
+  const bottom = `M0 ${H} L${cx} ${BOTTOM_TIP_Y} L${W} ${H} L${W + 60} ${H + 60} L-60 ${H + 60} Z`;
+  // The lace follows the lid's edges from its point to each top corner.
+  const laceAngle = (Math.atan(lidSlope) * 180) / Math.PI;
+  const laceLength = Math.hypot(cx, LID_TIP_Y) + 20;
+  return { cx, lid, leftSide, rightSide, bottom, laceAngle, laceLength };
 }
 
 type Props = {
@@ -172,21 +179,21 @@ type Props = {
 
 export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
   const experienceRef = useRef<HTMLDivElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
   const pendingOpen = useRef(false);
   const [assetsReady, setAssetsReady] = useState(false);
-  const [viewport, setViewport] = useState({ width: 390, height: 844 });
+  const [viewport, setViewport] = useState(envelopeSize(390, 844));
 
   useLayoutEffect(() => {
-    const body = bodyRef.current;
-    if (!body) return;
+    const scene = sceneRef.current;
+    if (!scene) return;
     const measure = () => {
-      const rect = body.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) setViewport({ width: rect.width, height: rect.height });
+      const rect = scene.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) setViewport(envelopeSize(rect.width, rect.height));
     };
     measure();
     const observer = new ResizeObserver(measure);
-    observer.observe(body);
+    observer.observe(scene);
     return () => observer.disconnect();
   }, []);
 
@@ -245,20 +252,22 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
     else pendingOpen.current = true;
   };
 
-  const width = (H * viewport.width) / viewport.height;
-  const { cx, lid, leftSide, rightSide, bottom, laceAngle } = geometry(width);
-  const laceLength = Math.hypot(width / 2 + 60, (width / 2 + 60) * LID_SLOPE);
-  const viewBox = `0 0 ${width.toFixed(2)} ${H}`;
+  const width = W;
+  const { cx, lid, leftSide, rightSide, bottom, laceAngle, laceLength } = geometry();
+  const viewBox = `0 0 ${W} ${H}`;
 
   return (
     <div ref={experienceRef} className="experience" data-state={state}>
       {children}
-      <div className="envelope-scene" aria-hidden="true">
-        {/* The envelope itself: half the screen in each direction, centred. */}
+      <div ref={sceneRef} className="envelope-scene" aria-hidden="true">
+        {/* The envelope itself, centred on the screen. */}
         <div
-          ref={bodyRef}
           className="envelope__body"
-          style={{ perspective: `${(PERSPECTIVE_HEIGHTS * viewport.height).toFixed(1)}px` }}
+          style={{
+            width: `${viewport.width.toFixed(1)}px`,
+            height: `${viewport.height.toFixed(1)}px`,
+            perspective: `${(PERSPECTIVE_HEIGHTS * viewport.height).toFixed(1)}px`,
+          }}
         >
           <svg className="envelope__defs" width="0" height="0" focusable="false">
             <defs>
@@ -330,7 +339,7 @@ export function EnvelopeIntro({ state, onOpen, onTap, children }: Props) {
             <WaxSeal size={(SEAL_SIZE / H) * viewport.height} top={`${((SEAL_Y / H) * 100).toFixed(3)}%`} />
           </div>
         </div>
-        <p className="envelope__hint">Tap to open</p>
+        <p className="envelope__hint" style={{ top: `calc(50% + ${(viewport.height / 2 + 24).toFixed(1)}px)` }}>Tap to open</p>
       </div>
       <button
         className="envelope__hit-area"

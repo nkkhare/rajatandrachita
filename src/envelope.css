@@ -55,13 +55,12 @@
 
 .envelope__defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 
-/* A free-standing envelope: half the screen in each direction, centred. */
+/* A free-standing envelope in true proportions, centred (size set in JS). */
 .envelope__body {
   position: absolute;
-  left: 25%;
-  top: 25%;
-  width: 50%;
-  height: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   overflow: hidden;
   border-radius: 3px;
   background: #d9d0e3;
@@ -152,7 +151,6 @@
 
 .envelope__hint {
   position: absolute;
-  top: calc(75% + 26px);
   left: 0;
   right: 0;
   margin: 0;
