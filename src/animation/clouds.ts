@@ -19,8 +19,8 @@ type Cloud = {
   // zone, as an ellipse in source-image pixels
   cx: number; cy: number; rx: number; ry: number;
   drift: number;      // reach either side of rest (source px); at the card's ~0.42 screen px per
-                      // source px a full cycle travels about 10-25 screen px
-  lift: number;       // vertical reach either side (source px): about 2-4 screen px a cycle
+                      // source px a full cycle travels about 20-50 screen px
+  lift: number;       // vertical reach either side (source px): about 4-8 screen px a cycle
   period: number;     // seconds per cycle
   phase: number;      // where in its cycle it starts (radians)
   dir: number;        // 1 drifts right first, -1 left first
@@ -28,19 +28,19 @@ type Cloud = {
 
 // Nearer, larger clouds: more drift and shorter periods. Distant wisps: less.
 const CLOUDS: Cloud[] = [
-  { cx: 225, cy: 545, rx: 150, ry: 110, drift: 30, lift: 5, period: 29, phase: 0.4, dir: 1 },    // left, beside the names
-  { cx: 200, cy: 748, rx: 125, ry: 52, drift: 22, lift: 4, period: 34, phase: 2.1, dir: -1 },    // left, lower
-  { cx: 200, cy: 862, rx: 125, ry: 54, drift: 18, lift: 3, period: 39, phase: 4.0, dir: 1 },     // left, near the skyline
-  { cx: 800, cy: 418, rx: 125, ry: 58, drift: 26, lift: 4, period: 24, phase: 1.3, dir: -1 },    // right, upper
-  { cx: 818, cy: 700, rx: 112, ry: 95, drift: 28, lift: 5, period: 31, phase: 3.3, dir: 1 },     // right, middle
-  { cx: 812, cy: 890, rx: 105, ry: 40, drift: 16, lift: 3, period: 45, phase: 5.2, dir: -1 },    // right, lower
-  { cx: 245, cy: 280, rx: 85, ry: 85, drift: 14, lift: 2, period: 42, phase: 0.9, dir: -1 },     // wisps left of SAVE THE DATE
-  { cx: 790, cy: 280, rx: 90, ry: 85, drift: 15, lift: 2, period: 37, phase: 2.7, dir: 1 },      // wisps right of SAVE THE DATE
-  { cx: 515, cy: 135, rx: 115, ry: 50, drift: 12, lift: 2, period: 44, phase: 4.6, dir: 1 },     // high wisps under the arch's peak
+  { cx: 225, cy: 545, rx: 150, ry: 110, drift: 60, lift: 10, period: 29, phase: 0.4, dir: 1 },    // left, beside the names
+  { cx: 200, cy: 748, rx: 125, ry: 52, drift: 44, lift: 8, period: 34, phase: 2.1, dir: -1 },    // left, lower
+  { cx: 200, cy: 862, rx: 125, ry: 54, drift: 36, lift: 6, period: 39, phase: 4.0, dir: 1 },     // left, near the skyline
+  { cx: 800, cy: 418, rx: 125, ry: 58, drift: 52, lift: 8, period: 24, phase: 1.3, dir: -1 },    // right, upper
+  { cx: 818, cy: 700, rx: 112, ry: 95, drift: 56, lift: 10, period: 31, phase: 3.3, dir: 1 },     // right, middle
+  { cx: 812, cy: 890, rx: 105, ry: 40, drift: 32, lift: 6, period: 45, phase: 5.2, dir: -1 },    // right, lower
+  { cx: 245, cy: 280, rx: 85, ry: 85, drift: 28, lift: 4, period: 42, phase: 0.9, dir: -1 },     // wisps left of SAVE THE DATE
+  { cx: 790, cy: 280, rx: 90, ry: 85, drift: 30, lift: 4, period: 37, phase: 2.7, dir: 1 },      // wisps right of SAVE THE DATE
+  { cx: 515, cy: 135, rx: 115, ry: 50, drift: 24, lift: 4, period: 44, phase: 4.6, dir: 1 },     // high wisps under the arch's peak
 ];
 
 const FEATHER = 0.35;   // fraction of each zone's radius that fades out
-const MARGIN = 50;      // room around a zone for the shifted painting (more than any drift)
+const MARGIN = 70;      // room around a zone for the shifted painting (more than any drift)
 
 type Zone = {
   cloud: Cloud;
@@ -186,7 +186,7 @@ export class CloudRenderer {
       // a shallow, uneven wave: two harmonics, so its speed varies but it never halts
       const dx = amp * cloud.dir * cloud.drift * (0.78 * Math.sin(theta) + 0.22 * Math.sin(2 * theta + 1.1));
       const dy = amp * cloud.lift * (0.7 * Math.sin(theta + 1.7) + 0.3 * Math.sin(3 * theta + 0.4));
-      const grow = 1 + 0.004 * (1 + Math.sin(theta * 0.5 + cloud.phase));    // at most 0.8% larger
+      const grow = 1 + 0.008 * (1 + Math.sin(theta * 0.5 + cloud.phase));    // at most 1.6% larger
 
       // the painting, offset and grown about the cloud's centre, cut to its zone
       const wx = zone.work.getContext('2d')!;

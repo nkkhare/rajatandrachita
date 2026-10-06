@@ -39,10 +39,11 @@ function waveOffset(y: number, seconds: number) {
       + 3.2 * Math.sin(seconds * -3.05 + row * 0.282)
       + 1.6 * Math.sin(seconds * 1.42 + row * 0.49);
   }
-  return 2.65 * Math.sin(seconds * 0.47 + row * 0.102)
-    + 1.48 * Math.sin(seconds * -0.72 + row * 0.235)
-    + 0.82 * Math.sin(seconds * 0.31 + row * 0.438)
-    + 0.38 * Math.sin(seconds * -1.03 + row * 0.612);
+  // doubled (+100%) from the first version
+  return 5.3 * Math.sin(seconds * 0.47 + row * 0.102)
+    + 2.96 * Math.sin(seconds * -0.72 + row * 0.235)
+    + 1.64 * Math.sin(seconds * 0.31 + row * 0.438)
+    + 0.76 * Math.sin(seconds * -1.03 + row * 0.612);
 }
 
 function drawLightShimmer(context: CanvasRenderingContext2D, seconds: number, pixelsToSource: number) {
@@ -52,9 +53,9 @@ function drawLightShimmer(context: CanvasRenderingContext2D, seconds: number, pi
   const right: Array<[number, number]> = [];
   for (let y = 0; y <= WATER_BAND_HEIGHT; y += 6) {
     const shift = waveOffset(WATER_BAND_TOP + y, seconds) * pixelsToSource * 0.5;
-    const center = 420 + shift + 9 * Math.sin(seconds * 0.31);
+    const center = 420 + shift + 18 * Math.sin(seconds * 0.31);
     const width = 82 + y * 0.43
-      + 6 * Math.sin(y * 0.17 + seconds * 0.63);
+      + 12 * Math.sin(y * 0.17 + seconds * 0.63);
     left.push([center - width, y]);
     right.push([center + width, y]);
   }
@@ -125,7 +126,7 @@ export class WaterRenderer {
       const sourceY = WATER_BAND_TOP + localY;
       const bankFade = Math.max(0, Math.min(1, (sourceY - 1407) / 20));
       const offset = waveOffset(sourceY, seconds) * pixelsToSource * bankFade;
-      const stretch = 1 + (DEBUG_WATER ? 0.004 : 0.0017)
+      const stretch = 1 + (DEBUG_WATER ? 0.004 : 0.0034)
         * Math.sin(seconds * (DEBUG_WATER ? 2.0 : 0.43) + localY * 0.13);
       const width = IMAGE_WIDTH * stretch;
       context.drawImage(this.image,

@@ -3,7 +3,7 @@
    move and the outer blossoms move a little more. Durations, delays,
    directions, and distances all differ so no two groups ever sway together.
    Each animation starts from rest, so nothing jumps when it begins. The
-   sway was reduced by 15% from its first version. */
+   sway is 1.7x its first version (reduced 15%, then doubled). */
 .flowers {
   position: absolute;
   z-index: 2;
@@ -35,38 +35,38 @@
 
 @keyframes breeze-top-left {
   0% { transform: none; }
-  40% { transform: rotate(-.383deg) translate(.51px, .34px); }
-  100% { transform: rotate(.297deg) translate(-.34px, 1.02px) scale(1.00255); }
+  40% { transform: rotate(-.766deg) translate(1.02px, .68px); }
+  100% { transform: rotate(.594deg) translate(-.68px, 2.04px) scale(1.0051); }
 }
 
 @keyframes breeze-top-right {
   0% { transform: none; }
-  55% { transform: rotate(.468deg) translate(-.68px, .51px); }
-  100% { transform: rotate(-.212deg) translate(.425px, .85px) scale(.99745); }
+  55% { transform: rotate(.936deg) translate(-1.36px, 1.02px); }
+  100% { transform: rotate(-.424deg) translate(.85px, 1.7px) scale(.9949); }
 }
 
 @keyframes breeze-left {
   0% { transform: none; }
-  45% { transform: rotate(.255deg) translate(.34px, 0); }
-  100% { transform: rotate(-.17deg) translate(.68px, -.34px); }
+  45% { transform: rotate(.51deg) translate(.68px, 0); }
+  100% { transform: rotate(-.34deg) translate(1.36px, -.68px); }
 }
 
 @keyframes breeze-right {
   0% { transform: none; }
-  50% { transform: rotate(-.297deg) translate(-.425px, .17px); }
-  100% { transform: rotate(.128deg) translate(-.765px, -.255px); }
+  50% { transform: rotate(-.594deg) translate(-.85px, .34px); }
+  100% { transform: rotate(.256deg) translate(-1.53px, -.51px); }
 }
 
 @keyframes breeze-bottom-left {
   0% { transform: none; }
-  35% { transform: rotate(.34deg) translate(.425px, -.255px); }
-  100% { transform: rotate(-.255deg) translate(.85px, -.68px) scale(1.0034); }
+  35% { transform: rotate(.68deg) translate(.85px, -.51px); }
+  100% { transform: rotate(-.51deg) translate(1.7px, -1.36px) scale(1.0068); }
 }
 
 @keyframes breeze-bottom-right {
   0% { transform: none; }
-  60% { transform: rotate(-.425deg) translate(-.51px, -.425px); }
-  100% { transform: rotate(.212deg) translate(-.935px, -.17px) scale(.9966); }
+  60% { transform: rotate(-.85deg) translate(-1.02px, -.85px); }
+  100% { transform: rotate(.424deg) translate(-1.87px, -.34px) scale(.9932); }
 }
 
 @media (prefers-reduced-motion: reduce) {
