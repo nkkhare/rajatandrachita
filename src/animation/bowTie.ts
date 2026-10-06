@@ -31,17 +31,6 @@ type ArmName = keyof typeof ARMS;
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const smooth = (t: number) => { const x = clamp01(t); return x * x * (3 - 2 * x); };
-// cubic-bezier(0.22, 1, 0.36, 1): fast start, long gentle settle
-function easeOut(t: number) {
-  const x = clamp01(t);
-  let lo = 0, hi = 1;
-  for (let i = 0; i < 24; i++) {
-    const u = (lo + hi) / 2, bx = 3 * (1 - u) ** 2 * u * 0.22 + 3 * (1 - u) * u * u * 0.36 + u ** 3;
-    if (bx < x) lo = u; else hi = u;
-  }
-  const u = (lo + hi) / 2;
-  return 3 * (1 - u) ** 2 * u * 1 + 3 * (1 - u) * u * u * 1 + u ** 3;
-}
 const phase = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
 
 // ---- geometry ----------------------------------------------------------------
@@ -72,28 +61,40 @@ const sections: Section[] = (Object.keys(ARMS) as ArmName[]).map((name) => ({
 
 // ---- the choreography ----------------------------------------------------------
 
+/** Length of the whole formation, in seconds. */
+export const BOW_FORM_SECONDS = 3.2;
+
 type Pose = { reveal: number; scale: number; turn: number };   // reveal in steps along the section
 
+// One continuous motion: a single eased clock drives everything, and each
+// section moves at a steady rate inside its own window. The windows overlap,
+// so something is always growing and nothing comes to rest until the end.
+// moves from the very first frame, eases gently to rest at the end
+const easeInOut = (x: number) => { const u = clamp01(x); return 0.3 * u + 0.7 * (u * u * (3 - 2 * u)); };
+
 function poses(t: number) {
-  const tighten = smooth(phase(t, 0.8, 1.05));
-  const squeeze = Math.sin(Math.PI * phase(t, 0.8, 1.05));
+  const u = easeInOut(t / BOW_FORM_SECONDS);
+  const deg = Math.PI / 180;
+  const tighten = smooth(phase(u, 0.5, 0.8));
+  const squeeze = Math.sin(Math.PI * phase(u, 0.5, 0.8));
   const grow = (section: Section, start: number, end: number, turn: number, loose: number): Pose => {
-    const p = phase(t, start, end), steps = section.points.length + FEATHER + 30;
+    const p = phase(u, start, end), steps = section.points.length + FEATHER + 30;
     return {
-      reveal: smooth(p) * steps,
-      // unfurls outward from the knot with a slight turn, settling into place
-      scale: mix(0.9, 1, easeOut(p)) * mix(loose, 1, tighten),
-      turn: turn * (1 - easeOut(p)),
+      reveal: p * steps,
+      // unfurls outward from the knot with a slight turn, easing into place
+      scale: mix(0.9, 1, Math.sqrt(p)) * mix(loose, 1, tighten),
+      turn: turn * (1 - Math.sqrt(p)),
     };
   };
-  const deg = Math.PI / 180;
   const byName = (n: ArmName) => sections.find((s) => s.name === n)!;
   return {
-    leftLoop: grow(byName('leftLoop'), 0.12, 0.8, 7 * deg, 1.02),
-    rightLoop: grow(byName('rightLoop'), 0.28, 0.95, -7 * deg, 1.02),
-    leftTail: grow(byName('leftTail'), 0.88, 1.45, -5 * deg, 1),
-    rightTail: grow(byName('rightTail'), 0.98, 1.55, 5 * deg, 1),
-    knot: { radius: mix(0, KNOT_RADIUS + KNOT_EDGE + 6, easeOut(phase(t, 0, 0.28))), scale: mix(0.8, 1, easeOut(phase(t, 0, 0.25))) * (1 - 0.05 * squeeze) },
+    leftLoop: grow(byName('leftLoop'), 0.02, 0.55, 7 * deg, 1.02),
+    rightLoop: grow(byName('rightLoop'), 0.1, 0.62, -7 * deg, 1.02),
+    leftTail: grow(byName('leftTail'), 0.34, 0.95, -5 * deg, 1),
+    rightTail: grow(byName('rightTail'), 0.4, 1, 5 * deg, 1),
+    knot: { radius: mix(0, KNOT_RADIUS + KNOT_EDGE + 6, phase(u, 0, 0.24)), scale: mix(0.8, 1, Math.sqrt(phase(u, 0, 0.24))) * (1 - 0.04 * squeeze) },
+    // the whole bow eases the last hair into its final size as it comes to rest
+    settle: 1 + 0.012 * (1 - smooth(phase(u, 0.55, 1))),
   };
 }
 
@@ -106,6 +107,7 @@ type Layer = {
   pixels: Int32Array;        // indices of this layer's painted pixels
   order: Float32Array;       // when each is revealed (steps along the section, or radius)
   alpha: Uint8ClampedArray;  // its painted alpha
+  lastFront: number;         // the front last rendered, to skip unchanged layers
 };
 
 export class BowTie {
@@ -145,7 +147,7 @@ export class BowTie {
         const fade = li === 0 ? 1 - smooth((lists[0].order[j] - KNOT_RADIUS) / KNOT_EDGE) : 1;
         alpha[j] = src[p * 4 + 3] * fade;
       });
-      return { name, canvas, image, pixels, order: Float32Array.from(lists[li].order), alpha };
+      return { name, canvas, image, pixels, order: Float32Array.from(lists[li].order), alpha, lastFront: -1 };
     });
   }
 
@@ -153,7 +155,7 @@ export class BowTie {
   draw(ctx: CanvasRenderingContext2D, seconds: number) {
     const t = Math.max(0, seconds);
     const pose = poses(t);
-    const settle = 1 + 0.015 * Math.sin(Math.PI * phase(t, 1.6, 1.75)) - 0.003 * Math.sin(Math.PI * phase(t, 1.75, 1.9));
+    const settle = pose.settle;
     ctx.save();
     ctx.translate(KNOT[0], KNOT[1]); ctx.scale(settle, settle); ctx.translate(-KNOT[0], -KNOT[1]);
     // tails beneath, loops over them, the knot on top (as in the painting)
@@ -162,15 +164,14 @@ export class BowTie {
       const front = name === 'knot' ? pose.knot.radius : pose[name].reveal;
       if (front <= 0) continue;
       const soft = name === 'knot' ? 5 : FEATHER;
-      const data = layer.image.data;
-      let any = false;
-      for (let j = 0; j < layer.pixels.length; j++) {
-        const a = clamp01((front - layer.order[j]) / soft);
-        data[layer.pixels[j] * 4 + 3] = layer.alpha[j] * smooth(a);
-        if (a > 0) any = true;
+      if (front !== layer.lastFront) {
+        const data = layer.image.data;
+        for (let j = 0; j < layer.pixels.length; j++) {
+          data[layer.pixels[j] * 4 + 3] = layer.alpha[j] * smooth((front - layer.order[j]) / soft);
+        }
+        layer.canvas.getContext('2d')!.putImageData(layer.image, 0, 0);
+        layer.lastFront = front;
       }
-      if (!any) continue;
-      layer.canvas.getContext('2d')!.putImageData(layer.image, 0, 0);
       const scale = name === 'knot' ? pose.knot.scale : pose[name].scale;
       const turn = name === 'knot' ? 0 : pose[name].turn;
       const [ax, ay] = name === 'knot' ? KNOT : ARMS[name].anchor;
@@ -182,6 +183,4 @@ export class BowTie {
     ctx.restore();
   }
 
-  /** The formation's length; the static painting is identical from here on. */
-  static readonly DURATION = 1.95;
 }

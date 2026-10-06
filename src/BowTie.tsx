@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import bowUrl from './assets/bow/bow.png';
-import { BOW_SIZE, BowTie as BowTieAnimation } from './animation/bowTie';
+import { BOW_FORM_SECONDS, BOW_SIZE, BowTie as BowTieAnimation } from './animation/bowTie';
 import './bow.css';
 
 // Where the approved bow sits in the 1024 x 1536 artwork.
@@ -9,7 +9,8 @@ const BOW = { x: 448.75, y: 530, width: 142 };
 const SCALE = BOW.width / BOW_SIZE.width;
 // the canvas just covers the finished bow, with a little room for the settle
 const VIEW = { x0: -6, x1: 204, y0: -6, y1: 143 };
-const HANDOFF = { start: 1.9, end: 1.98 };   // the drawn frames already match the painting exactly
+// the drawn frames already match the painting, so the handoff is invisible
+const HANDOFF = { start: BOW_FORM_SECONDS, end: BOW_FORM_SECONDS + 0.08 };
 
 const pct = (value: number, of: number) => `${((value / of) * 100).toFixed(4)}%`;
 
