@@ -1,14 +1,15 @@
-// The flowering-vine bow ties itself.
+// The flowering-vine bow forms itself in place.
 //
 // The approved bow is a painting, so it is "skinned": each section of vine
-// (two tails, two loops) has a traced centreline, and the painting along that
-// line, with its leaves and blossoms, is copied into a flexible strip. Each
-// frame the strips are bent along animated centrelines and drawn in depth
-// order, so the vines can cross in front of and behind one another. Every arm
-// starts at its vine's point in the knot and is built by integrating segment
-// angles, so it can curl continuously from a loose strand into its final
-// curve. At full curl it lies exactly on the traced line, so the last frame
-// coincides with the approved painting, which then takes over.
+// (two loops, two tails) has a traced centreline, and the painting along that
+// line, with its leaves and blossoms, is copied into a flexible strip. A small
+// patch of the painted knot appears first; then each section is revealed
+// outward from the knot along its own final curve, curling the last little
+// way into shape as it goes, with a feathered front behind which the leaves
+// spread out. The loops draw in to tighten, the tails grow from under the
+// knot, and the bow settles. Everything stays inside the final bow's
+// footprint, and at the end every strip lies exactly on the painting, which
+// then takes over.
 //
 // All coordinates are in the bow image's own pixels (198 x 137).
 
@@ -43,8 +44,6 @@ function easeOut(t: number) {
   const u = (lo + hi) / 2;
   return 3 * (1 - u) ** 2 * u * 1 + 3 * (1 - u) * u * u * 1 + u ** 3;
 }
-// accelerate into a pull, then stop quickly at tension
-const pull = (t: number) => { const x = clamp01(t); return x < 0.6 ? 0.55 * (x / 0.6) ** 2 : 1 - 0.45 * ((1 - x) / 0.4) ** 2; };
 const phase = (t: number, a: number, b: number) => clamp01((t - a) / (b - a));
 
 // ---- geometry ----------------------------------------------------------------
@@ -117,122 +116,73 @@ function buildArm(name: ArmName, image: ImageData): Arm {
 // ---- the choreography ----------------------------------------------------------
 
 type ArmPose = {
-  anchor: Pt;            // where the arm starts (its vine's knot point)
-  base: number;          // direction of the straight, uncurled arm (radians)
-  curl: number;          // 0 = straight along `base`, 1 = the final curve
-  scale: number;         // size about the anchor (loops start loose, then tighten)
-  offset: Pt;            // extra drift
-  sway: number;          // whole-arm rotation about the anchor (radians)
-  spread: number;        // leaf spread across the strip (unfolding)
-  visible: number;       // fraction of the arm's length shown, from the anchor
+  reveal: number;        // how much of the arm is shown, outward from the knot (0..1)
+  curl: number;          // how far it has curled into its final curve (0..1)
+  scale: number;         // size about its knot point (loops tighten inward)
+  sway: number;          // tiny rotation about its knot point (radians)
+  spread: number;        // leaf spread across the whole strip (blooming)
   z: number;             // drawing order
 };
 
-const deg = Math.PI / 180;
+const KNOT_RADIUS = 14;
+const FEATHER = 10;                // length of the soft reveal front, in strip columns
+const BLOOM = 16;                  // how far behind the front leaves finish spreading
 
-function poses(t: number): Record<ArmName, ArmPose> {
-  // Each vine's knot point slides in from its own side and meets at the knot.
-  // gentle start, speeding up toward the crossing, then easing into place
-  const approachL = smooth(phase(t, 0, 0.66));
-  const approachR = smooth(phase(t, 0.03, 0.7));
-  const anchorL: Pt = [mix(-62, 90, approachL), mix(58, 52, approachL) + 3 * Math.sin(approachL * Math.PI)];
-  const anchorR: Pt = [mix(252, 100, approachR), mix(46, 52, approachR) - 2.5 * Math.sin(approachR * Math.PI)];
-
-  // Tails: lead in pointing at each other, cross (left over right), then the
-  // left end wraps under and around the right vine and both drop downward.
-  const crossL = phase(t, 0.25, 0.45), wrapL = smooth(phase(t, 0.45, 0.78));
-  const crossR = phase(t, 0.28, 0.48), wrapR = smooth(phase(t, 0.5, 0.84));
-  // tension from the tightening lifts the tails toward the knot, then releases
-  const tension = Math.sin(Math.PI * phase(t, 1.4, 1.66));
-  const releaseL = phase(t, 1.55, 1.8), releaseR = phase(t, 1.62, 1.88);
-  const swingL = 0.05 * Math.sin(releaseL * Math.PI * 1.5) * (1 - releaseL);
-  const swingR = -0.05 * Math.sin(releaseR * Math.PI * 1.5) * (1 - releaseR);
-  const leftTail: ArmPose = {
-    anchor: anchorL,
-    base: mix(mix(-4, 18, crossL) * deg, 120 * deg, wrapL),
-    curl: mix(0.15, 1, wrapL),
-    scale: 1 - 0.07 * tension,
-    offset: [0, 0],
-    sway: -10 * deg * tension + swingL,
-    spread: mix(0.82, 1, smooth(phase(t, 0.5, 1.8))),
-    visible: 1,
-    // over the right vine while crossing, behind it mid-wrap, then in front
-    z: t < 0.5 ? 4 : t < 0.68 ? 1 : 3,
+function poses(t: number) {
+  // the bow pulls itself snug: loops draw in a few pixels, the knot compresses
+  const tighten = smooth(phase(t, 0.8, 1.05));
+  const squeeze = Math.sin(Math.PI * phase(t, 0.8, 1.05));
+  const loop = (start: number, end: number, z: number): ArmPose => {
+    const p = phase(t, start, end);
+    return {
+      reveal: easeOut(p),
+      curl: mix(0.95, 1, smooth(p)),
+      scale: mix(1.02, 1, tighten),
+      sway: 0,
+      spread: mix(0.92, 1, smooth(phase(t, 1.2, 1.65))),
+      z,
+    };
   };
-  const rightTail: ArmPose = {
-    anchor: anchorR,
-    base: mix(mix(184, 160, crossR) * deg, 60 * deg, wrapR),
-    curl: mix(0.15, 1, wrapR),
-    scale: 1 - 0.07 * tension,
-    offset: [0, 0],
-    sway: 10 * deg * tension + swingR,
-    spread: mix(0.82, 1, smooth(phase(t, 0.55, 1.88))),
-    visible: 1,
-    z: 2,
+  const tail = (start: number, end: number, side: number, z: number): ArmPose => {
+    const p = phase(t, start, end);
+    return {
+      reveal: easeOut(p),
+      curl: mix(0.9, 1, smooth(p)),
+      scale: 1,
+      // a whisper of movement as each tail grows, easing to rest
+      sway: side * 0.035 * Math.sin(Math.PI * smooth(p)) * (1 - p * 0.5),
+      spread: mix(0.92, 1, smooth(phase(t, 1.2, 1.65))),
+      z,
+    };
   };
-
-  // First loop: the left vine's long end folds back on itself into a loop,
-  // a little loose at first, pulled out and tightened later.
-  // a uniform curl from straight-left: the end sweeps down, round and back
-  // up into the loop, never rising above the bow's own top
-  const fold = smooth(phase(t, 0.6, 1.02));
-  const tighten = pull(phase(t, 1.4, 1.7));
-  const relax = Math.sin(Math.PI * phase(t, 1.72, 2.08));
-  const leftLoop: ArmPose = {
-    anchor: anchorL,
-    base: -180 * deg,                      // straight left (same turn direction as the loop)
-    curl: fold,
-    scale: mix(1.1, 1, tighten),
-    offset: [mix(3.5, -1.2, tighten) + 1.2 * smooth(phase(t, 1.7, 2.05)) + 0.8 * relax, mix(-1, 0, tighten)],
-    sway: 0,
-    spread: mix(0.8, 1, smooth(phase(t, 0.7, 1.75))),
-    visible: 1,
-    z: 2,
+  return {
+    arms: {
+      leftLoop: loop(0.15, 0.75, 2),
+      rightLoop: loop(0.3, 0.9, 2),
+      leftTail: tail(0.9, 1.4, -1, 1),
+      rightTail: tail(1.0, 1.5, 1, 1),
+    } as Record<ArmName, ArmPose>,
+    knot: {
+      opacity: smooth(phase(t, 0, 0.2)),
+      scale: mix(0.8, 1, easeOut(phase(t, 0, 0.22))) * (1 - 0.06 * squeeze),
+    },
   };
-
-  // Second loop: the right vine's long end swings up and across the front of
-  // the first loop's base, passes round behind the knot, and its folded
-  // section is pulled through as a growing loop.
-  const swing = smooth(phase(t, 0.88, 1.08));            // across the front
-  const around = smooth(phase(t, 1.03, 1.2));            // behind the knot
-  const through = easeOut(phase(t, 1.15, 1.47));         // pulled through
-  let base = mix(-6, -186, swing) * deg;                 // up, over, to the left
-  base = mix(base, -330 * deg, around);                  // down and round behind
-  base = mix(base, -40 * deg, through);                  // emerging on the right
-  const rightLoop: ArmPose = {
-    anchor: anchorR,
-    base,
-    curl: mix(mix(mix(0.05, 0.3, swing), 0.35, around), 1, through),
-    // shortened while it swings over, so it passes close above the knot
-    scale: mix(mix(mix(1, 0.5, swing), 0.45, around), 1.1, through) * mix(1, 1 / 1.1, tighten),
-    offset: [mix(-3.5, 1.2, tighten) - 1.2 * smooth(phase(t, 1.7, 2.05)) - 0.8 * relax, mix(-1, 0, tighten)],
-    sway: 0,
-    spread: mix(0.8, 1, smooth(phase(t, 1.15, 1.8))),
-    // while being pulled through, only the emerging fold is visible
-    visible: t < 1.03 ? 1 : mix(mix(1, 0.3, around), 1, through),
-    // in front while crossing the first loop's base, behind the knot after
-    z: t < 1.06 ? 5 : 1,
-  };
-  return { leftTail, rightTail, leftLoop, rightLoop };
 }
 
 // ---- rendering -----------------------------------------------------------------
 
 function armCentreline(arm: Arm, pose: ArmPose) {
-  // integrate the blended segment angles outward from the anchor
+  // integrate the blended segment angles outward from the knot point; at
+  // curl = 1 this reproduces the traced centreline exactly
   const first = arm.angles[0];
-  const pts: Pt[] = [pose.anchor];
+  const pts: Pt[] = [arm.anchor];
   const angs: number[] = [];
-  let [x, y] = pose.anchor;
-  const n = Math.max(1, Math.round(arm.lengths.length * clamp01(pose.visible)));
-  for (let i = 0; i < n; i++) {
-    // As the arm curls, its starting direction blends from `base` to the final
-    // one and each segment's bend grows to its final value; at curl = 1 this
-    // reproduces the traced centreline exactly.
-    const dir = mix(pose.base, first, pose.curl) + (arm.angles[i] - first) * pose.curl + pose.sway;
+  let [x, y] = arm.anchor;
+  for (let i = 0; i < arm.lengths.length; i++) {
+    const dir = first + (arm.angles[i] - first) * pose.curl + pose.sway;
     x += Math.cos(dir) * arm.lengths[i] * pose.scale;
     y += Math.sin(dir) * arm.lengths[i] * pose.scale;
-    pts.push([x + pose.offset[0] * (i / n), y + pose.offset[1] * (i / n)]);
+    pts.push([x, y]);
     angs.push(dir);
   }
   return { pts, angs };
@@ -240,6 +190,7 @@ function armCentreline(arm: Arm, pose: ArmPose) {
 
 export class BowTie {
   private arms: Arm[];
+  private knot: HTMLCanvasElement;
 
   constructor(bow: HTMLImageElement) {
     const c = document.createElement('canvas');
@@ -248,33 +199,58 @@ export class BowTie {
     x.drawImage(bow, 0, 0);
     const image = x.getImageData(0, 0, c.width, c.height);
     this.arms = (['leftTail', 'rightTail', 'leftLoop', 'rightLoop'] as ArmName[]).map((name) => buildArm(name, image));
+    // the painted knot, feathered at its edge
+    const r = KNOT_RADIUS, size = r * 2 + 2;
+    this.knot = document.createElement('canvas'); this.knot.width = size; this.knot.height = size;
+    const kx = this.knot.getContext('2d')!;
+    kx.drawImage(bow, KNOT[0] - r - 1, KNOT[1] - r - 1, size, size, 0, 0, size, size);
+    kx.globalCompositeOperation = 'destination-in';
+    const g = kx.createRadialGradient(r + 1, r + 1, r * 0.55, r + 1, r + 1, r + 1);
+    g.addColorStop(0, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    kx.fillStyle = g; kx.fillRect(0, 0, size, size);
   }
 
   /** Draws the bow at `seconds` into a context whose transform maps bow pixels. */
   draw(ctx: CanvasRenderingContext2D, seconds: number) {
     const t = Math.max(0, seconds);
-    const all = poses(t);
-    // the final, extremely restrained settle of the whole bow
-    const settle = t < 1.8 ? 1 : 1 + 0.015 * Math.sin(Math.PI * phase(t, 1.8, 1.95)) - 0.005 * Math.sin(Math.PI * phase(t, 1.95, 2.1));
+    const { arms, knot } = poses(t);
+    // one extremely restrained settle of the whole, finished bow
+    const settle = 1 + 0.015 * Math.sin(Math.PI * phase(t, 1.6, 1.75)) - 0.003 * Math.sin(Math.PI * phase(t, 1.75, 1.88));
     ctx.save();
     ctx.translate(KNOT[0], KNOT[1]); ctx.scale(settle, settle); ctx.translate(-KNOT[0], -KNOT[1]);
-    const order = this.arms.map((arm) => ({ arm, pose: all[arm.name] })).sort((a, b) => a.pose.z - b.pose.z);
+    const order = this.arms.map((arm) => ({ arm, pose: arms[arm.name] })).sort((a, b) => a.pose.z - b.pose.z);
     for (const { arm, pose } of order) {
+      if (pose.reveal <= 0) continue;
       const { pts, angs } = armCentreline(arm, pose);
+      const front = pose.reveal * (angs.length + FEATHER);
       for (let i = 0; i < angs.length; i++) {
+        const alpha = clamp01((front - i) / FEATHER);
+        if (alpha <= 0) break;
+        // leaves open out just behind the advancing front
+        const bloom = mix(0.72, 1, smooth((front - i) / BLOOM)) * pose.spread;
         const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
         const len = Math.hypot(x1 - x0, y1 - y0) + 0.9;      // slight overlap: no seams at bends
         ctx.save();
+        ctx.globalAlpha = alpha;
         ctx.translate(x0, y0);
         ctx.rotate(angs[i]);
-        ctx.scale(1, pose.spread);
+        ctx.scale(1, bloom);
         ctx.drawImage(arm.strip, i, 0, 1, HALF_WIDTH * 2 + 1, 0, -HALF_WIDTH - 0.5, len, HALF_WIDTH * 2 + 1);
         ctx.restore();
       }
     }
+    // the knot sits over the loops and tails, as in the painting
+    if (knot.opacity > 0) {
+      const size = this.knot.width;
+      ctx.save();
+      ctx.globalAlpha = knot.opacity;
+      ctx.translate(KNOT[0], KNOT[1]); ctx.scale(knot.scale, knot.scale);
+      ctx.drawImage(this.knot, -size / 2, -size / 2);
+      ctx.restore();
+    }
     ctx.restore();
   }
 
-  /** The tie's length; after this the static painting takes over. */
-  static readonly DURATION = 2.1;
+  /** The formation's length; the static painting takes over at the end. */
+  static readonly DURATION = 2.0;
 }

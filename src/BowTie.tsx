@@ -3,13 +3,13 @@ import bowUrl from './assets/bow/bow.png';
 import { BOW_SIZE, BowTie as BowTieAnimation } from './animation/bowTie';
 import './bow.css';
 
-// Where the approved bow sits in the 1024 x 1536 artwork, and the wider area
-// (in bow pixels) the loose vines move through while it ties.
+// Where the approved bow sits in the 1024 x 1536 artwork.
 const ART = { width: 1024, height: 1536 };
 const BOW = { x: 448.75, y: 530, width: 142 };
 const SCALE = BOW.width / BOW_SIZE.width;
-const VIEW = { x0: -290, x1: 490, y0: -50, y1: 165 };
-const HANDOFF = { start: 1.95, end: 2.1 };   // the painting takes over from the drawn vines
+// the canvas just covers the finished bow, with a little room for the settle
+const VIEW = { x0: -6, x1: 204, y0: -6, y1: 143 };
+const HANDOFF = { start: 1.86, end: 2.0 };   // the painting takes over from the drawn vines
 
 const pct = (value: number, of: number) => `${((value / of) * 100).toFixed(4)}%`;
 
@@ -55,7 +55,7 @@ export function BowTie({ play }: Props) {
       tie.draw(ctx, seconds);
     };
 
-    if (!play) { draw(0); return; }                  // the loose vines, waiting
+    if (!play) { draw(0); return; }                  // nothing yet: the bow forms in place
     const began = performance.now();
     const tick = (now: number) => {
       const seconds = (now - began) / 1000;
