@@ -9,14 +9,12 @@ export type InvitationState = 'closed' | 'opening' | 'revealed';
 // The lid lifts as in the reference intro, 15% faster, and the envelope fades
 // out over the last part of the lift while the flap is still moving. As it
 // starts to fade, the whole invitation begins a slow fade in (4.4 s, easing in
-// and out) with an almost imperceptible settle from 98.8% to full size. The
-// flowers start to stir toward the end of that fade.
+// and out) with an almost imperceptible settle from 98.8% to full size.
 const SPEED = 0.85;
 const LID_SECONDS = 3.583 * SPEED;
 const ENVELOPE_FADE_SECONDS = 0.8 * SPEED;
 const CARD_SECONDS = 3.5 * 1.25;
 const REVEAL_START = LID_SECONDS - ENVELOPE_FADE_SECONDS;
-const BREEZE_START = REVEAL_START + CARD_SECONDS * 0.65;
 const TOTAL_SECONDS = REVEAL_START + CARD_SECONDS;
 export const REVEAL_DURATION_MS = Math.round(TOTAL_SECONDS * 1000);
 /** When the invitation starts to fade in; its ambient motion starts then too. */
@@ -89,7 +87,6 @@ export function renderEnvelopeFrame(element: HTMLElement, seconds: number) {
   style.setProperty('--backdrop-opacity', card.toFixed(3));
   style.setProperty('--card-opacity', card.toFixed(3));
   style.setProperty('--card-scale', (0.988 + 0.012 * card).toFixed(4));
-  element.dataset.breeze = seconds >= BREEZE_START ? 'on' : 'off';
 }
 
 function preload(url: string) {

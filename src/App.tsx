@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { EnvelopeIntro, INVITATION_FADE_START_MS, REVEAL_DURATION_MS, type InvitationState } from './EnvelopeIntro';
 import { BowTie } from './BowTie';
 import { Countdown } from './Countdown';
-import { FlowerBreeze } from './FlowerBreeze';
 import { MusicToggle } from './MusicToggle';
 import { Soundtrack } from './soundtrack';
 
@@ -11,13 +10,12 @@ const soundtrack = new Soundtrack();
 
 export function App() {
   const [invitationState, setInvitationState] = useState<InvitationState>('closed');
-  // The water and clouds start as soon as the invitation begins to fade in, so
+  // The water, foliage and sky start as soon as the invitation begins to fade in, so
   // they appear with it; the petals start once it is fully visible.
   const [ambient, setAmbient] = useState(false);
   const openedAt = useRef(0);
   const imageRef = useRef<HTMLImageElement>(null);
-  const waterRef = useRef<HTMLCanvasElement>(null);
-  const cloudsRef = useRef<HTMLCanvasElement>(null);
+  const ambientRef = useRef<HTMLCanvasElement>(null);
   const petalsRef = useRef<HTMLCanvasElement>(null);
   const openingRequested = useRef(false);
 
@@ -62,12 +60,15 @@ export function App() {
   }, [invitationState]);
 
   useEffect(() => {
+    void import('./animation/ambient').then((m) => m.ambientMaps()).catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
     if (!ambient) return;
     const image = imageRef.current;
-    const waterCanvas = waterRef.current;
-    const cloudsCanvas = cloudsRef.current;
+    const ambientCanvas = ambientRef.current;
     const petalsCanvas = petalsRef.current;
-    if (!image || !waterCanvas || !cloudsCanvas || !petalsCanvas) return;
+    if (!image || !ambientCanvas || !petalsCanvas) return;
 
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
     let disposed = false;
@@ -78,7 +79,7 @@ export function App() {
       const currentGeneration = ++generation;
       stopAnimation?.();
       stopAnimation = undefined;
-      if (motionPreference.matches || document.hidden || !image || !waterCanvas || !cloudsCanvas || !petalsCanvas) return;
+      if (motionPreference.matches || document.hidden || !image || !ambientCanvas || !petalsCanvas) return;
 
       if (!image.complete || image.naturalWidth === 0) {
         await new Promise<void>((resolve) => {
@@ -92,7 +93,9 @@ export function App() {
       if (disposed || currentGeneration !== generation || motionPreference.matches || document.hidden) return;
       // Petals wait until the invitation has fully faded in.
       const petalsDelay = Math.max(0, openedAt.current + REVEAL_DURATION_MS - performance.now());
-      stopAnimation = createSceneAnimation(image, waterCanvas, cloudsCanvas, petalsCanvas, petalsDelay);
+      const stop = await createSceneAnimation(image, ambientCanvas, petalsCanvas, petalsDelay);
+      if (disposed || currentGeneration !== generation) { stop(); return; }
+      stopAnimation = stop;
     }
 
     const handleChange = () => { void start(); };
@@ -128,11 +131,9 @@ export function App() {
             decoding="async"
             fetchPriority="high"
           />
-          <canvas ref={cloudsRef} className="invitation__clouds" aria-hidden="true" />
+          <canvas ref={ambientRef} className="invitation__ambient" aria-hidden="true" />
           <Countdown />
           <BowTie play={invitationState === 'revealed'} />
-          <canvas ref={waterRef} className="invitation__water" aria-hidden="true" />
-          <FlowerBreeze />
           <canvas ref={petalsRef} className="invitation__petals" aria-hidden="true" />
         </div>
       </EnvelopeIntro>

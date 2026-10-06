@@ -1,16 +1,15 @@
-import { CloudRenderer } from './clouds';
+import { AmbientRenderer, ambientMaps } from './ambient';
 import { PetalField } from './petals';
-import { WaterRenderer } from './water';
 
-export function createSceneAnimation(
+export async function createSceneAnimation(
   image: HTMLImageElement,
-  waterCanvas: HTMLCanvasElement,
-  cloudsCanvas: HTMLCanvasElement,
+  ambientCanvas: HTMLCanvasElement,
   petalsCanvas: HTMLCanvasElement,
   petalsDelayMs = 0,
 ) {
-  const water = new WaterRenderer(image, waterCanvas);
-  const clouds = new CloudRenderer(image, cloudsCanvas);
+  const maps = await ambientMaps().catch(() => null);
+  // flowing water, swaying foliage and drifting sky (skipped without WebGL)
+  const ambient = maps ? AmbientRenderer.create(image, maps, ambientCanvas) : null;
   // The petals begin to fall only once the invitation is fully visible.
   const petalsAt = performance.now() + petalsDelayMs;
   let petals: PetalField | undefined;
@@ -20,8 +19,7 @@ export function createSceneAnimation(
   const frame = (now: number) => {
     const deltaSeconds = Math.min((now - previous) / 1000, 0.05);
     previous = now;
-    water.render(now / 1000);
-    clouds.render(now / 1000);
+    ambient?.render(now / 1000);
     if (!petals && now >= petalsAt) petals = new PetalField(petalsCanvas);
     petals?.render(deltaSeconds, now / 1000);
     frameId = requestAnimationFrame(frame);
@@ -30,8 +28,7 @@ export function createSceneAnimation(
 
   return () => {
     cancelAnimationFrame(frameId);
-    water.dispose();
-    clouds.dispose();
+    ambient?.dispose();
     petals?.dispose();
   };
 }

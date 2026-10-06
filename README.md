@@ -16,9 +16,8 @@ Open the URL printed by Vite. `npm run build` creates a production site in `dist
 1. Blurred copy of the artwork behind the card.
 2. The approved envelope artwork, centred at about a quarter of the screen area (`src/EnvelopeIntro.tsx`). It is split into three layers in `src/assets/`: the body (with the paper under the flap painted in), the flap with its gold border and filigree, and the flap's resting shadow. The flap hinges on the envelope's top edge and flips open.
 3. The artwork PNG (`public/save-the-date-tie.png`): the sky inside the arch and its clouds come from the colour reference, the lettering uses its antique-gold and gold-brown tones, and the printed countdown box is retouched out. "AND" between the names is replaced by a flowering-vine bow, and the names are at 75% size and spaced apart to make room for it. The bow is not baked into the PNG: `src/BowTie.tsx` and `src/animation/bowTie.ts` animate it forming in place (knot, then loops unfurling, then tails) once the invitation is fully visible, then show the approved painting (`src/assets/bow/bow.png`) in its exact place. On top, the live SVG countdown uses the original design at 80% size.
-4. Independent cloud drift (`src/animation/clouds.ts`): each cloud group floats on its own slow, shallow wave (24–45 s cycles, about 20–50 px a cycle on a phone) within a soft zone. Lettering, the arch, flowers, and the skyline never move.
-5. A canvas water overlay, clipped to an editable polygon below the bridge (`src/animation/water.ts`).
-6. Lightweight canvas petals falling across the card (`src/animation/petals.ts`).
+4. A WebGL layer (`src/animation/ambient.ts`) that redraws the card each frame. Water flows in shallow travelling waves. The edge flowers and leaves sway in a wind field, anchored at the card's edges. The whole sky drifts slowly beneath the lettering, lotus dividers and arch line, which are redrawn on top. The maps it uses are in `src/assets/ambient/`. Without WebGL, the still painting shows.
+5. Lightweight canvas petals falling across the card (`src/animation/petals.ts`).
 
 The opening sequence:
 - Tap anywhere and the flap tips toward the viewer over 3.0 s (15% faster than the reference).
