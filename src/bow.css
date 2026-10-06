@@ -1,0 +1,18 @@
+/* The flowering-vine bow between the names: the tying animation on a canvas,
+   and the approved painting, which takes over once the bow is tied. */
+.bow {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bow__vines,
+.bow__painting {
+  position: absolute;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.bow__painting { opacity: 0; }
