@@ -9,7 +9,7 @@ const BOW = { x: 448.75, y: 530, width: 142 };
 const SCALE = BOW.width / BOW_SIZE.width;
 // the canvas just covers the finished bow, with a little room for the settle
 const VIEW = { x0: -6, x1: 204, y0: -6, y1: 143 };
-const HANDOFF = { start: 1.86, end: 2.0 };   // the painting takes over from the drawn vines
+const HANDOFF = { start: 1.9, end: 1.98 };   // the drawn frames already match the painting exactly
 
 const pct = (value: number, of: number) => `${((value / of) * 100).toFixed(4)}%`;
 
