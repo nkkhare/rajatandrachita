@@ -75,10 +75,10 @@ body { overflow-x: hidden; }
 .invitation__clouds {
   position: absolute;
   z-index: 1;
-  top: 22.135417%; /* source image y=340 of 1536 */
+  top: 3.90625%;     /* source image y=60 of 1536 */
   left: 0;
   width: 100%;
-  height: 37.760417%;
+  height: 57.291667%; /* 880 px: the sky down to the skyline */
   pointer-events: none;
 }
 
