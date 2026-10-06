@@ -15,7 +15,7 @@ Open the URL printed by Vite. `npm run build` creates a production site in `dist
 
 1. Blurred copy of the artwork behind the card.
 2. The approved envelope artwork, centred at about a quarter of the screen area (`src/EnvelopeIntro.tsx`). It is split into three layers in `src/assets/`: the body (with the paper under the flap painted in), the flap with its gold border and filigree, and the flap's resting shadow. The flap hinges on the envelope's top edge and flips open.
-3. The artwork PNG (`public/save-the-date-sunset-v3.png`): the sky inside the arch and its clouds come from the colour reference, the lettering uses its antique-gold and gold-brown tones, and the printed countdown box is retouched out. On top, the live SVG countdown uses the original design at 80% size.
+3. The artwork PNG (`public/save-the-date-bow.png`): the sky inside the arch and its clouds come from the colour reference, the lettering uses its antique-gold and gold-brown tones, and the printed countdown box is retouched out. "AND" between the names is replaced by a flowering-vine bow, taken from the supplied mockup, and the names are at 75% size and spaced apart to make room for it. On top, the live SVG countdown uses the original design at 80% size.
 4. A canvas cloud drift, masked to the open sky beside the lettering (`src/animation/clouds.ts`).
 5. A canvas water overlay, clipped to an editable polygon below the bridge (`src/animation/water.ts`).
 6. Lightweight canvas petals falling across the card (`src/animation/petals.ts`).
