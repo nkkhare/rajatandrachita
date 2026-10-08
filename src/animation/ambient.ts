@@ -8,9 +8,9 @@
 //   masks   R water, G foliage (stronger further from where it grows),
 //           B the moving sky (fading out above the skyline)
 //
-// Water samples the artwork through travelling shallow waves, so it flows
-// rather than shifting in strips. Foliage samples it through a wind field: a
-// slow branch sway plus faster flutter that varies across the card, so each
+// Water samples the artwork through layered, drifting ripple noise, and its
+// existing golden reflections shimmer as independent horizontal fragments.
+// Foliage samples it through a wind field: a slow branch sway plus faster flutter that varies across the card, so each
 // blossom and leaf moves on its own. The sky drifts as a whole beneath the
 // lettering. Everything else is drawn untouched.
 import skyUrl from '../assets/ambient/sky.webp';
@@ -36,19 +36,35 @@ uniform float uTime, uRamp;
 varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 
+// smooth value noise, so motion is organic and never one repeating sine
+// (inputs wrapped to a small range so it stays precise on mobile GPUs)
+float hash(vec2 p) { p = mod(p, 289.0); return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+float noise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x),
+             mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y) * 2.0 - 1.0;
+}
+
 void main() {
   vec2 px = vUv * SIZE;
   vec4 m = texture2D(uMasks, vUv);
   float t = uTime;
 
-  // Water: shallow waves travelling across the river, larger toward the viewer.
-  float depth = clamp((px.y - 1400.0) / 136.0, 0.0, 1.0);
-  float wa = mix(1.4, 4.4, depth) * uRamp * m.r;
-  float w1 = px.x * 0.045 - t * 1.25 + px.y * 0.11;
+  // Water: hundreds of small horizontal ripples. Three layers of noise,
+  // stretched wide and thin, drift different ways at different speeds (about
+  // 5 s, 2.5 s and 2 s), so each band of the river moves on its own. Ripples
+  // are finer and calmer by the far bank, a little wider toward the viewer.
+  float depth = clamp((px.y - 1404.0) / 132.0, 0.0, 1.0);
+  float ripple = mix(1.9, 1.0, depth);                      // finer far away
+  vec2 q = vec2(px.x * 0.022, px.y * 0.30) * ripple;
+  float n1 = noise(q + vec2(t * 0.20, t * 0.05));                   // slow drift right
+  float n2 = noise(q * vec2(1.9, 1.6) + vec2(-t * 0.42, 7.3));      // quicker drift left
+  float n3 = noise(q * vec2(3.1, 2.4) + vec2(13.1, t * 0.5));       // fine, changing shape
+  float wa = uRamp * m.r * mix(0.6, 1.0, depth);
   vec2 water = wa * vec2(
-    0.55 * sin(w1) + 0.3 * sin(px.x * 0.11 + t * 0.9 - px.y * 0.27) + 0.25 * sin(px.x * 0.021 - t * 0.55 + px.y * 0.05),
-    0.35 * sin(px.x * 0.06 - t * 1.05 + px.y * 0.19));
-
+    3.0 * (0.55 * n1 + 0.30 * n2 + 0.15 * n3),
+    0.9 * (0.6 * n2 + 0.4 * n3));
   // Foliage: a slow sway of whole sprays, with gusts, plus a lighter flutter
   // whose phase changes across the card so neighbouring blooms move apart.
   float gust = 0.7 + 0.3 * sin(t * 0.13 + 1.1);
@@ -59,8 +75,22 @@ void main() {
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
-  // a soft glint on the crest of each ripple
-  base += 0.05 * m.r * uRamp * max(0.0, cos(w1)) * vec3(1.0, 0.92, 0.8);
+
+  // Golden reflections: only the existing bright streaks shimmer. Their
+  // brightness is broken into short horizontal fragments that drift, stretch,
+  // part and rejoin independently, in the painting's own colours.
+  if (m.r > 0.0) {
+    float lum = dot(base, vec3(0.2126, 0.7152, 0.0722));
+    float glow = smoothstep(0.5, 0.82, lum) * m.r * uRamp;
+    vec2 s = vec2(px.x * 0.05, px.y * 0.42) * ripple;
+    float f1 = noise(s + vec2(t * 0.55, 0.0));
+    float f2 = noise(s * vec2(0.6, 1.3) + vec2(-t * 0.35, t * 0.22 + 4.7));
+    float shimmer = 0.6 * f1 + 0.4 * f2;                      // -1..1, smooth
+    // dimmer gaps between streaks, brighter crests; stays within the palette
+    base *= 1.0 + glow * (0.16 * shimmer + 0.03);
+    // the darker water between reflections breathes very slightly
+    base *= 1.0 - (1.0 - smoothstep(0.35, 0.6, lum)) * m.r * uRamp * 0.035 * f2;
+  }
 
   // Sky: drifts slowly as one body, with a faint rise and fall.
   vec2 drift = vec2(28.0 * sin(t * 0.02618), 3.0 * sin(t * 0.0648));
@@ -156,8 +186,8 @@ export class AmbientRenderer {
   /** Draws the card at `seconds` (any clock); motion eases in over the first 1.5 s. */
   render(seconds: number) {
     if (this.started < 0) this.started = seconds;
-    // ~30 fps is plenty for motion this gentle, and halves the work on phones
-    if (seconds - this.lastRender < 1 / 31) return;
+    // render every frame (up to 60 fps) so the water's shimmer stays fluid
+    if (seconds - this.lastRender < 1 / 65) return;
     this.lastRender = seconds;
     const t = seconds - this.started, gl = this.gl;
     const ramp = Math.min(1, t / 1.5);
