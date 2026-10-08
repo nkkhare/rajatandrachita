@@ -63,15 +63,15 @@ void main() {
   float n3 = noise(q * vec2(3.1, 2.4) + vec2(13.1, t * 0.5));       // fine, changing shape
   float wa = uRamp * m.r * mix(0.6, 1.0, depth);
   vec2 water = wa * vec2(
-    3.0 * (0.55 * n1 + 0.30 * n2 + 0.15 * n3),
-    0.9 * (0.6 * n2 + 0.4 * n3));
+    9.0 * (0.55 * n1 + 0.30 * n2 + 0.15 * n3),
+    2.6 * (0.6 * n2 + 0.4 * n3));
   // Foliage: a slow sway of whole sprays, with gusts, plus a lighter flutter
   // whose phase changes across the card so neighbouring blooms move apart.
   float gust = 0.7 + 0.3 * sin(t * 0.13 + 1.1);
   float sway = sin(t * 0.55 + px.y * 0.006 + px.x * 0.004) * 0.7 + sin(t * 0.31 + px.x * 0.009 + 2.0) * 0.3;
   float fx = sin(t * 1.7 + px.x * 0.07 + px.y * 0.05) * 0.35 + sin(t * 2.6 + px.x * 0.13 - px.y * 0.11) * 0.15;
   float fy = sin(t * 1.9 + px.y * 0.08 - px.x * 0.04) * 0.3;
-  vec2 foliage = 2.6 * uRamp * m.g * gust * vec2(sway + fx, 0.35 * sway + fy);
+  vec2 foliage = 9.0 * uRamp * m.g * gust * vec2(sway + fx, 0.35 * sway + fy);
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
@@ -87,13 +87,15 @@ void main() {
     float f2 = noise(s * vec2(0.6, 1.3) + vec2(-t * 0.35, t * 0.22 + 4.7));
     float shimmer = 0.6 * f1 + 0.4 * f2;                      // -1..1, smooth
     // dimmer gaps between streaks, brighter crests; stays within the palette
-    base *= 1.0 + glow * (0.16 * shimmer + 0.03);
+    base *= 1.0 + glow * (0.32 * shimmer + 0.04);
     // the darker water between reflections breathes very slightly
-    base *= 1.0 - (1.0 - smoothstep(0.35, 0.6, lum)) * m.r * uRamp * 0.035 * f2;
+    base *= 1.0 - (1.0 - smoothstep(0.35, 0.6, lum)) * m.r * uRamp * 0.06 * f2;
   }
 
   // Sky: drifts slowly as one body, with a faint rise and fall.
-  vec2 drift = vec2(28.0 * sin(t * 0.02618), 3.0 * sin(t * 0.0648));
+  float band = px.y * 0.004;
+  vec2 drift = vec2(16.0 * sin(t * 0.157 + band) + 5.0 * sin(t * 0.091 - band * 1.7),
+                    2.5 * sin(t * 0.11 + band * 2.0));
   vec3 sky = texture2D(uSky, vUv - drift / SIZE).rgb;
   vec4 fg = texture2D(uFg, vUv);
   vec3 skyWithLettering = mix(sky, fg.rgb, fg.a);
