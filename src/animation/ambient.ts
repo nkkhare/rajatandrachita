@@ -96,7 +96,7 @@ void main() {
   float phase = px.x * 0.004 + px.y * 0.0018;
   float sway = 0.75 * sin(t * 0.9 + phase) + 0.25 * sin(t * 0.53 + phase * 1.7 + 2.0);
   float flutter = 0.08 * sin(t * 2.1 + px.x * 0.035 + px.y * 0.028);
-  vec2 foliage = 14.4 * uRamp * wg * gust * vec2(sway + flutter, 0.18 * sway * sway - 0.06);
+  vec2 foliage = 15.84 * uRamp * wg * gust * vec2(sway + flutter, 0.18 * sway * sway - 0.06);
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
