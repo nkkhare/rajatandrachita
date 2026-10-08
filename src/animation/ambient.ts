@@ -79,7 +79,16 @@ void main() {
     wg += texture2D(uMasks, vUv + vec2(float(i), float(j)) * 22.0 / SIZE).g;
   }
   wg /= 9.0;
-  wg *= 1.0 - texture2D(uFg, vUv).a;                         // the gold arch stays put
+  // The gold arch stays perfectly still: no pixel near it moves, so it can
+  // never be pulled along (the sway reaches ~14 px, the guard 18 px).
+  float arch = texture2D(uFg, vUv).a;
+  for (int k = 0; k < 8; k++) {
+    float ang = float(k) * 0.7854;
+    vec2 dir = vec2(cos(ang), sin(ang)) / SIZE;
+    arch = max(arch, texture2D(uFg, vUv + dir * 9.0).a);
+    arch = max(arch, 0.85 * texture2D(uFg, vUv + dir * 18.0).a);
+  }
+  wg *= 1.0 - smoothstep(0.15, 0.6, arch);
   // anchored at the card's edge, where the plants grow from (and nothing is
   // ever sampled from outside the painting)
   wg *= smoothstep(0.0, 26.0, px.x) * smoothstep(0.0, 26.0, SIZE.x - px.x) * smoothstep(0.0, 26.0, px.y) * smoothstep(0.0, 26.0, SIZE.y - px.y);
