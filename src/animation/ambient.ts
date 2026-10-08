@@ -51,27 +51,43 @@ void main() {
   vec4 m = texture2D(uMasks, vUv);
   float t = uTime;
 
-  // Water: hundreds of small horizontal ripples. Three layers of noise,
-  // stretched wide and thin, drift different ways at different speeds (about
-  // 5 s, 2.5 s and 2 s), so each band of the river moves on its own. Ripples
-  // are finer and calmer by the far bank, a little wider toward the viewer.
+  // Water: visible horizontal ripple bands (a few screen pixels tall) made of
+  // three noise layers drifting right, left, and in place at different
+  // speeds, so each band of the river moves on its own. Finer and calmer by
+  // the far bank, a little wider toward the viewer.
   float depth = clamp((px.y - 1404.0) / 132.0, 0.0, 1.0);
-  float ripple = mix(1.9, 1.0, depth);                      // finer far away
-  vec2 q = vec2(px.x * 0.022, px.y * 0.30) * ripple;
-  float n1 = noise(q + vec2(t * 0.20, t * 0.05));                   // slow drift right
-  float n2 = noise(q * vec2(1.9, 1.6) + vec2(-t * 0.42, 7.3));      // quicker drift left
-  float n3 = noise(q * vec2(3.1, 2.4) + vec2(13.1, t * 0.5));       // fine, changing shape
+  float ripple = mix(1.6, 1.0, depth);                      // finer far away
+  vec2 q = vec2(px.x * 0.010, px.y * 0.085) * ripple;
+  float n1 = noise(q + vec2(t * 0.35, t * 0.12));                         // drifts right
+  float n2 = noise(q * vec2(1.7, 1.5) + vec2(-t * 0.55, 7.3 + t * 0.1));   // drifts left
+  float n3 = noise(q * vec2(2.9, 2.3) + vec2(13.1, t * 0.7));             // changes shape
   float wa = uRamp * m.r * mix(0.6, 1.0, depth);
   vec2 water = wa * vec2(
     13.5 * (0.55 * n1 + 0.30 * n2 + 0.15 * n3),
     3.9 * (0.6 * n2 + 0.4 * n3));
-  // Foliage: a slow sway of whole sprays, with gusts, plus a lighter flutter
-  // whose phase changes across the card so neighbouring blooms move apart.
-  float gust = 0.7 + 0.3 * sin(t * 0.13 + 1.1);
-  float sway = sin(t * 0.55 + px.y * 0.006 + px.x * 0.004) * 0.7 + sin(t * 0.31 + px.x * 0.009 + 2.0) * 0.3;
-  float fx = sin(t * 1.7 + px.x * 0.07 + px.y * 0.05) * 0.35 + sin(t * 2.6 + px.x * 0.13 - px.y * 0.11) * 0.15;
-  float fy = sin(t * 1.9 + px.y * 0.08 - px.x * 0.04) * 0.3;
-  vec2 foliage = 10.8 * uRamp * m.g * gust * vec2(sway + fx, 0.35 * sway + fy);
+  // the slope of each ripple catches the light, so the bands read as moving
+  vec2 qd = vec2(0.0, 4.0 * 0.085 * ripple);
+  float slope = (0.6 * noise(q + qd + vec2(t * 0.35, t * 0.12)) + 0.4 * noise((q + qd) * vec2(1.7, 1.5) + vec2(-t * 0.55, 7.3 + t * 0.1)))
+              - (0.6 * n1 + 0.4 * n2);
+
+  // Foliage: whole sprays sway together like branches in a breeze. The weight
+  // is smoothed over the region (so outlines move with their flowers), grows
+  // toward the tips, and the wind is a slow wave across the card, so the left
+  // and right corners swing out of step. Only a whisper of flutter.
+  float wg = 0.0;
+  for (int i = -1; i <= 1; i++) for (int j = -1; j <= 1; j++) {
+    wg += texture2D(uMasks, vUv + vec2(float(i), float(j)) * 22.0 / SIZE).g;
+  }
+  wg /= 9.0;
+  wg *= 1.0 - texture2D(uFg, vUv).a;                         // the gold arch stays put
+  // anchored at the card's edge, where the plants grow from (and nothing is
+  // ever sampled from outside the painting)
+  wg *= smoothstep(0.0, 26.0, px.x) * smoothstep(0.0, 26.0, SIZE.x - px.x) * smoothstep(0.0, 26.0, px.y) * smoothstep(0.0, 26.0, SIZE.y - px.y);
+  float gust = 0.75 + 0.25 * sin(t * 0.17 + 1.1);
+  float phase = px.x * 0.004 + px.y * 0.0018;
+  float sway = 0.75 * sin(t * 0.9 + phase) + 0.25 * sin(t * 0.53 + phase * 1.7 + 2.0);
+  float flutter = 0.08 * sin(t * 2.1 + px.x * 0.035 + px.y * 0.028);
+  vec2 foliage = 18.0 * uRamp * wg * gust * vec2(sway + flutter, 0.18 * sway * sway - 0.06);
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
@@ -90,6 +106,8 @@ void main() {
     base *= 1.0 + glow * (0.32 * shimmer + 0.04);
     // the darker water between reflections breathes very slightly
     base *= 1.0 - (1.0 - smoothstep(0.35, 0.6, lum)) * m.r * uRamp * 0.06 * f2;
+    // light and shade on each ripple's slope
+    base *= 1.0 + m.r * uRamp * 0.14 * slope;
   }
 
   // Sky: drifts slowly as one body, with a faint rise and fall.
