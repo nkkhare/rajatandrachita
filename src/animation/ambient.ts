@@ -123,10 +123,17 @@ export class AmbientRenderer {
   private lastRender = -Infinity;
   private textures: WebGLTexture[] = [];
 
+  /** Why the last create() returned null, for the ?debug=1 status line. */
+  static lastError = '';
+
   static create(art: HTMLImageElement, maps: HTMLImageElement[], canvas: HTMLCanvasElement) {
-    const gl = canvas.getContext('webgl', { alpha: false, antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: false });
-    if (!gl) return null;
-    try { return new AmbientRenderer(gl, art, maps, canvas); } catch { return null; }
+    const gl = (canvas.getContext('webgl', { alpha: false, antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: false })
+      ?? canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
+    if (!gl) { AmbientRenderer.lastError = 'WebGL unavailable'; return null; }
+    try { return new AmbientRenderer(gl, art, maps, canvas); } catch (error) {
+      AmbientRenderer.lastError = String(error instanceof Error ? error.message : error).slice(0, 300);
+      return null;
+    }
   }
 
   private constructor(gl: WebGLRenderingContext, art: HTMLImageElement, maps: HTMLImageElement[], private canvas: HTMLCanvasElement) {
