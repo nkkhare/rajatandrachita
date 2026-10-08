@@ -63,15 +63,15 @@ void main() {
   float n3 = noise(q * vec2(3.1, 2.4) + vec2(13.1, t * 0.5));       // fine, changing shape
   float wa = uRamp * m.r * mix(0.6, 1.0, depth);
   vec2 water = wa * vec2(
-    9.0 * (0.55 * n1 + 0.30 * n2 + 0.15 * n3),
-    2.6 * (0.6 * n2 + 0.4 * n3));
+    13.5 * (0.55 * n1 + 0.30 * n2 + 0.15 * n3),
+    3.9 * (0.6 * n2 + 0.4 * n3));
   // Foliage: a slow sway of whole sprays, with gusts, plus a lighter flutter
   // whose phase changes across the card so neighbouring blooms move apart.
   float gust = 0.7 + 0.3 * sin(t * 0.13 + 1.1);
   float sway = sin(t * 0.55 + px.y * 0.006 + px.x * 0.004) * 0.7 + sin(t * 0.31 + px.x * 0.009 + 2.0) * 0.3;
   float fx = sin(t * 1.7 + px.x * 0.07 + px.y * 0.05) * 0.35 + sin(t * 2.6 + px.x * 0.13 - px.y * 0.11) * 0.15;
   float fy = sin(t * 1.9 + px.y * 0.08 - px.x * 0.04) * 0.3;
-  vec2 foliage = 9.0 * uRamp * m.g * gust * vec2(sway + fx, 0.35 * sway + fy);
+  vec2 foliage = 10.8 * uRamp * m.g * gust * vec2(sway + fx, 0.35 * sway + fy);
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
