@@ -63,8 +63,8 @@ void main() {
   float n3 = noise(q * vec2(2.9, 2.3) + vec2(13.1, t * 0.7));             // changes shape
   float wa = uRamp * m.r * mix(0.6, 1.0, depth);
   vec2 water = wa * vec2(
-    13.5 * (0.55 * n1 + 0.30 * n2 + 0.15 * n3),
-    3.9 * (0.6 * n2 + 0.4 * n3));
+    16.2 * (0.55 * n1 + 0.30 * n2 + 0.15 * n3),
+    4.7 * (0.6 * n2 + 0.4 * n3));
   // the slope of each ripple catches the light, so the bands read as moving
   vec2 qd = vec2(0.0, 4.0 * 0.085 * ripple);
   float slope = (0.6 * noise(q + qd + vec2(t * 0.35, t * 0.12)) + 0.4 * noise((q + qd) * vec2(1.7, 1.5) + vec2(-t * 0.55, 7.3 + t * 0.1)))
@@ -87,7 +87,7 @@ void main() {
   float phase = px.x * 0.004 + px.y * 0.0018;
   float sway = 0.75 * sin(t * 0.9 + phase) + 0.25 * sin(t * 0.53 + phase * 1.7 + 2.0);
   float flutter = 0.08 * sin(t * 2.1 + px.x * 0.035 + px.y * 0.028);
-  vec2 foliage = 18.0 * uRamp * wg * gust * vec2(sway + flutter, 0.18 * sway * sway - 0.06);
+  vec2 foliage = 14.4 * uRamp * wg * gust * vec2(sway + flutter, 0.18 * sway * sway - 0.06);
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
@@ -107,7 +107,7 @@ void main() {
     // the darker water between reflections breathes very slightly
     base *= 1.0 - (1.0 - smoothstep(0.35, 0.6, lum)) * m.r * uRamp * 0.06 * f2;
     // light and shade on each ripple's slope
-    base *= 1.0 + m.r * uRamp * 0.14 * slope;
+    base *= 1.0 + m.r * uRamp * 0.168 * slope;
   }
 
   // Sky: drifts slowly as one body, with a faint rise and fall.
