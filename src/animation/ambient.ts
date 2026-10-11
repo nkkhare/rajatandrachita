@@ -161,6 +161,10 @@ void main() {
   float band = px.y * 0.004;
   vec2 drift = vec2(16.0 * sin(t * 0.157 + band) + 5.0 * sin(t * 0.091 - band * 1.7),
                     2.5 * sin(t * 0.11 + band * 2.0));
+  // The clouds come to rest as they reach the gold frame (its distance in px
+  // is stored in the frame map), so the trim keeps a clean edge and nothing
+  // from beyond the frame is ever pulled into the sky.
+  drift *= smoothstep(6.0, 110.0, texture2D(uArch, vUv).b * 255.0);
   vec3 sky = texture2D(uSky, vUv - drift / SIZE).rgb;
   vec4 fg = texture2D(uFg, vUv);
   vec3 skyWithLettering = mix(sky, fg.rgb, fg.a);
