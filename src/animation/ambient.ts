@@ -117,6 +117,10 @@ void main() {
     arch = max(arch, 0.85 * texture2D(uArch, vUv + dir * 16.0).r);
   }
   sw *= 1.0 - smoothstep(0.15, 0.6, arch);
+  // The scenery stays perfectly still too: the buildings, trees, bridge and
+  // the sky behind the skyline. Nothing within ~16 px of them moves, and the
+  // sway eases in over the next ~56 px, so no moving pixel ever samples them.
+  sw *= smoothstep(0.03, 1.0, texture2D(uArch, vUv).g);
   // anchored at the card's edge, where the plants grow from (and nothing is
   // ever sampled from outside the painting)
   sw *= smoothstep(0.0, 26.0, px.x) * smoothstep(0.0, 26.0, SIZE.x - px.x) * smoothstep(0.0, 26.0, px.y) * smoothstep(0.0, 26.0, SIZE.y - px.y);
