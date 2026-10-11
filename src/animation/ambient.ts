@@ -44,7 +44,7 @@ varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 const float TAU = 6.2831853;
 // largest rotations, in degrees
-const float STEM_DEG = 7.0;         // thin outer stems, about their roots
+const float STEM_DEG = 8.5;         // thin outer stems, about their roots
 const float HEAD_DEG_SMALL = 3.0;   // small flower heads, about their stems
 const float HEAD_DEG_LARGE = 1.8;   // the large peonies
 
@@ -58,23 +58,14 @@ float noise(vec2 p) {
              mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y) * 2.0 - 1.0;
 }
 
-// a breeze that strengthens and fades: from near-calm (0.1) to gentle (1.0),
-// over irregular ~30-50 s spells
-float breeze(float t, float p) {
-  float b = 0.5 + 0.3 * sin(TAU * t / 47.0 + p) + 0.2 * sin(TAU * t / 31.0 + 1.7 * p + 0.6);
-  return 0.1 + 0.9 * smoothstep(0.1, 0.95, b);
-}
-
-// a smooth min(a, b): no corner, so a limited motion eases off and never stalls
-float softMin(float a, float b) { return 0.5 * (a + b - sqrt((a - b) * (a - b) + 4.0)); }
-
 // One breeze moves every flower. It always blows the same way across the
-// whole card at any moment, strengthening and fading (breeze()) on one slow
-// 24 s swing, and reaches the right side ~3 s after the left and the bottom
-// ~2 s after the top as it passes through.
+// whole card at any moment, on one slow, continuous 24 s swing (its strength
+// drifts only gently, between 80% and 100%, so it never falls calm), and it
+// reaches the right side ~3 s after the left and the bottom ~2 s after the top
+// as it passes through.
 float wind(vec2 x, float delay) {
   float tt = uTime - delay - x.x * 0.003 - x.y * 0.0012;
-  return sin(TAU / 24.0 * tt) * breeze(tt, 0.0);
+  return sin(TAU / 24.0 * tt) * (0.9 + 0.1 * sin(TAU / 47.0 * tt + 0.6));
 }
 
 // How much the breeze turns a garland at x, and which way: each garland pivots
@@ -92,8 +83,10 @@ float stemLean(vec2 x, out vec2 q) {
 // The thin stems at x: each garland turns as one connected structure, by a
 // small angle about the corner it grows from, so every part moves in step
 // with its neighbours (nothing slides against anything) and the tips, furthest
-// from the root, swing most. Near the gold frame or the scenery the motion
-// eases off smoothly, never reaching a quarter of the distance to them.
+// from the root, swing most. Parts near the gold frame, the scenery or the
+// card's edge simply swing less (their reach is set by the room they have), so
+// nothing is ever carried across them, nothing is drawn in from beyond the
+// card, and every part keeps moving smoothly without ever holding still.
 vec2 stemField(vec2 x) {
   float fromTop = 1.0 - smoothstep(620.0, 860.0, x.y);
   vec2 rootX = vec2(x.x < SIZE.x * 0.5 ? 0.0 : SIZE.x, 0.0);
@@ -101,17 +94,12 @@ vec2 stemField(vec2 x) {
   vec2 turnT = (-qT.y / max(length(qT), 1.0)) * vec2(-qT.y, qT.x);
   vec2 turnB = (-qB.y / max(length(qB), 1.0)) * vec2(-qB.y, qB.x);
   vec3 sm = texture2D(uSway, x / SIZE).rgb;                    // r: foliage, g/b: px to scenery/frame
-  vec2 d = sm.r * radians(STEM_DEG) * wind(x, 0.0) * mix(turnB, turnT, fromTop);
-  // nothing is drawn in from beyond the card's edge: motion away from an edge
-  // (which would need painting that isn't there) eases off close to it, while
-  // motion toward the edge is free (the card simply crops it)
-  vec4 room = 3.0 + 0.2 * vec4(x.x, SIZE.x - x.x, x.y, SIZE.y - x.y);
-  d.x = softMin(d.x, room.x) - softMin(0.0, room.x);
-  d.x = -(softMin(-d.x, room.y) - softMin(0.0, room.y));
-  d.y = softMin(d.y, room.z) - softMin(0.0, room.z);
-  d.y = -(softMin(-d.y, room.w) - softMin(0.0, room.w));
+  vec2 reach = sm.r * radians(STEM_DEG) * mix(turnB, turnT, fromTop);   // the full swing here
+  vec2 room = 3.0 + 0.2 * vec2(min(x.x, SIZE.x - x.x), min(x.y, SIZE.y - x.y));
+  reach *= room / sqrt(room * room + reach * reach + 1e-4);
   float lim = 0.25 * max(min(sm.g, sm.b) * 255.0 - 6.0, 0.0);
-  return d * lim / sqrt(lim * lim + dot(d, d) + 1e-4);
+  reach *= lim / sqrt(lim * lim + dot(reach, reach) + 1e-4);
+  return reach * wind(x, 0.0);
 }
 
 void main() {
@@ -172,7 +160,7 @@ void main() {
   // cut into pieces (each flower head, leaf and bud, from the pieces map), and
   // every piece moves rigidly, so nothing ever stretches or changes shape:
   //   main branches  still (near where each garland grows from)
-  //   thin stems     the outer sprays and vines turn up to ~7 deg about the
+  //   thin stems     the outer sprays and vines turn up to ~8.5 deg about the
   //                  garland's root corner; each piece takes the local motion
   //                  as a rigid shift and turn, so only the thin stems and the
   //                  sky between pieces flex
