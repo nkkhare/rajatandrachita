@@ -44,7 +44,7 @@ varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 const float TAU = 6.2831853;
 // largest rotations, in degrees
-const float STEM_DEG = 12.0;         // thin outer stems, about their roots
+const float STEM_DEG = 7.0;         // thin outer stems, about their roots
 const float HEAD_DEG_SMALL = 3.0;   // small flower heads, about their stems
 const float HEAD_DEG_LARGE = 1.8;   // the large peonies
 
@@ -65,30 +65,53 @@ float breeze(float t, float p) {
   return 0.1 + 0.9 * smoothstep(0.1, 0.95, b);
 }
 
-// The breeze on the thin stems at x: each garland turns a fraction of a degree
-// about the corner it grows from, building up gradually away from the root.
-// The motion toward the gold frame, the scenery or the card's edge is limited
-// to half the distance to it, so nothing is ever carried across them and
-// the motion eases off without stretching anything.
+// a smooth min(a, b): no corner, so a limited motion eases off and never stalls
+float softMin(float a, float b) { return 0.5 * (a + b - sqrt((a - b) * (a - b) + 4.0)); }
+
+// One breeze moves every flower. It always blows the same way across the
+// whole card at any moment, strengthening and fading (breeze()) on one slow
+// 24 s swing, and reaches the right side ~3 s after the left and the bottom
+// ~2 s after the top as it passes through.
+float wind(vec2 x, float delay) {
+  float tt = uTime - delay - x.x * 0.003 - x.y * 0.0012;
+  return sin(TAU / 24.0 * tt) * breeze(tt, 0.0);
+}
+
+// How much the breeze turns a garland at x, and which way: each garland pivots
+// about the corner it grows from (top ones hang, bottom ones grow up), turned
+// by the part of the wind that pushes across it. So hanging vines swing and
+// upright sprays lean downwind, while sprays lying along the wind hardly move.
+float stemLean(vec2 x, out vec2 q) {
+  vec2 root = vec2(x.x < SIZE.x * 0.5 ? 0.0 : SIZE.x, x.y < 740.0 ? 0.0 : SIZE.y);
+  float fromTop = 1.0 - smoothstep(620.0, 860.0, x.y);
+  vec2 qT = x - vec2(root.x, 0.0), qB = x - vec2(root.x, SIZE.y);
+  q = fromTop > 0.5 ? qT : qB;
+  return mix(-qB.y / max(length(qB), 1.0), -qT.y / max(length(qT), 1.0), fromTop);
+}
+
+// The thin stems at x: each garland turns as one connected structure, by a
+// small angle about the corner it grows from, so every part moves in step
+// with its neighbours (nothing slides against anything) and the tips, furthest
+// from the root, swing most. Near the gold frame or the scenery the motion
+// eases off smoothly, never reaching a quarter of the distance to them.
 vec2 stemField(vec2 x) {
-  float t = uTime;
-  float side = x.x < SIZE.x * 0.5 ? 1.0 : -1.0;               // +1 leans right (inward) on the left
-  float lag = (side > 0.0 ? 0.0 : 1.9) + x.y * 0.00082;        // the sides out of step, ~4 s down a side
-  float gust = breeze(t - lag * 3.2, side > 0.0 ? 0.0 : 2.3);
-  float period = side > 0.0 ? 22.0 : 26.0;
-  float sway = (0.8 * sin(TAU / period * t - lag) + 0.2 * sin(TAU / 29.0 * t - lag * 1.3 - 1.7 + x.x * 0.002)) * gust;
-  float fromTop = 1.0 - smoothstep(620.0, 860.0, x.y);         // top garlands hang, bottom ones grow up
-  vec2 qT = x - vec2(side > 0.0 ? 0.0 : SIZE.x, 0.0);
-  vec2 qB = x - vec2(side > 0.0 ? 0.0 : SIZE.x, SIZE.y);
-  vec2 turn = mix(smoothstep(120.0, 420.0, length(qB)) * vec2(-qB.y, qB.x),
-                  smoothstep(120.0, 420.0, length(qT)) * vec2(-qT.y, qT.x), fromTop);
+  float fromTop = 1.0 - smoothstep(620.0, 860.0, x.y);
+  vec2 rootX = vec2(x.x < SIZE.x * 0.5 ? 0.0 : SIZE.x, 0.0);
+  vec2 qT = x - rootX, qB = x - rootX - vec2(0.0, SIZE.y);
+  vec2 turnT = (-qT.y / max(length(qT), 1.0)) * vec2(-qT.y, qT.x);
+  vec2 turnB = (-qB.y / max(length(qB), 1.0)) * vec2(-qB.y, qB.x);
   vec3 sm = texture2D(uSway, x / SIZE).rgb;                    // r: foliage, g/b: px to scenery/frame
-  vec2 d = sm.r * radians(STEM_DEG) * side * sway * turn;
-  vec2 e = vec2(max(min(x.x, SIZE.x - x.x) - 2.0, 0.0), max(min(x.y, SIZE.y - x.y) - 2.0, 0.0)) * 0.5;
-  d = clamp(d, -e, e);
-  float lim = 0.5 * max(min(sm.g, sm.b) * 255.0 - 6.0, 0.0);
-  float len = length(d);
-  return len > lim ? d * (lim / len) : d;
+  vec2 d = sm.r * radians(STEM_DEG) * wind(x, 0.0) * mix(turnB, turnT, fromTop);
+  // nothing is drawn in from beyond the card's edge: motion away from an edge
+  // (which would need painting that isn't there) eases off close to it, while
+  // motion toward the edge is free (the card simply crops it)
+  vec4 room = 3.0 + 0.2 * vec4(x.x, SIZE.x - x.x, x.y, SIZE.y - x.y);
+  d.x = softMin(d.x, room.x) - softMin(0.0, room.x);
+  d.x = -(softMin(-d.x, room.y) - softMin(0.0, room.y));
+  d.y = softMin(d.y, room.z) - softMin(0.0, room.z);
+  d.y = -(softMin(-d.y, room.w) - softMin(0.0, room.w));
+  float lim = 0.25 * max(min(sm.g, sm.b) * 255.0 - 6.0, 0.0);
+  return d * lim / sqrt(lim * lim + dot(d, d) + 1e-4);
 }
 
 void main() {
@@ -149,40 +172,56 @@ void main() {
   // cut into pieces (each flower head, leaf and bud, from the pieces map), and
   // every piece moves rigidly, so nothing ever stretches or changes shape:
   //   main branches  still (near where each garland grows from)
-  //   thin stems     the outer sprays and vines turn up to ~12 deg about the
+  //   thin stems     the outer sprays and vines turn up to ~7 deg about the
   //                  garland's root corner; each piece takes the local motion
   //                  as a rigid shift and turn, so only the thin stems and the
   //                  sky between pieces flex
-  //   flower heads   each also nods ~2-3 deg about its own stem, mostly
-  //                  following its stem, a little out of step with neighbours
+  //   flower heads   each also nods ~2-3 deg about its own stem, following
+  //                  its stem's lean a moment later
   // Petals and leaves keep their painted shapes and ride with their piece.
-  // Cycles: stems 22 s (left) / 26 s (right), heads 14-22 s.
-  vec3 pc = texture2D(uPieces, vUv).rgb;
-  vec2 c = floor(px) + (floor(pc.rg * 255.0 + 0.5) - 128.0) + 0.5;   // this piece's centre (exact)
-  vec2 D0 = stemField(c), Dx = stemField(c + vec2(4.0, 0.0)), Dy = stemField(c + vec2(0.0, 4.0));
-  float turn = 0.5 * ((Dx.y - D0.y) - (Dy.x - D0.x)) / 4.0;     // the local rotation, without any stretch
-  vec2 rel = px - c;
-  vec2 stems = D0 + turn * vec2(-rel.y, rel.x);
+  // All of it is driven by one shared breeze (wind()), one 24 s swing.
+  // Which piece is here is looked up where the content comes from (not where
+  // it was), so every piece carries its own outline along as it moves and is
+  // never clipped. A piece moves rigidly: the local stem motion at its centre,
+  // taken as a shift and a turn, then (for a flower head) its nod.
+  vec2 s0 = px - uRamp * stemField(px);                         // roughly where this pixel's content was
+  vec2 src = s0;
+  for (int pass = 0; pass < 2; pass++) {
+    vec3 pc = texture2D(uPieces, s0 / SIZE).rgb;
+    vec2 c = floor(s0) + (floor(pc.rg * 255.0 + 0.5) - 128.0) + 0.5;   // that piece's centre (exact)
+    vec2 D0 = uRamp * stemField(c), Dx = uRamp * stemField(c + vec2(4.0, 0.0)), Dy = uRamp * stemField(c + vec2(0.0, 4.0));
+    float turn = 0.5 * ((Dx.y - D0.y) - (Dy.x - D0.x)) / 4.0;   // the local rotation, without any stretch
+    vec2 rel = px - D0 - c;
+    vec2 s1 = px - D0 - turn * vec2(-rel.y, rel.x);             // undo the piece's shift and turn
 
-  // Flower heads nod as one piece about their stem, which runs toward the edge
-  // the plant grows from.
-  float R = pc.b * 255.0;
-  vec2 head = vec2(0.0);
-  if (R > 0.5) {
-    float side = c.x < SIZE.x * 0.5 ? 1.0 : -1.0;
-    float lag = (side > 0.0 ? 0.0 : 1.9) + c.y * 0.00082;
-    float gust = breeze(t - lag * 3.2, side > 0.0 ? 0.0 : 2.3);
-    float id = hash(floor(c));
-    float big = smoothstep(12.0, 60.0, R);                      // larger flowers: slower, smaller
-    vec2 stem = c.y < min(c.x, SIZE.x - c.x) ? vec2(0.0, -1.0) : vec2(side > 0.0 ? -1.0 : 1.0, 0.0);
-    vec2 q = px - (c + stem * R * 0.9);
-    float follow = side * 0.8 * sin(TAU / (side > 0.0 ? 22.0 : 26.0) * (t - 1.5) - lag) * gust;
-    float own = sin(TAU / mix(14.0, 22.0, big) * t + id * TAU) * breeze(t - 1.5 - id * 6.0, id * 4.0);
-    float nod = radians(mix(HEAD_DEG_SMALL, HEAD_DEG_LARGE, big)) * (0.7 * follow + 0.3 * own);
-    vec3 sm = texture2D(uSway, c / SIZE).rgb;
-    head = nod * vec2(-q.y, q.x) * clamp((min(sm.g, sm.b) * 255.0 - 8.0) / 16.0, 0.0, 1.0);
+    // Flower heads nod as one piece about their stem (which runs toward the
+    // edge the plant grows from), following their stem's lean a moment later,
+    // larger flowers a little later still. 85% is that shared motion; 15% is
+    // the same breeze reaching this flower slightly early or late, so
+    // neighbours move together without moving identically.
+    float R = pc.b * 255.0;
+    if (R > 0.5) {
+      float big = smoothstep(12.0, 60.0, R);                    // larger flowers: a little later, smaller
+      float id = hash(floor(c));
+      vec2 rq;
+      float lean = stemLean(c, rq);
+      float follow = mix(0.6, 1.2, big);                        // s behind the stem
+      float nod = radians(mix(HEAD_DEG_SMALL, HEAD_DEG_LARGE, big)) * lean
+                * (0.85 * wind(c, follow) + 0.15 * wind(c, follow + (id - 0.5) * 3.0));
+      vec2 stem = c.y < min(c.x, SIZE.x - c.x) ? vec2(0.0, -1.0) : vec2(c.x < SIZE.x * 0.5 ? -1.0 : 1.0, 0.0);
+      vec3 sm = texture2D(uSway, c / SIZE).rgb;
+      nod *= uRamp * clamp((min(sm.g, sm.b) * 255.0 - 8.0) / 16.0, 0.0, 1.0);
+      vec2 q = s1 - (c + stem * R * 0.9);
+      s1 -= nod * vec2(-q.y, q.x);                              // undo the nod
+    }
+    // keep it only if the piece really does cover this pixel once moved;
+    // otherwise look again from there (and in the end let the stems flex)
+    vec3 back = texture2D(uPieces, s1 / SIZE).rgb;
+    vec2 c1 = floor(s1) + (floor(back.rg * 255.0 + 0.5) - 128.0) + 0.5;
+    if (length(c1 - c) < 0.5) { src = s1; break; }
+    s0 = s1;
   }
-  vec2 foliage = uRamp * (stems + head);
+  vec2 foliage = px - src;
   // and, whatever a piece does, nothing comes within reach of the frame or scenery
   vec3 here = texture2D(uSway, vUv).rgb;
   float reachMax = 0.6 * max(min(here.g, here.b) * 255.0 - 4.0, 0.0);
