@@ -52,6 +52,27 @@ void main() {
   vec4 m = texture2D(uMasks, vUv);
   float t = uTime;
 
+  // Flowers, smoothed over ~22 px: drives the sway, and keeps the water off
+  // the petals so the corner flowers stay crisp where they meet the river.
+  float wg = 0.0;
+  for (int i = -1; i <= 1; i++) for (int j = -1; j <= 1; j++) {
+    wg += texture2D(uMasks, vUv + vec2(float(i), float(j)) * 22.0 / SIZE).g;
+  }
+  wg /= 9.0;
+  float onFlowers = smoothstep(0.02, 0.12, wg);
+  // For the sway, each flower and a margin around it move as one solid piece:
+  // the weight is a dilation that falls off gently 15-60 px out, so leaf tips
+  // never stretch or smear; only plain surroundings bend.
+  float sw = texture2D(uMasks, vUv).g;
+  for (int k = 0; k < 8; k++) {
+    float ang = float(k) * 0.7854;
+    vec2 dir = vec2(cos(ang), sin(ang)) / SIZE;
+    sw = max(sw, 0.97 * texture2D(uMasks, vUv + dir * 15.0).g);
+    sw = max(sw, 0.78 * texture2D(uMasks, vUv + dir * 30.0).g);
+    sw = max(sw, 0.48 * texture2D(uMasks, vUv + dir * 45.0).g);
+    sw = max(sw, 0.20 * texture2D(uMasks, vUv + dir * 60.0).g);
+  }
+
   // Water: a seamless 10 s loop. Every motion runs at a whole number of
   // cycles per loop (1, 2, 3, 4 or 6), so the last frame flows into the
   // first. Thin horizontal ripples travel mostly left to right, with one
@@ -71,7 +92,10 @@ void main() {
   float r3 = 0.090 * rp.x + 0.70 * rp.y + p3 - 6.0 * w * t;   // fine, right (1.7 s)
   float r4 = 0.060 * rp.x + 0.55 * rp.y - p1 - 4.0 * w * t;   // medium, right (2.5 s)
   float env = 0.65 + 0.35 * sin(w * t + p2 * 1.3);            // ripples grow and fade (10 s)
-  float wa = uRamp * m.r * mix(0.6, 1.0, depth) * env;
+  // open water only: not on the flowers, nor where the sway carries a leaf
+  // tip out over the river (so the tips are never rippled into a blur)
+  float wet = m.r * (1.0 - max(onFlowers, smoothstep(0.15, 0.45, sw)));
+  float wa = uRamp * wet * mix(0.6, 1.0, depth) * env;
   vec2 water = wa * vec2(
     9.0 * (0.42 * sin(r1) + 0.24 * sin(r2) + 0.14 * sin(r3) + 0.20 * sin(r4)),
     2.6 * (0.5 * sin(r2 + 1.3) + 0.5 * sin(r3 + 0.6)));
@@ -82,24 +106,20 @@ void main() {
   // is smoothed over the region (so outlines move with their flowers), grows
   // toward the tips, and the wind is a slow wave across the card, so the left
   // and right corners swing out of step. Only a whisper of flutter.
-  float wg = 0.0;
-  for (int i = -1; i <= 1; i++) for (int j = -1; j <= 1; j++) {
-    wg += texture2D(uMasks, vUv + vec2(float(i), float(j)) * 22.0 / SIZE).g;
-  }
-  wg /= 9.0;
+
   // The gold arch stays perfectly still: no pixel near it moves, so it can
-  // never be pulled along (the sway reaches ~9 px, the guard ~12 px).
+  // never be pulled along (the sway reaches ~13 px, the guard ~16 px).
   float arch = texture2D(uArch, vUv).r;                     // the gold frame line only
   for (int k = 0; k < 8; k++) {
     float ang = float(k) * 0.7854;
     vec2 dir = vec2(cos(ang), sin(ang)) / SIZE;
-    arch = max(arch, texture2D(uArch, vUv + dir * 6.0).r);
-    arch = max(arch, 0.85 * texture2D(uArch, vUv + dir * 12.0).r);
+    arch = max(arch, texture2D(uArch, vUv + dir * 8.0).r);
+    arch = max(arch, 0.85 * texture2D(uArch, vUv + dir * 16.0).r);
   }
-  wg *= 1.0 - smoothstep(0.15, 0.6, arch);
+  sw *= 1.0 - smoothstep(0.15, 0.6, arch);
   // anchored at the card's edge, where the plants grow from (and nothing is
   // ever sampled from outside the painting)
-  wg *= smoothstep(0.0, 26.0, px.x) * smoothstep(0.0, 26.0, SIZE.x - px.x) * smoothstep(0.0, 26.0, px.y) * smoothstep(0.0, 26.0, SIZE.y - px.y);
+  sw *= smoothstep(0.0, 26.0, px.x) * smoothstep(0.0, 26.0, SIZE.x - px.x) * smoothstep(0.0, 26.0, px.y) * smoothstep(0.0, 26.0, SIZE.y - px.y);
   // A barely-there spring breeze: one slow sway every 20 s, plus a softer
   // 27 s drift in the smaller flowers and leaves. Left and right lean inward
   // as mirror images, the right about 3 s behind the left, and the breeze
@@ -112,7 +132,7 @@ void main() {
   float primary = sin(TAU / 20.0 * t - lag);
   float secondary = sin(TAU / 27.0 * t - lag * 1.3 - 1.7 + px.x * 0.002);
   float sway = 0.82 * primary + 0.18 * secondary;
-  vec2 foliage = 8.75 * uRamp * wg * vec2(side * sway, 0.05 * sway * sway);
+  vec2 foliage = 13.125 * uRamp * sw * vec2(side * sway, 0.05 * sway * sway);
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
@@ -121,16 +141,16 @@ void main() {
   // brightness follows the same ripples, so streaks widen, narrow, part and
   // rejoin as the water moves; the brightest flicks appear briefly where two
   // ripples crest together. Only the existing colours get lighter or darker.
-  if (m.r > 0.0) {
+  if (wet > 0.0) {
     float lum = dot(base, vec3(0.2126, 0.7152, 0.0722));
-    float glow = smoothstep(0.5, 0.82, lum) * m.r * uRamp;
+    float glow = smoothstep(0.5, 0.82, lum) * wet * uRamp;
     float shimmer = 0.5 * sin(r1 + 0.8) + 0.3 * sin(r3 + 2.1) + 0.2 * sin(r2 + 0.4);
     float crest = pow(max(0.0, sin(r1) * sin(r4)), 3.0);
     base *= 1.0 + glow * (0.26 * shimmer * env + 0.22 * crest + 0.04);
     // the darker water between reflections breathes very slightly
-    base *= 1.0 - (1.0 - smoothstep(0.35, 0.6, lum)) * m.r * uRamp * 0.05 * sin(r2 + 2.5);
+    base *= 1.0 - (1.0 - smoothstep(0.35, 0.6, lum)) * wet * uRamp * 0.05 * sin(r2 + 2.5);
     // light and shade on each ripple's slope
-    base *= 1.0 + m.r * uRamp * 0.09 * slope * env;
+    base *= 1.0 + wet * uRamp * 0.09 * slope * env;
   }
 
   // Sky: drifts slowly as one body, with a faint rise and fall.
