@@ -16,6 +16,7 @@
 import skyUrl from '../assets/ambient/sky.webp';
 import fgUrl from '../assets/ambient/fg.webp';
 import masksUrl from '../assets/ambient/masks.webp';
+import archUrl from '../assets/ambient/arch.webp';
 
 const VERTEX = `
 attribute vec2 aPos;
@@ -31,7 +32,7 @@ precision highp float;
 #else
 precision mediump float;
 #endif
-uniform sampler2D uArt, uSky, uFg, uMasks;
+uniform sampler2D uArt, uSky, uFg, uMasks, uArch;
 uniform float uTime, uRamp;
 varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
@@ -87,23 +88,31 @@ void main() {
   }
   wg /= 9.0;
   // The gold arch stays perfectly still: no pixel near it moves, so it can
-  // never be pulled along (the sway reaches ~14 px, the guard 18 px).
-  float arch = texture2D(uFg, vUv).a;
+  // never be pulled along (the sway reaches ~7 px, the guard ~12 px).
+  float arch = texture2D(uArch, vUv).r;                     // the gold frame line only
   for (int k = 0; k < 8; k++) {
     float ang = float(k) * 0.7854;
     vec2 dir = vec2(cos(ang), sin(ang)) / SIZE;
-    arch = max(arch, texture2D(uFg, vUv + dir * 9.0).a);
-    arch = max(arch, 0.85 * texture2D(uFg, vUv + dir * 18.0).a);
+    arch = max(arch, texture2D(uArch, vUv + dir * 6.0).r);
+    arch = max(arch, 0.85 * texture2D(uArch, vUv + dir * 12.0).r);
   }
   wg *= 1.0 - smoothstep(0.15, 0.6, arch);
   // anchored at the card's edge, where the plants grow from (and nothing is
   // ever sampled from outside the painting)
   wg *= smoothstep(0.0, 26.0, px.x) * smoothstep(0.0, 26.0, SIZE.x - px.x) * smoothstep(0.0, 26.0, px.y) * smoothstep(0.0, 26.0, SIZE.y - px.y);
-  float gust = 0.75 + 0.25 * sin(t * 0.17 + 1.1);
-  float phase = px.x * 0.004 + px.y * 0.0018;
-  float sway = 0.75 * sin(t * 0.9 + phase) + 0.25 * sin(t * 0.53 + phase * 1.7 + 2.0);
-  float flutter = 0.08 * sin(t * 2.1 + px.x * 0.035 + px.y * 0.028);
-  vec2 foliage = 15.84 * uRamp * wg * gust * vec2(sway + flutter, 0.18 * sway * sway - 0.06);
+  // A barely-there spring breeze: one slow sway every 20 s, plus a softer
+  // 27 s drift in the smaller flowers and leaves. Left and right lean inward
+  // as mirror images, the right about 3 s behind the left, and the breeze
+  // takes ~4 s to travel down each side, so clusters move slightly out of
+  // step. Everything varies only over large distances, so each cluster moves
+  // as one piece (no flutter or rippling). At most ~3 screen px at the tips,
+  // anchored at the card's edges.
+  float side = px.x < SIZE.x * 0.5 ? 1.0 : -1.0;              // +1 leans right (inward) on the left
+  float lag = (side > 0.0 ? 0.0 : 0.94) + px.y * 0.00082;     // ~3 s between sides, ~4 s down a side
+  float primary = sin(TAU / 20.0 * t - lag);
+  float secondary = sin(TAU / 27.0 * t - lag * 1.3 - 1.7 + px.x * 0.002);
+  float sway = 0.82 * primary + 0.18 * secondary;
+  vec2 foliage = 7.0 * uRamp * wg * vec2(side * sway, 0.05 * sway * sway);
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
@@ -145,7 +154,7 @@ function loadImage(url: string) {
 }
 
 /** Starts fetching the maps early so the renderer is ready when needed. */
-export const ambientMaps = () => Promise.all([loadImage(skyUrl), loadImage(fgUrl), loadImage(masksUrl)]);
+export const ambientMaps = () => Promise.all([loadImage(skyUrl), loadImage(fgUrl), loadImage(masksUrl), loadImage(archUrl)]);
 
 export class AmbientRenderer {
   private gl: WebGLRenderingContext;
@@ -194,7 +203,7 @@ export class AmbientRenderer {
     gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-    ['uArt', 'uSky', 'uFg', 'uMasks'].forEach((name, unit) => {
+    ['uArt', 'uSky', 'uFg', 'uMasks', 'uArch'].forEach((name, unit) => {
       const texture = gl.createTexture()!;
       gl.activeTexture(gl.TEXTURE0 + unit);
       gl.bindTexture(gl.TEXTURE_2D, texture);
