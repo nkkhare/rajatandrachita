@@ -88,7 +88,7 @@ void main() {
   }
   wg /= 9.0;
   // The gold arch stays perfectly still: no pixel near it moves, so it can
-  // never be pulled along (the sway reaches ~7 px, the guard ~12 px).
+  // never be pulled along (the sway reaches ~9 px, the guard ~12 px).
   float arch = texture2D(uArch, vUv).r;                     // the gold frame line only
   for (int k = 0; k < 8; k++) {
     float ang = float(k) * 0.7854;
@@ -112,7 +112,7 @@ void main() {
   float primary = sin(TAU / 20.0 * t - lag);
   float secondary = sin(TAU / 27.0 * t - lag * 1.3 - 1.7 + px.x * 0.002);
   float sway = 0.82 * primary + 0.18 * secondary;
-  vec2 foliage = 7.0 * uRamp * wg * vec2(side * sway, 0.05 * sway * sway);
+  vec2 foliage = 8.75 * uRamp * wg * vec2(side * sway, 0.05 * sway * sway);
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
