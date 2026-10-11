@@ -1,24 +1,28 @@
 // The living parts of the painting: flowing water, foliage swaying in the
 // wind, and clouds drifting across the sky. One WebGL pass redraws the card
-// each frame from the artwork and three precomputed maps:
+// each frame from the artwork and precomputed maps:
 //
 //   sky     the sky inside the arch with the lettering, lotus dividers and arch
 //           line painted out, so the whole sky can drift as one body
 //   fg      those painted-out elements as a layer, redrawn exactly on top
 //   masks   R water, G foliage (stronger further from where it grows),
 //           B the moving sky (fading out above the skyline)
+//   arch    R the gold frame line, G scenery still-weight, B px to the frame
+//   pieces  each flower head, leaf and bud cut out as a rigid piece: the
+//           offset to its centre (R, G) and, for flower heads, the radius (B)
+//   sway    R where the plants may move, G/B px to the scenery/frame
 //
 // Water ripples in a seamless 10 s loop of irregular travelling ripples, and
 // its existing golden reflections shimmer as independent horizontal streaks.
-// Foliage samples it through a wind field: a slow branch sway plus faster flutter that varies across the card, so each
-// blossom and leaf moves on its own. The sky drifts as a whole beneath the
+// Foliage moves only by tiny rigid rotations: thin stems lean about their
+// roots and flower heads nod about their stems, so nothing changes shape. The sky drifts as a whole beneath the
 // lettering. Everything else is drawn untouched.
 import skyUrl from '../assets/ambient/sky.webp';
 import fgUrl from '../assets/ambient/fg.webp';
 import masksUrl from '../assets/ambient/masks.webp';
 import archUrl from '../assets/ambient/arch.webp';
-import flowersUrl from '../assets/ambient/flowers.webp';
-import flowerWUrl from '../assets/ambient/flowersw.webp';
+import piecesUrl from '../assets/ambient/pieces.webp';
+import swayUrl from '../assets/ambient/sway.webp';
 
 const VERTEX = `
 attribute vec2 aPos;
@@ -34,15 +38,15 @@ precision highp float;
 #else
 precision mediump float;
 #endif
-uniform sampler2D uArt, uSky, uFg, uMasks, uArch, uFlowers, uFlowerW;
+uniform sampler2D uArt, uSky, uFg, uMasks, uArch, uPieces, uSway;
 uniform float uTime, uRamp;
 varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 const float TAU = 6.2831853;
-// largest movement, in painting px (the card is drawn at ~0.4-1.5x)
-const float BRANCH_PX = 46.875;   // branch tips
-const float PETAL_PX = 16.875;   // petal tips
-const float LEAF_PX = 14.0625;   // leaf flex
+// largest rotations, in degrees
+const float STEM_DEG = 2.0;         // thin outer stems, about their roots
+const float HEAD_DEG_SMALL = 0.7;   // small flower heads, about their stems
+const float HEAD_DEG_LARGE = 0.4;   // the large peonies
 
 // smooth value noise, so motion is organic and never one repeating sine
 // (inputs wrapped to a small range so it stays precise on mobile GPUs)
@@ -59,6 +63,32 @@ float noise(vec2 p) {
 float breeze(float t, float p) {
   float b = 0.5 + 0.3 * sin(TAU * t / 47.0 + p) + 0.2 * sin(TAU * t / 31.0 + 1.7 * p + 0.6);
   return 0.1 + 0.9 * smoothstep(0.1, 0.95, b);
+}
+
+// The breeze on the thin stems at x: each garland turns a fraction of a degree
+// about the corner it grows from, building up gradually away from the root.
+// The motion toward the gold frame, the scenery or the card's edge is limited
+// to a tenth of the distance to it, so nothing is ever carried across them and
+// the motion eases off without stretching anything.
+vec2 stemField(vec2 x) {
+  float t = uTime;
+  float side = x.x < SIZE.x * 0.5 ? 1.0 : -1.0;               // +1 leans right (inward) on the left
+  float lag = (side > 0.0 ? 0.0 : 1.9) + x.y * 0.00082;        // the sides out of step, ~4 s down a side
+  float gust = breeze(t - lag * 3.2, side > 0.0 ? 0.0 : 2.3);
+  float period = side > 0.0 ? 22.0 : 26.0;
+  float sway = (0.8 * sin(TAU / period * t - lag) + 0.2 * sin(TAU / 29.0 * t - lag * 1.3 - 1.7 + x.x * 0.002)) * gust;
+  float fromTop = 1.0 - smoothstep(620.0, 860.0, x.y);         // top garlands hang, bottom ones grow up
+  vec2 qT = x - vec2(side > 0.0 ? 0.0 : SIZE.x, 0.0);
+  vec2 qB = x - vec2(side > 0.0 ? 0.0 : SIZE.x, SIZE.y);
+  vec2 turn = mix(smoothstep(120.0, 420.0, length(qB)) * vec2(-qB.y, qB.x),
+                  smoothstep(120.0, 420.0, length(qT)) * vec2(-qT.y, qT.x), fromTop);
+  vec3 sm = texture2D(uSway, x / SIZE).rgb;                    // r: foliage, g/b: px to scenery/frame
+  vec2 d = sm.r * radians(STEM_DEG) * side * sway * turn;
+  vec2 e = vec2(max(min(x.x, SIZE.x - x.x) - 2.0, 0.0), max(min(x.y, SIZE.y - x.y) - 2.0, 0.0)) * 0.1;
+  d = clamp(d, -e, e);
+  float lim = 0.1 * max(min(sm.g, sm.b) * 255.0 - 6.0, 0.0);
+  float len = length(d);
+  return len > lim ? d * (lim / len) : d;
 }
 
 void main() {
@@ -115,89 +145,49 @@ void main() {
   // light and shade on the ripple slopes, so the bands read as travelling
   float slope = 0.5 * cos(r1) + 0.3 * cos(r4) + 0.2 * cos(r3);
 
-  // Foliage: a living arrangement in an almost windless spring breeze, built
-  // as a hierarchy that never moves as one rigid piece:
-  //   branches   rooted at the card's edges, a slow 22-26 s bend of ~0.4 deg
-  //   heads      each flower nods about its stem, 14-22 s, ~0.5-1 deg
-  //              (larger flowers slower and less), following its branch ~1.5 s late
-  //   petals     the outer petals flex and breathe, 8-14 s, 1-2 px at the tips,
-  //              each petal a little out of step with its neighbours
-  //   leaves     tilt on their own 10-18 s cycles, each leaf at its own phase
-  // A slowly varying breeze (never mirrored left/right) sets the strength of
-  // all of it, with quiet spells where the flowers are almost still.
+  // Foliage: flowers on a nearly windless spring morning. The garlands are
+  // cut into pieces (each flower head, leaf and bud, from the pieces map), and
+  // every piece moves rigidly, so nothing ever stretches or changes shape:
+  //   main branches  still (near where each garland grows from)
+  //   thin stems     the outer sprays and vines turn up to ~2 deg about the
+  //                  garland's root corner; each piece takes the local motion
+  //                  as a rigid shift and turn, so only the thin stems and the
+  //                  sky between pieces flex
+  //   flower heads   each also nods ~0.4-0.7 deg about its own stem, mostly
+  //                  following its stem, a little out of step with neighbours
+  // Petals and leaves keep their painted shapes and ride with their piece.
+  // Cycles: stems 22 s (left) / 26 s (right), heads 14-22 s.
+  vec3 pc = texture2D(uPieces, vUv).rgb;
+  vec2 c = floor(px) + (floor(pc.rg * 255.0 + 0.5) - 128.0) + 0.5;   // this piece's centre (exact)
+  vec2 D0 = stemField(c), Dx = stemField(c + vec2(4.0, 0.0)), Dy = stemField(c + vec2(0.0, 4.0));
+  float turn = 0.5 * ((Dx.y - D0.y) - (Dy.x - D0.x)) / 4.0;     // the local rotation, without any stretch
+  vec2 rel = px - c;
+  vec2 stems = D0 + turn * vec2(-rel.y, rel.x);
 
-  // The gold arch stays perfectly still: no pixel near it moves, so it can
-  // never be pulled along (the motion reaches ~25 px; nothing within ~10 px
-  // of the frame moves, and motion eases in over the next ~50 px).
-  float arch = texture2D(uArch, vUv).r;                     // the gold frame line only
-  for (int k = 0; k < 8; k++) {
-    float ang = float(k) * 0.7854;
-    vec2 dir = vec2(cos(ang), sin(ang)) / SIZE;
-    arch = max(arch, texture2D(uArch, vUv + dir * 8.0).r);
-    arch = max(arch, 0.85 * texture2D(uArch, vUv + dir * 16.0).r);
+  // Flower heads nod as one piece about their stem, which runs toward the edge
+  // the plant grows from.
+  float R = pc.b * 255.0;
+  vec2 head = vec2(0.0);
+  if (R > 0.5) {
+    float side = c.x < SIZE.x * 0.5 ? 1.0 : -1.0;
+    float lag = (side > 0.0 ? 0.0 : 1.9) + c.y * 0.00082;
+    float gust = breeze(t - lag * 3.2, side > 0.0 ? 0.0 : 2.3);
+    float id = hash(floor(c));
+    float big = smoothstep(12.0, 60.0, R);                      // larger flowers: slower, smaller
+    vec2 stem = c.y < min(c.x, SIZE.x - c.x) ? vec2(0.0, -1.0) : vec2(side > 0.0 ? -1.0 : 1.0, 0.0);
+    vec2 q = px - (c + stem * R * 0.9);
+    float follow = side * 0.8 * sin(TAU / (side > 0.0 ? 22.0 : 26.0) * (t - 1.5) - lag) * gust;
+    float own = sin(TAU / mix(14.0, 22.0, big) * t + id * TAU) * breeze(t - 1.5 - id * 6.0, id * 4.0);
+    float nod = radians(mix(HEAD_DEG_SMALL, HEAD_DEG_LARGE, big)) * (0.7 * follow + 0.3 * own);
+    vec3 sm = texture2D(uSway, c / SIZE).rgb;
+    head = nod * vec2(-q.y, q.x) * clamp((min(sm.g, sm.b) * 255.0 - 8.0) / 16.0, 0.0, 1.0);
   }
-  float still = 1.0 - smoothstep(0.15, 0.6, arch);
-  still *= smoothstep(10.0, 60.0, texture2D(uArch, vUv).b * 255.0);
-  // The scenery stays perfectly still too: the buildings, trees, bridge and
-  // the sky behind the skyline. Nothing within ~16 px of them moves, and the
-  // motion eases in over the next ~56 px, so no moving pixel ever samples them.
-  still *= smoothstep(0.03, 1.0, texture2D(uArch, vUv).g);
-  // anchored at the card's edge, where the plants grow from (and nothing is
-  // ever sampled from outside the painting)
-  still *= smoothstep(0.0, 26.0, px.x) * smoothstep(0.0, 26.0, SIZE.x - px.x) * smoothstep(0.0, 26.0, px.y) * smoothstep(0.0, 26.0, SIZE.y - px.y);
-  sw *= still;
-
-  // The breeze: each side has its own timing, and it takes ~4 s to travel
-  // down a side. Its strength drifts between near-calm and gentle.
-  float side = px.x < SIZE.x * 0.5 ? 1.0 : -1.0;              // +1 leans right (inward) on the left
-  float lag = (side > 0.0 ? 0.0 : 1.9) + px.y * 0.00082;
-  float gust = breeze(t - lag * 3.2, side > 0.0 ? 0.0 : 2.3);
-
-  // Branches: rooted, the thicker bases nearly still, the far offshoots bend most.
-  float bPeriod = side > 0.0 ? 22.0 : 26.0;
-  float sway = (0.8 * sin(TAU / bPeriod * t - lag) + 0.2 * sin(TAU / 29.0 * t - lag * 1.3 - 1.7 + px.x * 0.002)) * gust;
-  float reach = min(min(px.x, SIZE.x - px.x), min(px.y, SIZE.y - px.y));
-  float bend = 0.3 + 0.7 * smoothstep(20.0, 280.0, reach);
-  vec2 branch = BRANCH_PX * sw * bend * vec2(side * sway, 0.05 * sway * sway);
-
-  // Flower heads and petals. The flower map gives each pixel its flower's
-  // centre and radius; its weight fades to zero at the flower's edge and
-  // between neighbouring flowers, so nothing tears.
-  vec3 fo = texture2D(uFlowers, vUv).rgb;
-  vec2 fw = texture2D(uFlowerW, vUv).rg;
-  vec2 c = floor(px) + (floor(fo.rg * 255.0 + 0.5) - 128.0) + 0.5;   // exact (nearest-texel map)
-  float R = max(fo.b * 255.0, 8.0);
-  float id = hash(floor(c));
-  float big = smoothstep(12.0, 60.0, R);                        // larger flowers: slower, smaller
-  vec2 d = px - c;
-  float r = length(d);
-  // nod about the stem, which runs toward the edge the plant grows from
-  vec2 stem = c.y < min(c.x, SIZE.x - c.x) ? vec2(0.0, -1.0) : vec2(c.x < SIZE.x * 0.5 ? -1.0 : 1.0, 0.0);
-  vec2 q = px - (c + stem * R * 0.9);
-  float follow = side * (0.8 * sin(TAU / bPeriod * (t - 1.5) - lag)) * gust;   // its branch, a moment late
-  float own = sin(TAU / mix(14.0, 22.0, big) * t + id * TAU) * breeze(t - 1.5 - id * 6.0, id * 4.0);
-  float nod = radians(mix(9.375, 4.6875, big)) * (0.45 * follow + 0.55 * own);
-  vec2 head = nod * vec2(-q.y, q.x);
-  // petals: base still, tips flex; neighbouring petals ~1-2 s out of step
-  float tip = smoothstep(0.15, 1.0, r / R);
-  tip *= tip;
-  vec2 radial = r > 0.5 ? d / r : vec2(0.0);
-  float pT = mix(8.0, 14.0, big);
-  float ang = atan(d.y, d.x);
-  float pb = 0.35 + 0.65 * breeze(t - 2.5 - id * 5.0, id * 7.0);
-  float flex = sin(TAU / pT * t + ang + id * 17.0) * (0.55 + 0.45 * sin(3.0 * ang + id * 9.0));
-  float breathe = sin(TAU / (pT * 1.37) * t + 2.0 * ang + id * 5.0);
-  vec2 petal = tip * pb * (radians(7.5) * R * flex * vec2(-radial.y, radial.x) + PETAL_PX * mix(0.6, 1.0, big) * breathe * radial);
-  // leaves (and buds): each tilts on its own, the phase varying leaf to leaf
-  float n1 = noise(px * 0.012), n2 = noise(px * 0.012 + 31.0);   // broad enough that leaves never fold
-  float lb = 0.35 + 0.65 * breeze(t - 1.0 - lag * 3.2, side > 0.0 ? 1.1 : 3.7);
-  vec2 leaf = LEAF_PX * lb * vec2(sin(TAU / 12.0 * t + 1.5 * n1), 0.6 * sin(TAU / 16.5 * t + 1.5 * n2));
-
-  // a flower's own motion stays within 15% of its radius, so small blossoms
-  // nod and flex without distorting
-  vec2 hp = head + petal;
-  hp *= min(1.0, 0.15 * R / max(length(hp), 0.001));
-  vec2 foliage = uRamp * (branch + still * (fw.r * hp + fw.g * leaf));
+  vec2 foliage = uRamp * (stems + head);
+  // and, whatever a piece does, nothing comes within reach of the frame or scenery
+  vec3 here = texture2D(uSway, vUv).rgb;
+  float reachMax = 0.6 * max(min(here.g, here.b) * 255.0 - 4.0, 0.0);
+  float fl = length(foliage);
+  if (fl > reachMax) foliage *= reachMax / fl;
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
@@ -243,7 +233,7 @@ function loadImage(url: string) {
 }
 
 /** Starts fetching the maps early so the renderer is ready when needed. */
-export const ambientMaps = () => Promise.all([loadImage(skyUrl), loadImage(fgUrl), loadImage(masksUrl), loadImage(archUrl), loadImage(flowersUrl), loadImage(flowerWUrl)]);
+export const ambientMaps = () => Promise.all([loadImage(skyUrl), loadImage(fgUrl), loadImage(masksUrl), loadImage(archUrl), loadImage(piecesUrl), loadImage(swayUrl)]);
 
 export class AmbientRenderer {
   private gl: WebGLRenderingContext;
@@ -292,14 +282,14 @@ export class AmbientRenderer {
     gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-    ['uArt', 'uSky', 'uFg', 'uMasks', 'uArch', 'uFlowers', 'uFlowerW'].forEach((name, unit) => {
+    ['uArt', 'uSky', 'uFg', 'uMasks', 'uArch', 'uPieces', 'uSway'].forEach((name, unit) => {
       const texture = gl.createTexture()!;
       gl.activeTexture(gl.TEXTURE0 + unit);
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      // the flower map holds exact per-flower values, so it is never blended
-      const filter = name === 'uFlowers' ? gl.NEAREST : gl.LINEAR;
+      // the pieces map holds exact per-piece values, so it is never blended
+      const filter = name === 'uPieces' ? gl.NEAREST : gl.LINEAR;
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, unit === 0 ? art : maps[unit - 1]);
