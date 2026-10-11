@@ -44,9 +44,9 @@ varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 const float TAU = 6.2831853;
 // largest rotations, in degrees
-const float STEM_DEG = 2.0;         // thin outer stems, about their roots
-const float HEAD_DEG_SMALL = 0.7;   // small flower heads, about their stems
-const float HEAD_DEG_LARGE = 0.4;   // the large peonies
+const float STEM_DEG = 6.0;         // thin outer stems, about their roots
+const float HEAD_DEG_SMALL = 1.5;   // small flower heads, about their stems
+const float HEAD_DEG_LARGE = 0.9;   // the large peonies
 
 // smooth value noise, so motion is organic and never one repeating sine
 // (inputs wrapped to a small range so it stays precise on mobile GPUs)
@@ -68,7 +68,7 @@ float breeze(float t, float p) {
 // The breeze on the thin stems at x: each garland turns a fraction of a degree
 // about the corner it grows from, building up gradually away from the root.
 // The motion toward the gold frame, the scenery or the card's edge is limited
-// to a tenth of the distance to it, so nothing is ever carried across them and
+// to a quarter of the distance to it, so nothing is ever carried across them and
 // the motion eases off without stretching anything.
 vec2 stemField(vec2 x) {
   float t = uTime;
@@ -84,9 +84,9 @@ vec2 stemField(vec2 x) {
                   smoothstep(120.0, 420.0, length(qT)) * vec2(-qT.y, qT.x), fromTop);
   vec3 sm = texture2D(uSway, x / SIZE).rgb;                    // r: foliage, g/b: px to scenery/frame
   vec2 d = sm.r * radians(STEM_DEG) * side * sway * turn;
-  vec2 e = vec2(max(min(x.x, SIZE.x - x.x) - 2.0, 0.0), max(min(x.y, SIZE.y - x.y) - 2.0, 0.0)) * 0.1;
+  vec2 e = vec2(max(min(x.x, SIZE.x - x.x) - 2.0, 0.0), max(min(x.y, SIZE.y - x.y) - 2.0, 0.0)) * 0.25;
   d = clamp(d, -e, e);
-  float lim = 0.1 * max(min(sm.g, sm.b) * 255.0 - 6.0, 0.0);
+  float lim = 0.25 * max(min(sm.g, sm.b) * 255.0 - 6.0, 0.0);
   float len = length(d);
   return len > lim ? d * (lim / len) : d;
 }
@@ -149,11 +149,11 @@ void main() {
   // cut into pieces (each flower head, leaf and bud, from the pieces map), and
   // every piece moves rigidly, so nothing ever stretches or changes shape:
   //   main branches  still (near where each garland grows from)
-  //   thin stems     the outer sprays and vines turn up to ~2 deg about the
+  //   thin stems     the outer sprays and vines turn up to ~6 deg about the
   //                  garland's root corner; each piece takes the local motion
   //                  as a rigid shift and turn, so only the thin stems and the
   //                  sky between pieces flex
-  //   flower heads   each also nods ~0.4-0.7 deg about its own stem, mostly
+  //   flower heads   each also nods ~1-1.5 deg about its own stem, mostly
   //                  following its stem, a little out of step with neighbours
   // Petals and leaves keep their painted shapes and ride with their piece.
   // Cycles: stems 22 s (left) / 26 s (right), heads 14-22 s.
