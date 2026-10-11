@@ -62,7 +62,7 @@ const sections: Section[] = (Object.keys(ARMS) as ArmName[]).map((name) => ({
 // ---- the choreography ----------------------------------------------------------
 
 /** Length of the whole formation, in seconds. */
-export const BOW_FORM_SECONDS = 8.0;   // half the speed of the previous 4.0 s
+export const BOW_FORM_SECONDS = 8.0 / 1.2;   // 20% faster than 8.0 s (about 6.7 s)
 
 type Pose = { reveal: number; scale: number; turn: number };   // reveal in steps along the section
 
