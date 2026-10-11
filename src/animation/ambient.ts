@@ -8,8 +8,8 @@
 //   masks   R water, G foliage (stronger further from where it grows),
 //           B the moving sky (fading out above the skyline)
 //
-// Water samples the artwork through layered, drifting ripple noise, and its
-// existing golden reflections shimmer as independent horizontal fragments.
+// Water ripples in a seamless 10 s loop of irregular travelling ripples, and
+// its existing golden reflections shimmer as independent horizontal streaks.
 // Foliage samples it through a wind field: a slow branch sway plus faster flutter that varies across the card, so each
 // blossom and leaf moves on its own. The sky drifts as a whole beneath the
 // lettering. Everything else is drawn untouched.
@@ -51,24 +51,31 @@ void main() {
   vec4 m = texture2D(uMasks, vUv);
   float t = uTime;
 
-  // Water: visible horizontal ripple bands (a few screen pixels tall) made of
-  // three noise layers drifting right, left, and in place at different
-  // speeds, so each band of the river moves on its own. Finer and calmer by
-  // the far bank, a little wider toward the viewer.
+  // Water: a seamless 10 s loop. Every motion runs at a whole number of
+  // cycles per loop (1, 2, 3, 4 or 6), so the last frame flows into the
+  // first. Thin horizontal ripples travel mostly left to right, with one
+  // layer going the other way. A fixed noise pattern bends each into
+  // irregular, broken shapes, and a slow regional envelope lets ripples
+  // build up and flatten. Finer and tighter near the bridge, wider in front.
+  const float TAU = 6.2831853;
+  float w = TAU / 10.0;                                       // one loop per 10 s
   float depth = clamp((px.y - 1404.0) / 132.0, 0.0, 1.0);
-  float ripple = mix(1.6, 1.0, depth);                      // finer far away
-  vec2 q = vec2(px.x * 0.010, px.y * 0.085) * ripple;
-  float n1 = noise(q + vec2(t * 0.35, t * 0.12));                         // drifts right
-  float n2 = noise(q * vec2(1.7, 1.5) + vec2(-t * 0.55, 7.3 + t * 0.1));   // drifts left
-  float n3 = noise(q * vec2(2.9, 2.3) + vec2(13.1, t * 0.7));             // changes shape
-  float wa = uRamp * m.r * mix(0.6, 1.0, depth);
+  float ripple = mix(1.6, 1.0, depth);                        // finer far away
+  vec2 rp = px * ripple;
+  float p1 = 5.0 * noise(vec2(px.x * 0.006, px.y * 0.040));   // static phase fields
+  float p2 = 4.0 * noise(vec2(px.x * 0.009, px.y * 0.055) + 11.0);
+  float p3 = 3.0 * noise(vec2(px.x * 0.014, px.y * 0.080) + 23.0);
+  float r1 = 0.035 * rp.x + 0.30 * rp.y + p1 - 2.0 * w * t;   // broad, drifts right (5 s)
+  float r2 = -0.050 * rp.x + 0.42 * rp.y + p2 - 3.0 * w * t;  // drifts left (3.3 s)
+  float r3 = 0.090 * rp.x + 0.70 * rp.y + p3 - 6.0 * w * t;   // fine, right (1.7 s)
+  float r4 = 0.060 * rp.x + 0.55 * rp.y - p1 - 4.0 * w * t;   // medium, right (2.5 s)
+  float env = 0.65 + 0.35 * sin(w * t + p2 * 1.3);            // ripples grow and fade (10 s)
+  float wa = uRamp * m.r * mix(0.6, 1.0, depth) * env;
   vec2 water = wa * vec2(
-    16.2 * (0.55 * n1 + 0.30 * n2 + 0.15 * n3),
-    4.7 * (0.6 * n2 + 0.4 * n3));
-  // the slope of each ripple catches the light, so the bands read as moving
-  vec2 qd = vec2(0.0, 4.0 * 0.085 * ripple);
-  float slope = (0.6 * noise(q + qd + vec2(t * 0.35, t * 0.12)) + 0.4 * noise((q + qd) * vec2(1.7, 1.5) + vec2(-t * 0.55, 7.3 + t * 0.1)))
-              - (0.6 * n1 + 0.4 * n2);
+    9.0 * (0.42 * sin(r1) + 0.24 * sin(r2) + 0.14 * sin(r3) + 0.20 * sin(r4)),
+    2.6 * (0.5 * sin(r2 + 1.3) + 0.5 * sin(r3 + 0.6)));
+  // light and shade on the ripple slopes, so the bands read as travelling
+  float slope = 0.5 * cos(r1) + 0.3 * cos(r4) + 0.2 * cos(r3);
 
   // Foliage: whole sprays sway together like branches in a breeze. The weight
   // is smoothed over the region (so outlines move with their flowers), grows
@@ -101,22 +108,20 @@ void main() {
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
 
-  // Golden reflections: only the existing bright streaks shimmer. Their
-  // brightness is broken into short horizontal fragments that drift, stretch,
-  // part and rejoin independently, in the painting's own colours.
+  // Golden reflections: the painting's own bright streaks shimmer. Their
+  // brightness follows the same ripples, so streaks widen, narrow, part and
+  // rejoin as the water moves; the brightest flicks appear briefly where two
+  // ripples crest together. Only the existing colours get lighter or darker.
   if (m.r > 0.0) {
     float lum = dot(base, vec3(0.2126, 0.7152, 0.0722));
     float glow = smoothstep(0.5, 0.82, lum) * m.r * uRamp;
-    vec2 s = vec2(px.x * 0.05, px.y * 0.42) * ripple;
-    float f1 = noise(s + vec2(t * 0.55, 0.0));
-    float f2 = noise(s * vec2(0.6, 1.3) + vec2(-t * 0.35, t * 0.22 + 4.7));
-    float shimmer = 0.6 * f1 + 0.4 * f2;                      // -1..1, smooth
-    // dimmer gaps between streaks, brighter crests; stays within the palette
-    base *= 1.0 + glow * (0.32 * shimmer + 0.04);
+    float shimmer = 0.5 * sin(r1 + 0.8) + 0.3 * sin(r3 + 2.1) + 0.2 * sin(r2 + 0.4);
+    float crest = pow(max(0.0, sin(r1) * sin(r4)), 3.0);
+    base *= 1.0 + glow * (0.26 * shimmer * env + 0.22 * crest + 0.04);
     // the darker water between reflections breathes very slightly
-    base *= 1.0 - (1.0 - smoothstep(0.35, 0.6, lum)) * m.r * uRamp * 0.06 * f2;
+    base *= 1.0 - (1.0 - smoothstep(0.35, 0.6, lum)) * m.r * uRamp * 0.05 * sin(r2 + 2.5);
     // light and shade on each ripple's slope
-    base *= 1.0 + m.r * uRamp * 0.168 * slope;
+    base *= 1.0 + m.r * uRamp * 0.09 * slope * env;
   }
 
   // Sky: drifts slowly as one body, with a faint rise and fall.
