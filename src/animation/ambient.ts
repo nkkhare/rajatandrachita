@@ -40,9 +40,9 @@ varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 const float TAU = 6.2831853;
 // largest movement, in painting px (the card is drawn at ~0.4-1.5x)
-const float BRANCH_PX = 6.25;   // branch tips
-const float PETAL_PX = 2.25;   // petal tips
-const float LEAF_PX = 1.875;   // leaf flex
+const float BRANCH_PX = 15.625;   // branch tips
+const float PETAL_PX = 5.625;   // petal tips
+const float LEAF_PX = 4.6875;   // leaf flex
 
 // smooth value noise, so motion is organic and never one repeating sine
 // (inputs wrapped to a small range so it stays precise on mobile GPUs)
@@ -127,7 +127,8 @@ void main() {
   // all of it, with quiet spells where the flowers are almost still.
 
   // The gold arch stays perfectly still: no pixel near it moves, so it can
-  // never be pulled along (the motion reaches ~8 px, the guard ~16 px).
+  // never be pulled along (the motion reaches ~25 px; nothing within ~10 px
+  // of the frame moves, and motion eases in over the next ~50 px).
   float arch = texture2D(uArch, vUv).r;                     // the gold frame line only
   for (int k = 0; k < 8; k++) {
     float ang = float(k) * 0.7854;
@@ -136,6 +137,7 @@ void main() {
     arch = max(arch, 0.85 * texture2D(uArch, vUv + dir * 16.0).r);
   }
   float still = 1.0 - smoothstep(0.15, 0.6, arch);
+  still *= smoothstep(10.0, 60.0, texture2D(uArch, vUv).b * 255.0);
   // The scenery stays perfectly still too: the buildings, trees, bridge and
   // the sky behind the skyline. Nothing within ~16 px of them moves, and the
   // motion eases in over the next ~56 px, so no moving pixel ever samples them.
@@ -174,7 +176,7 @@ void main() {
   vec2 q = px - (c + stem * R * 0.9);
   float follow = side * (0.8 * sin(TAU / bPeriod * (t - 1.5) - lag)) * gust;   // its branch, a moment late
   float own = sin(TAU / mix(14.0, 22.0, big) * t + id * TAU) * breeze(t - 1.5 - id * 6.0, id * 4.0);
-  float nod = radians(mix(1.25, 0.625, big)) * (0.45 * follow + 0.55 * own);
+  float nod = radians(mix(3.125, 1.5625, big)) * (0.45 * follow + 0.55 * own);
   vec2 head = nod * vec2(-q.y, q.x);
   // petals: base still, tips flex; neighbouring petals ~1-2 s out of step
   float tip = smoothstep(0.15, 1.0, r / R);
@@ -185,7 +187,7 @@ void main() {
   float pb = 0.35 + 0.65 * breeze(t - 2.5 - id * 5.0, id * 7.0);
   float flex = sin(TAU / pT * t + ang + id * 17.0) * (0.55 + 0.45 * sin(3.0 * ang + id * 9.0));
   float breathe = sin(TAU / (pT * 1.37) * t + 2.0 * ang + id * 5.0);
-  vec2 petal = tip * pb * (radians(1.0) * R * flex * vec2(-radial.y, radial.x) + PETAL_PX * mix(0.6, 1.0, big) * breathe * radial);
+  vec2 petal = tip * pb * (radians(2.5) * R * flex * vec2(-radial.y, radial.x) + PETAL_PX * mix(0.6, 1.0, big) * breathe * radial);
   // leaves (and buds): each tilts on its own, the phase varying leaf to leaf
   float n1 = noise(px * 0.03), n2 = noise(px * 0.03 + 31.0);
   float lb = 0.35 + 0.65 * breeze(t - 1.0 - lag * 3.2, side > 0.0 ? 1.1 : 3.7);
