@@ -40,9 +40,9 @@ varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 const float TAU = 6.2831853;
 // largest movement, in painting px (the card is drawn at ~0.4-1.5x)
-const float BRANCH_PX = 15.625;   // branch tips
-const float PETAL_PX = 5.625;   // petal tips
-const float LEAF_PX = 4.6875;   // leaf flex
+const float BRANCH_PX = 46.875;   // branch tips
+const float PETAL_PX = 16.875;   // petal tips
+const float LEAF_PX = 14.0625;   // leaf flex
 
 // smooth value noise, so motion is organic and never one repeating sine
 // (inputs wrapped to a small range so it stays precise on mobile GPUs)
@@ -176,7 +176,7 @@ void main() {
   vec2 q = px - (c + stem * R * 0.9);
   float follow = side * (0.8 * sin(TAU / bPeriod * (t - 1.5) - lag)) * gust;   // its branch, a moment late
   float own = sin(TAU / mix(14.0, 22.0, big) * t + id * TAU) * breeze(t - 1.5 - id * 6.0, id * 4.0);
-  float nod = radians(mix(3.125, 1.5625, big)) * (0.45 * follow + 0.55 * own);
+  float nod = radians(mix(9.375, 4.6875, big)) * (0.45 * follow + 0.55 * own);
   vec2 head = nod * vec2(-q.y, q.x);
   // petals: base still, tips flex; neighbouring petals ~1-2 s out of step
   float tip = smoothstep(0.15, 1.0, r / R);
@@ -187,13 +187,17 @@ void main() {
   float pb = 0.35 + 0.65 * breeze(t - 2.5 - id * 5.0, id * 7.0);
   float flex = sin(TAU / pT * t + ang + id * 17.0) * (0.55 + 0.45 * sin(3.0 * ang + id * 9.0));
   float breathe = sin(TAU / (pT * 1.37) * t + 2.0 * ang + id * 5.0);
-  vec2 petal = tip * pb * (radians(2.5) * R * flex * vec2(-radial.y, radial.x) + PETAL_PX * mix(0.6, 1.0, big) * breathe * radial);
+  vec2 petal = tip * pb * (radians(7.5) * R * flex * vec2(-radial.y, radial.x) + PETAL_PX * mix(0.6, 1.0, big) * breathe * radial);
   // leaves (and buds): each tilts on its own, the phase varying leaf to leaf
-  float n1 = noise(px * 0.03), n2 = noise(px * 0.03 + 31.0);
+  float n1 = noise(px * 0.012), n2 = noise(px * 0.012 + 31.0);   // broad enough that leaves never fold
   float lb = 0.35 + 0.65 * breeze(t - 1.0 - lag * 3.2, side > 0.0 ? 1.1 : 3.7);
-  vec2 leaf = LEAF_PX * lb * vec2(sin(TAU / 12.0 * t + 3.0 * n1), 0.6 * sin(TAU / 16.5 * t + 3.0 * n2));
+  vec2 leaf = LEAF_PX * lb * vec2(sin(TAU / 12.0 * t + 1.5 * n1), 0.6 * sin(TAU / 16.5 * t + 1.5 * n2));
 
-  vec2 foliage = uRamp * (branch + still * (fw.r * (head + petal) + fw.g * leaf));
+  // a flower's own motion stays within 15% of its radius, so small blossoms
+  // nod and flex without distorting
+  vec2 hp = head + petal;
+  hp *= min(1.0, 0.15 * R / max(length(hp), 0.001));
+  vec2 foliage = uRamp * (branch + still * (fw.r * hp + fw.g * leaf));
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
