@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { EnvelopeIntro, INVITATION_FADE_START_MS, INVITATION_VISIBLE_MS, REVEAL_DURATION_MS, type InvitationState } from './EnvelopeIntro';
 import { BowTie } from './BowTie';
+import inviteNoteUrl from './assets/invitation-to-follow.png';
 import { Countdown } from './Countdown';
 import { MusicToggle } from './MusicToggle';
 import { Soundtrack } from './soundtrack';
 
-const imageUrl = `${import.meta.env.BASE_URL}save-the-date-v11.png`;
+const imageUrl = `${import.meta.env.BASE_URL}save-the-date-v12.png`;
 const soundtrack = new Soundtrack();
 
 export function App() {
@@ -142,6 +143,8 @@ export function App() {
           />
           <canvas ref={ambientRef} className="invitation__ambient" aria-hidden="true" />
           <Countdown />
+          {/* "Invitation to follow", rebuilt at 4x from the painted lettering so it stays crisp when zoomed */}
+          <img className="invitation__note" src={inviteNoteUrl} alt="" aria-hidden="true" draggable={false} />
           <BowTie play={bowPlaying} />
           <canvas ref={petalsRef} className="invitation__petals" aria-hidden="true" />
         </div>

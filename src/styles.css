@@ -23,7 +23,7 @@ body { overflow-x: hidden; }
   position: fixed;
   z-index: -1;
   inset: -48px;
-  background: linear-gradient(#efd5cc38, #b4768938), url('/save-the-date-v11.png') center / cover no-repeat;
+  background: linear-gradient(#efd5cc38, #b4768938), url('/save-the-date-v12.png') center / cover no-repeat;
   filter: blur(30px) saturate(.8);
   transform: scale(1.04);
   pointer-events: none;
@@ -60,6 +60,19 @@ body { overflow-x: hidden; }
   width: 42.65625%;  /* 436.8 px = 80% of 546 */
   height: 6.354167%; /* 97.6 px = 80% of 122 */
   pointer-events: none;
+}
+
+.invitation__note {
+  /* the lettering, rebuilt at 4x (1304 x 416) from the painting; sits exactly
+     where it was painted (x 350-676, y 1012-1116 of the 1024 x 1536 artwork) */
+  position: absolute;
+  z-index: 1;
+  left: 34.179688%;
+  top: 65.885417%;
+  width: 31.835938%;
+  height: 6.770833%;
+  pointer-events: none;
+  user-select: none;
 }
 
 .invitation__ambient {
