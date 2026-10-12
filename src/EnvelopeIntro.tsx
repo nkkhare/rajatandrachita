@@ -19,9 +19,9 @@ const TOTAL_SECONDS = REVEAL_START + CARD_SECONDS;
 export const REVEAL_DURATION_MS = Math.round(TOTAL_SECONDS * 1000);
 /** When the invitation starts to fade in; its ambient motion starts then too. */
 export const INVITATION_FADE_START_MS = Math.round(REVEAL_START * 1000);
-/** When the invitation looks fully faded in (97% opaque; the fade's last
- *  stretch is too gentle to see), so what follows can start without a pause. */
-export const INVITATION_VISIBLE_MS = Math.round((REVEAL_START + 0.89 * CARD_SECONDS) * 1000);
+/** When the invitation is 90% faded in (80% of the way through its eased
+ *  fade), so what follows starts during the last stretch of the fade. */
+export const INVITATION_VISIBLE_MS = Math.round((REVEAL_START + 0.8 * CARD_SECONDS) * 1000);
 
 // Lid angle (degrees) over time, fitted to the reference seal's position,
 // foreshortening, and growth: the lid hinges on the top edge of the screen

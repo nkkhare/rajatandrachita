@@ -42,7 +42,7 @@ export function App() {
     return () => window.clearTimeout(timer);
   }, [invitationState]);
 
-  // The bow starts forming the moment the invitation has visibly faded in.
+  // The bow starts forming during the last 10% of the invitation's fade-in.
   useEffect(() => {
     if (invitationState === 'revealed') { setBowPlaying(true); return; }
     if (invitationState !== 'opening') return;
