@@ -44,9 +44,9 @@ varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 const float TAU = 6.2831853;
 // largest rotations, in degrees
-const float STEM_DEG = 9.35;         // thin outer stems, about their roots
-const float HEAD_DEG_SMALL = 3.3;   // small flower heads, about their stems
-const float HEAD_DEG_LARGE = 1.98;   // the large peonies
+const float STEM_DEG = 18.7;         // thin outer stems, about their roots
+const float HEAD_DEG_SMALL = 4.95;   // small flower heads, about their stems
+const float HEAD_DEG_LARGE = 2.97;   // the large peonies
 
 // smooth value noise, so motion is organic and never one repeating sine
 // (inputs wrapped to a small range so it stays precise on mobile GPUs)
@@ -162,11 +162,11 @@ void main() {
   // cut into pieces (each flower head, leaf and bud, from the pieces map), and
   // every piece moves rigidly, so nothing ever stretches or changes shape:
   //   main branches  still (near where each garland grows from)
-  //   thin stems     the outer sprays and vines turn up to ~9.35 deg about the
+  //   thin stems     the outer sprays and vines turn up to ~18.7 deg about the
   //                  garland's root corner; each piece takes the local motion
   //                  as a rigid shift and turn, so only the thin stems and the
   //                  sky between pieces flex
-  //   flower heads   each also nods ~2-3 deg about its own stem, following
+  //   flower heads   each also nods ~3-5 deg about its own stem, following
   //                  its stem's lean a moment later
   // Petals and leaves keep their painted shapes and ride with their piece.
   // All of it is driven by one shared breeze (wind()), one 24 s swing.
@@ -217,6 +217,14 @@ void main() {
   float reachMax = 0.6 * max(min(here.g, here.b) * 255.0 - 4.0, 0.0);
   float fl = length(foliage);
   if (fl > reachMax) foliage *= reachMax / fl;
+  // and nothing is ever drawn in from beyond the card's edge: motion that
+  // would reach past an edge eases off close to it (whole stems and nodding
+  // heads alike)
+  vec2 lo = 0.25 * px + 0.5, hi = 0.25 * (SIZE - px) + 0.5;      // room toward each edge
+  if (foliage.x > 0.0) foliage.x *= lo.x / sqrt(lo.x * lo.x + foliage.x * foliage.x);
+  else foliage.x *= hi.x / sqrt(hi.x * hi.x + foliage.x * foliage.x);
+  if (foliage.y > 0.0) foliage.y *= lo.y / sqrt(lo.y * lo.y + foliage.y * foliage.y);
+  else foliage.y *= hi.y / sqrt(hi.y * hi.y + foliage.y * foliage.y);
 
   vec2 uv = vUv - (water + foliage) / SIZE;
   vec3 base = texture2D(uArt, uv).rgb;
