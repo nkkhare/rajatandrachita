@@ -120,6 +120,29 @@ vec2 stemField(vec2 x) {
   return reach * wind(x, lag) + vec2(0.0, 0.35 * length(reach)) * windQ(x, lag);
 }
 
+// The painting, resampled with a Catmull-Rom (bicubic) filter: crisper than
+// plain bilinear when the card is shown larger than the artwork (zoom, big
+// screens), without halos. Nine bilinear taps (Jimenez's method).
+vec3 artSample(vec2 uv) {
+  vec2 p = uv * SIZE - 0.5, f = fract(p), b = floor(p) + 0.5;
+  vec2 w0 = f * (-0.5 + f * (1.0 - 0.5 * f));
+  vec2 w1 = 1.0 + f * f * (-2.5 + 1.5 * f);
+  vec2 w2 = f * (0.5 + f * (2.0 - 1.5 * f));
+  vec2 w3 = f * f * (-0.5 + 0.5 * f);
+  vec2 w12 = w1 + w2, o12 = w2 / w12;
+  vec2 t0 = (b - 1.0) / SIZE, t3 = (b + 2.0) / SIZE, t12 = (b + o12) / SIZE;
+  vec3 c = texture2D(uArt, vec2(t0.x, t0.y)).rgb * w0.x * w0.y
+         + texture2D(uArt, vec2(t12.x, t0.y)).rgb * w12.x * w0.y
+         + texture2D(uArt, vec2(t3.x, t0.y)).rgb * w3.x * w0.y
+         + texture2D(uArt, vec2(t0.x, t12.y)).rgb * w0.x * w12.y
+         + texture2D(uArt, vec2(t12.x, t12.y)).rgb * w12.x * w12.y
+         + texture2D(uArt, vec2(t3.x, t12.y)).rgb * w3.x * w12.y
+         + texture2D(uArt, vec2(t0.x, t3.y)).rgb * w0.x * w3.y
+         + texture2D(uArt, vec2(t12.x, t3.y)).rgb * w12.x * w3.y
+         + texture2D(uArt, vec2(t3.x, t3.y)).rgb * w3.x * w3.y;
+  return clamp(c, 0.0, 1.0);
+}
+
 void main() {
   vec2 px = vUv * SIZE;
   vec4 m = texture2D(uMasks, vUv);
@@ -263,7 +286,7 @@ void main() {
   else foliage.y *= hi.y / sqrt(hi.y * hi.y + foliage.y * foliage.y);
 
   vec2 uv = vUv - (water + foliage) / SIZE;
-  vec3 base = texture2D(uArt, uv).rgb;
+  vec3 base = artSample(uv);
 
   // Golden reflections: the painting's own bright streaks shimmer. Their
   // brightness follows the same ripples, so streaks widen, narrow, part and
@@ -379,7 +402,10 @@ export class AmbientRenderer {
 
   private resize() {
     const rect = this.canvas.getBoundingClientRect();
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    // never less than before (2x the screen); when zoomed in, up to 3x so real
+    // detail shows, as long as the canvas stays within twice the artwork
+    const dpr = window.devicePixelRatio || 1, base = Math.min(dpr, 2);
+    const ratio = Math.max(base, Math.min(dpr, 3, 2048 / Math.max(1, rect.width)));
     const width = Math.max(1, Math.round(rect.width * ratio)), height = Math.max(1, Math.round(rect.height * ratio));
     if (this.canvas.width !== width || this.canvas.height !== height) {
       this.canvas.width = width; this.canvas.height = height;
