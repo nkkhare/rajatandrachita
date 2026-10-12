@@ -28,9 +28,9 @@ The envelope uses `closed → opening → revealed` states, and repeat taps are 
 
 ## Music
 
-Tapping the envelope starts `public/music/save-the-date.m4a` (see `src/soundtrack.ts`):
+Tapping the envelope starts `public/music/royal-monsoon.mp3` ("Royal Monsoon", ~62 s; see `src/soundtrack.ts`):
 - The song plays from 0:00 through the opening and on into the reveal.
-- After 0:15 it loops only 0:05–0:15, with a short crossfade at the loop point. The intro never repeats.
+- It loops for as long as the invitation is open: its real end (MP3 padding and trailing silence trimmed) is crossfaded over 1.5 s into its opening, so it flows straight back to the beginning with no gap.
 - A small toggle in the corner of the revealed invitation mutes and unmutes the music.
 - If the file is missing, the site runs silently and the toggle stays hidden.
 

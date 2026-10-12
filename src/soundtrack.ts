@@ -1,23 +1,38 @@
-// Background music in two phases: the tap that opens the envelope starts the
-// song at 0:00, it plays on through the reveal, and from 0:15 only the 0:05–
-// 0:15 phrase loops, so the introduction never repeats. The loop is
-// sample-accurate (AudioBufferSourceNode loop points) and a short equal-power
-// crossfade is baked into the phrase's last moments so the jump back to 0:05
-// has no audible seam.
-export const MUSIC_URL = `${import.meta.env.BASE_URL}music/save-the-date.m4a`;
+// Background music: "Royal Monsoon". The tap that opens the envelope starts
+// the song at 0:00, and it loops for as long as the invitation is open. The
+// loop is sample-accurate (AudioBufferSourceNode loop points): the song's
+// real end is found (MP3 padding and trailing silence trimmed), and its
+// opening is crossfaded over its last moments, so each time round the end
+// flows straight back into the beginning with no gap or jump.
+export const MUSIC_URL = `${import.meta.env.BASE_URL}music/royal-monsoon.mp3`;
 
-const LOOP_START = 5;
-const LOOP_END = 15;
-const CROSSFADE_SECONDS = 0.08;
+const CROSSFADE_SECONDS = 1.5;
 const VOLUME = 0.8;
 const FADE_SECONDS = 0.35;
 
 type AudioContextConstructor = typeof AudioContext;
 
-/** Blends the audio leading into LOOP_START over the end of the phrase. */
-export function prepareLoop(buffer: AudioBuffer, loopStart = LOOP_START, loopEnd = LOOP_END) {
+/** Where the song really ends: the last sample above a whisper (trims MP3
+ *  encoder padding and trailing silence, so the loop never pauses). */
+export function songEnd(buffer: AudioBuffer, threshold = 0.003) {
+  let last = 0;
+  for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+    const data = buffer.getChannelData(channel);
+    for (let i = data.length - 1; i > last; i--) if (Math.abs(data[i]) > threshold) { last = i; break; }
+  }
+  return (last + 1) / buffer.sampleRate;
+}
+
+/** The whole-song loop: from the end of the opening crossfade to the real end. */
+export function loopPoints(buffer: AudioBuffer) {
+  return { loopStart: CROSSFADE_SECONDS, loopEnd: songEnd(buffer) };
+}
+
+/** Blends the audio leading into loopStart (the song's opening) over the end,
+ *  with an equal-power crossfade as long as loopStart. */
+export function prepareLoop(buffer: AudioBuffer, loopStart: number, loopEnd: number) {
   const rate = buffer.sampleRate;
-  const fade = Math.round(CROSSFADE_SECONDS * rate);
+  const fade = Math.round(loopStart * rate);
   const end = Math.round(loopEnd * rate);
   const start = Math.round(loopStart * rate);
   if (end > buffer.length || start < fade) return;
@@ -32,23 +47,26 @@ export function prepareLoop(buffer: AudioBuffer, loopStart = LOOP_START, loopEnd
   }
 }
 
-/** Plays the buffer from `offset`, running into the loop and never back to 0. */
+/** Plays the buffer from `offset` (from 0:00 the first time), looping
+ *  loopStart..loopEnd from then on. */
 export function startSegmentLoop(
   context: BaseAudioContext,
   buffer: AudioBuffer,
   destination: AudioNode,
   when: number,
   offset: number,
+  loopStart: number,
+  loopEnd: number,
 ) {
   const source = context.createBufferSource();
   source.buffer = buffer;
   source.loop = true;
-  source.loopStart = LOOP_START;
-  source.loopEnd = Math.min(LOOP_END, buffer.duration);
+  source.loopStart = loopStart;
+  source.loopEnd = Math.min(loopEnd, buffer.duration);
   source.connect(destination);
   const position = offset < source.loopEnd
     ? offset
-    : LOOP_START + ((offset - LOOP_START) % (source.loopEnd - LOOP_START));
+    : loopStart + ((offset - loopStart) % (source.loopEnd - loopStart));
   source.start(when, position);
   return source;
 }
@@ -103,10 +121,11 @@ export class Soundtrack {
     void this.bytes.then(async (bytes) => {
       if (!bytes || context.state === 'closed') return;
       const buffer = await context.decodeAudioData(bytes.slice(0));
-      prepareLoop(buffer);
+      const { loopStart, loopEnd } = loopPoints(buffer);
+      prepareLoop(buffer, loopStart, loopEnd);
       // Keep the music in step with the envelope even if decoding took a moment.
       const offset = (performance.now() - tappedAt) / 1000;
-      this.source = startSegmentLoop(context, buffer, gain, context.currentTime, offset);
+      this.source = startSegmentLoop(context, buffer, gain, context.currentTime, offset, loopStart, loopEnd);
       this.available = true;
       this.notify();
     }).catch(() => undefined);
