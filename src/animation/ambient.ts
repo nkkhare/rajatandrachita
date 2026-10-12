@@ -44,9 +44,9 @@ varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 const float TAU = 6.2831853;
 // largest rotations, in degrees
-const float STEM_DEG = 8.5;         // thin outer stems, about their roots
-const float HEAD_DEG_SMALL = 3.0;   // small flower heads, about their stems
-const float HEAD_DEG_LARGE = 1.8;   // the large peonies
+const float STEM_DEG = 9.35;         // thin outer stems, about their roots
+const float HEAD_DEG_SMALL = 3.3;   // small flower heads, about their stems
+const float HEAD_DEG_LARGE = 1.98;   // the large peonies
 
 // smooth value noise, so motion is organic and never one repeating sine
 // (inputs wrapped to a small range so it stays precise on mobile GPUs)
@@ -77,7 +77,9 @@ float stemLean(vec2 x, out vec2 q) {
   float fromTop = 1.0 - smoothstep(620.0, 860.0, x.y);
   vec2 qT = x - vec2(root.x, 0.0), qB = x - vec2(root.x, SIZE.y);
   q = fromTop > 0.5 ? qT : qB;
-  return mix(-qB.y / max(length(qB), 1.0), -qT.y / max(length(qT), 1.0), fromTop);
+  // the low sprays along the bottom lie almost flat; they still catch a fair
+  // share of the breeze (at least 45%), so they sway too
+  return mix(0.45 + 0.55 * (-qB.y / max(length(qB), 1.0)), -qT.y / max(length(qT), 1.0), fromTop);
 }
 
 // The thin stems at x: each garland turns as one connected structure, by a
@@ -92,7 +94,7 @@ vec2 stemField(vec2 x) {
   vec2 rootX = vec2(x.x < SIZE.x * 0.5 ? 0.0 : SIZE.x, 0.0);
   vec2 qT = x - rootX, qB = x - rootX - vec2(0.0, SIZE.y);
   vec2 turnT = (-qT.y / max(length(qT), 1.0)) * vec2(-qT.y, qT.x);
-  vec2 turnB = (-qB.y / max(length(qB), 1.0)) * vec2(-qB.y, qB.x);
+  vec2 turnB = (0.45 + 0.55 * (-qB.y / max(length(qB), 1.0))) * vec2(-qB.y, qB.x);
   vec3 sm = texture2D(uSway, x / SIZE).rgb;                    // r: foliage, g/b: px to scenery/frame
   vec2 reach = sm.r * radians(STEM_DEG) * mix(turnB, turnT, fromTop);   // the full swing here
   vec2 room = 3.0 + 0.2 * vec2(min(x.x, SIZE.x - x.x), min(x.y, SIZE.y - x.y));
@@ -160,7 +162,7 @@ void main() {
   // cut into pieces (each flower head, leaf and bud, from the pieces map), and
   // every piece moves rigidly, so nothing ever stretches or changes shape:
   //   main branches  still (near where each garland grows from)
-  //   thin stems     the outer sprays and vines turn up to ~8.5 deg about the
+  //   thin stems     the outer sprays and vines turn up to ~9.35 deg about the
   //                  garland's root corner; each piece takes the local motion
   //                  as a rigid shift and turn, so only the thin stems and the
   //                  sky between pieces flex
