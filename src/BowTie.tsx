@@ -6,8 +6,8 @@ import './bow.css';
 // Where the approved bow sits in the 1024 x 1536 artwork.
 const ART = { width: 1024, height: 1536 };
 // 20% larger than first placed, centred in the gap between the names (moved
-// up 24 px with the evenly re-spaced lettering)
-const BOW = { x: 434.55, y: 493, width: 170.4 };
+// up with the evenly re-spaced lettering)
+const BOW = { x: 434.55, y: 463, width: 170.4 };
 const SCALE = BOW.width / BOW_SIZE.width;
 // the canvas just covers the finished bow, with a little room for the settle
 const VIEW = { x0: -6, x1: 204, y0: -6, y1: 143 };
