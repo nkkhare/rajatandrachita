@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { EnvelopeIntro, INVITATION_FADE_START_MS, REVEAL_DURATION_MS, type InvitationState } from './EnvelopeIntro';
+import { EnvelopeIntro, INVITATION_FADE_START_MS, INVITATION_VISIBLE_MS, REVEAL_DURATION_MS, type InvitationState } from './EnvelopeIntro';
 import { BowTie } from './BowTie';
 import { Countdown } from './Countdown';
 import { MusicToggle } from './MusicToggle';
@@ -13,6 +13,7 @@ export function App() {
   // The water, foliage and sky start as soon as the invitation begins to fade in, so
   // they appear with it; the petals start once it is fully visible.
   const [ambient, setAmbient] = useState(false);
+  const [bowPlaying, setBowPlaying] = useState(false);
   const openedAt = useRef(0);
   const imageRef = useRef<HTMLImageElement>(null);
   const ambientRef = useRef<HTMLCanvasElement>(null);
@@ -38,6 +39,14 @@ export function App() {
     if (invitationState !== 'opening') return;
     openedAt.current = performance.now();
     const timer = window.setTimeout(() => setAmbient(true), INVITATION_FADE_START_MS);
+    return () => window.clearTimeout(timer);
+  }, [invitationState]);
+
+  // The bow starts forming the moment the invitation has visibly faded in.
+  useEffect(() => {
+    if (invitationState === 'revealed') { setBowPlaying(true); return; }
+    if (invitationState !== 'opening') return;
+    const timer = window.setTimeout(() => setBowPlaying(true), INVITATION_VISIBLE_MS);
     return () => window.clearTimeout(timer);
   }, [invitationState]);
 
@@ -133,7 +142,7 @@ export function App() {
           />
           <canvas ref={ambientRef} className="invitation__ambient" aria-hidden="true" />
           <Countdown />
-          <BowTie play={invitationState === 'revealed'} />
+          <BowTie play={bowPlaying} />
           <canvas ref={petalsRef} className="invitation__petals" aria-hidden="true" />
         </div>
       </EnvelopeIntro>

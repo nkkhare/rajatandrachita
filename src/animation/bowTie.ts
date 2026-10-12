@@ -62,15 +62,16 @@ const sections: Section[] = (Object.keys(ARMS) as ArmName[]).map((name) => ({
 // ---- the choreography ----------------------------------------------------------
 
 /** Length of the whole formation, in seconds. */
-export const BOW_FORM_SECONDS = 8.0 / 1.2 / 0.9 / 0.9 / 0.8;   // then 10% slower twice and 20% slower (about 10.3 s)
+export const BOW_FORM_SECONDS = 8.0 / 1.2 / 0.9 / 0.9 / 0.8 * 0.9;   // then 10% slower twice, 20% slower, 10% faster (about 9.3 s)
 
 type Pose = { reveal: number; scale: number; turn: number };   // reveal in steps along the section
 
 // One continuous motion: a single eased clock drives everything, and each
 // section moves at a steady rate inside its own window. The windows overlap,
 // so something is always growing and nothing comes to rest until the end.
-// moves from the very first frame, eases gently to rest at the end
-const easeInOut = (x: number) => { const u = clamp01(x); return 0.3 * u + 0.7 * (u * u * (3 - 2 * u)); };
+// starts growing briskly from the very first frame (no slow wind-up), and
+// eases gently to rest at the end
+const easeInOut = (x: number) => { const u = clamp01(x); return 0.3 * u + 0.7 * Math.sin(u * Math.PI / 2); };
 
 function poses(t: number) {
   const u = easeInOut(t / BOW_FORM_SECONDS);
