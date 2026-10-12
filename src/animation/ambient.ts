@@ -63,9 +63,19 @@ float noise(vec2 p) {
 // drifts only gently, between 80% and 100%, so it never falls calm), and it
 // reaches the right side ~3 s after the left and the bottom ~2 s after the top
 // as it passes through.
+// the same breeze a quarter-cycle on: as a stem sways sideways it also dips
+// and lifts slightly, so it traces a soft loop and never stops dead
+float windQ(vec2 x, float delay) {
+  float tt = uTime - delay - x.x * 0.003 - x.y * 0.0012;
+  return (0.74 * cos(TAU / 24.0 * tt) + 0.26 * cos(TAU / 37.0 * tt + 1.3))
+       * (0.88 + 0.12 * sin(TAU / 61.0 * tt + 0.4));
+}
 float wind(vec2 x, float delay) {
   float tt = uTime - delay - x.x * 0.003 - x.y * 0.0012;
-  return sin(TAU / 24.0 * tt) * (0.9 + 0.1 * sin(TAU / 47.0 * tt + 0.6));
+  // a main 24 s sway, a softer 37 s swing and a slow 61 s gust that never line
+  // up, so the breeze never settles into one repeating pendulum
+  return (0.74 * sin(TAU / 24.0 * tt) + 0.26 * sin(TAU / 37.0 * tt + 1.3))
+       * (0.88 + 0.12 * sin(TAU / 61.0 * tt + 0.4));
 }
 
 // How much the breeze turns a garland at x, and which way: each garland pivots
@@ -93,15 +103,21 @@ vec2 stemField(vec2 x) {
   float fromTop = 1.0 - smoothstep(620.0, 860.0, x.y);
   vec2 rootX = vec2(x.x < SIZE.x * 0.5 ? 0.0 : SIZE.x, 0.0);
   vec2 qT = x - rootX, qB = x - rootX - vec2(0.0, SIZE.y);
-  vec2 turnT = (-qT.y / max(length(qT), 1.0)) * vec2(-qT.y, qT.x);
-  vec2 turnB = (0.45 + 0.55 * (-qB.y / max(length(qB), 1.0))) * vec2(-qB.y, qB.x);
+  // the vine bends rather than turning stiffly: near the root it barely moves,
+  // and the turn builds up toward the tips (curvature grows with length)
+  float rT = length(qT), rB = length(qB);
+  vec2 turnT = (-qT.y / max(rT, 1.0)) * min(rT / 175.0, 2.5) * vec2(-qT.y, qT.x);
+  vec2 turnB = (0.45 + 0.55 * (-qB.y / max(rB, 1.0))) * min(rB / 175.0, 2.5) * vec2(-qB.y, qB.x);
   vec3 sm = texture2D(uSway, x / SIZE).rgb;                    // r: foliage, g/b: px to scenery/frame
   vec2 reach = sm.r * radians(STEM_DEG) * mix(turnB, turnT, fromTop);   // the full swing here
   vec2 room = 3.0 + 0.2 * vec2(min(x.x, SIZE.x - x.x), min(x.y, SIZE.y - x.y));
   reach *= room / sqrt(room * room + reach * reach + 1e-4);
   float lim = 0.25 * max(min(sm.g, sm.b) * 255.0 - 6.0, 0.0);
   reach *= lim / sqrt(lim * lim + dot(reach, reach) + 1e-4);
-  return reach * wind(x, 0.0);
+  // the bend travels out along the vine: the tips answer ~3 s after the root,
+  // so when the base reverses the outer vine is still moving
+  float lag = mix(rB, rT, fromTop) / 230.0;
+  return reach * wind(x, lag) + vec2(0.0, 0.35 * length(reach)) * windQ(x, lag);
 }
 
 void main() {
@@ -169,7 +185,11 @@ void main() {
   //   flower heads   each also nods ~3-5 deg about its own stem, following
   //                  its stem's lean a moment later
   // Petals and leaves keep their painted shapes and ride with their piece.
-  // All of it is driven by one shared breeze (wind()), one 24 s swing.
+  // All of it is driven by one shared breeze (wind(): a 24 s sway, a 37 s
+  // swing and a 61 s gust that never line up). Vines bend more toward their
+  // tips, the bend travels out from the root (~3 s), and each part traces a
+  // soft loop (windQ) rather than a straight back-and-forth, so nothing stops
+  // dead. Outer petals tilt and lift slightly on their own, inside each flower.
   // Which piece is here is looked up where the content comes from (not where
   // it was), so every piece carries its own outline along as it moves and is
   // never clipped. A piece moves rigidly: the local stem motion at its centre,
@@ -196,13 +216,29 @@ void main() {
       vec2 rq;
       float lean = stemLean(c, rq);
       float follow = mix(0.6, 1.2, big);                        // s behind the stem
+      // mostly its vine's motion a moment later, plus a gentle nod of its own
+      // on cycles that differ from flower to flower
+      float own = 0.6 * sin(TAU / 29.0 * t + id * TAU) + 0.4 * sin(TAU / 43.0 * t + id * 17.0);
       float nod = radians(mix(HEAD_DEG_SMALL, HEAD_DEG_LARGE, big)) * lean
-                * (0.85 * wind(c, follow) + 0.15 * wind(c, follow + (id - 0.5) * 3.0));
+                * (0.72 * wind(c, follow) + 0.28 * own);
       vec2 stem = c.y < min(c.x, SIZE.x - c.x) ? vec2(0.0, -1.0) : vec2(c.x < SIZE.x * 0.5 ? -1.0 : 1.0, 0.0);
       vec3 sm = texture2D(uSway, c / SIZE).rgb;
       nod *= uRamp * clamp((min(sm.g, sm.b) * 255.0 - 8.0) / 16.0, 0.0, 1.0);
       vec2 q = s1 - (c + stem * R * 0.9);
       s1 -= nod * vec2(-q.y, q.x);                              // undo the nod
+      // petals: the centre stays put; outer petals tilt, lift and settle a
+      // little, each part of the flower at its own moment. Small and smooth, so
+      // shapes are kept; fades out at the flower's edge so nothing tears.
+      vec2 rel = s1 - c;
+      float pr = length(rel);
+      float outer = smoothstep(0.35 * R, R, pr) * (1.0 - smoothstep(1.0 * R, 1.2 * R, pr));
+      if (outer > 0.0) {
+        float pa = atan(rel.y, rel.x), sz = clamp(R / 40.0, 0.6, 1.4);
+        float breeze = 0.6 + 0.4 * wind(c, follow + 1.0);
+        float twist = radians(1.2) * outer * breeze * (0.65 * sin(TAU / 17.0 * t + 3.0 * pa + id * TAU) + 0.35 * sin(TAU / 23.0 * t + 2.0 * pa + id * 9.0));
+        float lift = 0.7 * sz * outer * outer * breeze * sin(TAU / 19.0 * t + 3.0 * pa + id * 4.0);
+        s1 -= uRamp * (twist * vec2(-rel.y, rel.x) + lift * rel / max(pr, 0.5));
+      }
     }
     // keep it only if the piece really does cover this pixel once moved;
     // otherwise look again from there (and in the end let the stems flex)
