@@ -219,12 +219,15 @@ export class BowTie {
           { canvas: part(layer, w2, n), pivot: at(0.75) },
         ] };
       }
-      // loops come back to the knot, so they turn about it: the outer, flowered
-      // half a little more than the rest
-      const tip = (u: number) => Math.sin(Math.PI * u) ** 2;
+      // loops come back to the knot, so they turn about it; their flower
+      // clusters (three bumps along the loop) each sway on their own
+      const bump = (c: number) => (u: number) => Math.max(0, 1 - Math.abs(u - c) / 0.25) ** 2 * Math.sin(Math.PI * u) ** 2;
+      const b1 = bump(0.25), b2 = bump(0.5), b3 = bump(0.75);
       return { name: sec.name, parts: [
-        { canvas: part(layer, (u) => 1 - tip(u), n), pivot: sec.anchor },
-        { canvas: part(layer, tip, n), pivot: sec.anchor },
+        { canvas: part(layer, (u) => 1 - b1(u) - b2(u) - b3(u), n), pivot: sec.anchor },
+        { canvas: part(layer, b1, n), pivot: at(0.1) },
+        { canvas: part(layer, b2, n), pivot: sec.anchor },
+        { canvas: part(layer, b3, n), pivot: at(0.9) },
       ] };
     });
   }
@@ -237,11 +240,14 @@ export class BowTie {
     const breeze = (period: number, lag: number, ph: number) =>
       0.8 * Math.sin(TAU * (seconds - lag) / period + ph) + 0.2 * Math.sin(TAU * (seconds - lag) / (period * 1.7) + ph * 1.9);
     const motion: Record<ArmName, { amps: number[]; period: number; ph: number }> = {
-      leftTail: { amps: [1.2, 2.0, 3.0], period: 6.5, ph: 0 },
-      rightTail: { amps: [1.2, 2.0, 3.0], period: 7.3, ph: 1.1 },
-      leftLoop: { amps: [0.35, 0.9], period: 8.2, ph: 0.5 },
-      rightLoop: { amps: [0.35, 0.9], period: 9.1, ph: 2.0 },
+      leftTail: { amps: [1.5, 2.5, 3.75], period: 6.5, ph: 0 },
+      rightTail: { amps: [1.5, 2.5, 3.75], period: 7.3, ph: 1.1 },
+      leftLoop: { amps: [0.45, 1.6, 1.4, 1.7], period: 8.2, ph: 0.5 },
+      rightLoop: { amps: [0.45, 1.5, 1.7, 1.4], period: 9.1, ph: 2.0 },
     };
+    // each part has its own rhythm and timing, so the flower clusters move as
+    // separate things in the same breeze
+    const own = [1, 1.13, 0.89, 1.21], offs = [0, 2.1, 4.3, 1.2];
     // each arm's overlapping parts are summed (additive) in a scratch canvas at
     // the target's resolution, so where parts overlap they add back up to the
     // painting exactly, then the arm is laid over the card
@@ -258,7 +264,7 @@ export class BowTie {
       const ctxArm = sc;
       ctxArm.save();
       arm.parts.forEach((pt, j) => {
-        const a = ramp * m.amps[j] * deg * breeze(m.period, chain ? 0.45 * j : 0.3 * j, m.ph);
+        const a = ramp * m.amps[j] * deg * breeze(m.period * (chain ? 1 : own[j]), chain ? 0.45 * j : 0.3 * j, m.ph + (chain ? 0 : offs[j]));
         if (!chain) ctxArm.save();
         ctxArm.translate(pt.pivot[0], pt.pivot[1]); ctxArm.rotate(a); ctxArm.translate(-pt.pivot[0], -pt.pivot[1]);
         ctxArm.drawImage(pt.canvas, 0, 0);

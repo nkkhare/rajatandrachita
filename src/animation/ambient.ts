@@ -44,9 +44,9 @@ varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 const float TAU = 6.2831853;
 // largest rotations, in degrees
-const float STEM_DEG = 18.7;         // thin outer stems, about their roots
-const float HEAD_DEG_SMALL = 4.95;   // small flower heads, about their stems
-const float HEAD_DEG_LARGE = 2.97;   // the large peonies
+const float STEM_DEG = 23.4;         // thin outer stems, about their roots
+const float HEAD_DEG_SMALL = 6.2;   // small flower heads, about their stems
+const float HEAD_DEG_LARGE = 3.7;   // the large peonies
 
 // smooth value noise, so motion is organic and never one repeating sine
 // (inputs wrapped to a small range so it stays precise on mobile GPUs)
@@ -243,7 +243,7 @@ void main() {
       // on cycles that differ from flower to flower
       float own = 0.6 * sin(TAU / 29.0 * t + id * TAU) + 0.4 * sin(TAU / 43.0 * t + id * 17.0);
       float nod = radians(mix(HEAD_DEG_SMALL, HEAD_DEG_LARGE, big)) * lean
-                * (0.72 * wind(c, follow) + 0.28 * own);
+                * (0.6 * wind(c, follow) + 0.4 * own);   // each flower nods more on its own
       vec2 stem = c.y < min(c.x, SIZE.x - c.x) ? vec2(0.0, -1.0) : vec2(c.x < SIZE.x * 0.5 ? -1.0 : 1.0, 0.0);
       vec3 sm = texture2D(uSway, c / SIZE).rgb;
       nod *= uRamp * clamp((min(sm.g, sm.b) * 255.0 - 8.0) / 16.0, 0.0, 1.0);
@@ -258,8 +258,8 @@ void main() {
       if (outer > 0.0) {
         float pa = atan(rel.y, rel.x), sz = clamp(R / 40.0, 0.6, 1.4);
         float breeze = 0.6 + 0.4 * wind(c, follow + 1.0);
-        float twist = radians(1.2) * outer * breeze * (0.65 * sin(TAU / 17.0 * t + 3.0 * pa + id * TAU) + 0.35 * sin(TAU / 23.0 * t + 2.0 * pa + id * 9.0));
-        float lift = 0.7 * sz * outer * outer * breeze * sin(TAU / 19.0 * t + 3.0 * pa + id * 4.0);
+        float twist = radians(1.5) * outer * breeze * (0.65 * sin(TAU / 17.0 * t + 3.0 * pa + id * TAU) + 0.35 * sin(TAU / 23.0 * t + 2.0 * pa + id * 9.0));
+        float lift = 0.875 * sz * outer * outer * breeze * sin(TAU / 19.0 * t + 3.0 * pa + id * 4.0);
         s1 -= uRamp * (twist * vec2(-rel.y, rel.x) + lift * rel / max(pr, 0.5));
       }
     }
