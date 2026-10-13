@@ -73,6 +73,7 @@ body { overflow-x: hidden; }
   height: 6.770833%;
   pointer-events: none;
   user-select: none;
+  opacity: 0.85;   /* softened 15% into the sky, still crisp */
 }
 
 .invitation__ambient {
