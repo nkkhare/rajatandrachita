@@ -11,8 +11,6 @@ const BOW = { x: 434.55, y: 472, width: 170.4 };
 const SCALE = BOW.width / BOW_SIZE.width;
 // the canvas just covers the finished bow, with a little room for the settle
 const VIEW = { x0: -6, x1: 204, y0: -6, y1: 143 };
-// the drawn frames already match the painting, so the handoff is invisible
-const HANDOFF = { start: BOW_FORM_SECONDS, end: BOW_FORM_SECONDS + 0.08 };
 
 const pct = (value: number, of: number) => `${((value / of) * 100).toFixed(4)}%`;
 
@@ -55,18 +53,19 @@ export function BowTie({ play }: Props) {
       const k = w / (VIEW.x1 - VIEW.x0);
       ctx.setTransform(k, 0, 0, k, -VIEW.x0 * k, -VIEW.y0 * k);
       ctx.imageSmoothingQuality = 'high';
-      tie.draw(ctx, seconds);
+      // forms, then keeps swaying gently in the breeze from its final pose
+      if (seconds < BOW_FORM_SECONDS) tie.draw(ctx, seconds);
+      else tie.drawSway(ctx, seconds - BOW_FORM_SECONDS);
     };
 
     if (!play) { draw(0); return; }                  // nothing yet: the bow forms in place
     const began = performance.now();
+    let last = -1;
     const tick = (now: number) => {
       const seconds = (now - began) / 1000;
-      draw(seconds);
-      const handoff = Math.min(1, Math.max(0, (seconds - HANDOFF.start) / (HANDOFF.end - HANDOFF.start)));
-      if (paintingRef.current) paintingRef.current.style.opacity = String(handoff);
-      if (seconds < HANDOFF.end) frame = requestAnimationFrame(tick);
-      else setDone(true);
+      // smooth while forming; ~30 fps is plenty for the slow sway afterwards
+      if (seconds < BOW_FORM_SECONDS || seconds - last >= 1 / 30) { draw(seconds); last = seconds; }
+      frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);

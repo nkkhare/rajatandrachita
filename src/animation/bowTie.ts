@@ -184,4 +184,89 @@ export class BowTie {
     ctx.restore();
   }
 
+
+  // ---- after forming: a gentle, endless breeze ------------------------------
+  // The tails hang as a chain of three overlapping parts, each turning a little
+  // more than the one above it and a moment later, so they ripple like hanging
+  // vines; the loops (and their blossoms) sway very slightly, mostly at their
+  // outer ends, about the knot; the knot itself stays put. With every angle at
+  // zero this draws the finished painting exactly, so the hand-over from
+  // forming is seamless, and the sway eases in over the first two seconds.
+  private sway?: { name: ArmName; parts: { canvas: HTMLCanvasElement; pivot: Pt }[] }[];
+  private scratch?: HTMLCanvasElement;
+
+  private prepareSway() {
+    const W = BOW_SIZE.width, H = BOW_SIZE.height;
+    const part = (layer: Layer, weight: (u: number) => number, n: number) => {
+      const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d')!; const img = ctx.createImageData(W, H);
+      for (let j = 0; j < layer.pixels.length; j++) {
+        const p = layer.pixels[j] * 4, u = clamp01(layer.order[j] / n);
+        img.data[p] = layer.image.data[p]; img.data[p + 1] = layer.image.data[p + 1]; img.data[p + 2] = layer.image.data[p + 2];
+        img.data[p + 3] = layer.alpha[j] * weight(u);
+      }
+      ctx.putImageData(img, 0, 0);
+      return canvas;
+    };
+    this.sway = sections.map((sec) => {
+      const layer = this.layers.find((l) => l.name === sec.name)!;
+      const n = sec.points.length - 1, at = (u: number) => sec.points[Math.round(u * n)];
+      if (sec.name.endsWith('Tail')) {
+        const w0 = (u: number) => Math.max(0, 1 - u / 0.5), w2 = (u: number) => Math.max(0, (u - 0.5) / 0.5);
+        return { name: sec.name, parts: [
+          { canvas: part(layer, w0, n), pivot: sec.anchor },
+          { canvas: part(layer, (u) => 1 - w0(u) - w2(u), n), pivot: at(0.25) },
+          { canvas: part(layer, w2, n), pivot: at(0.75) },
+        ] };
+      }
+      // loops come back to the knot, so they turn about it: the outer, flowered
+      // half a little more than the rest
+      const tip = (u: number) => Math.sin(Math.PI * u) ** 2;
+      return { name: sec.name, parts: [
+        { canvas: part(layer, (u) => 1 - tip(u), n), pivot: sec.anchor },
+        { canvas: part(layer, tip, n), pivot: sec.anchor },
+      ] };
+    });
+  }
+
+  /** Draws the finished bow swaying, `seconds` after it finished forming. */
+  drawSway(ctx: CanvasRenderingContext2D, seconds: number) {
+    if (!this.sway) this.prepareSway();
+    const deg = Math.PI / 180, TAU = Math.PI * 2;
+    const ramp = smooth(seconds / 2);
+    const breeze = (period: number, lag: number, ph: number) =>
+      0.8 * Math.sin(TAU * (seconds - lag) / period + ph) + 0.2 * Math.sin(TAU * (seconds - lag) / (period * 1.7) + ph * 1.9);
+    const motion: Record<ArmName, { amps: number[]; period: number; ph: number }> = {
+      leftTail: { amps: [1.2, 2.0, 3.0], period: 6.5, ph: 0 },
+      rightTail: { amps: [1.2, 2.0, 3.0], period: 7.3, ph: 1.1 },
+      leftLoop: { amps: [0.35, 0.9], period: 8.2, ph: 0.5 },
+      rightLoop: { amps: [0.35, 0.9], period: 9.1, ph: 2.0 },
+    };
+    // each arm's overlapping parts are summed (additive) in a scratch canvas at
+    // the target's resolution, so where parts overlap they add back up to the
+    // painting exactly, then the arm is laid over the card
+    const target = ctx.canvas, tf = ctx.getTransform();
+    if (!this.scratch || this.scratch.width !== target.width || this.scratch.height !== target.height) {
+      this.scratch = document.createElement('canvas'); this.scratch.width = target.width; this.scratch.height = target.height;
+    }
+    const sc = this.scratch.getContext('2d')!;
+    for (const name of ['leftTail', 'rightTail', 'leftLoop', 'rightLoop'] as const) {
+      const arm = this.sway!.find((a) => a.name === name)!, m = motion[name];
+      const chain = name.endsWith('Tail');
+      sc.setTransform(1, 0, 0, 1, 0, 0); sc.clearRect(0, 0, target.width, target.height);
+      sc.setTransform(tf); sc.globalCompositeOperation = 'lighter'; sc.imageSmoothingQuality = 'high';
+      const ctxArm = sc;
+      ctxArm.save();
+      arm.parts.forEach((pt, j) => {
+        const a = ramp * m.amps[j] * deg * breeze(m.period, chain ? 0.45 * j : 0.3 * j, m.ph);
+        if (!chain) ctxArm.save();
+        ctxArm.translate(pt.pivot[0], pt.pivot[1]); ctxArm.rotate(a); ctxArm.translate(-pt.pivot[0], -pt.pivot[1]);
+        ctxArm.drawImage(pt.canvas, 0, 0);
+        if (!chain) ctxArm.restore();
+      });
+      ctxArm.restore();
+      ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(this.scratch, 0, 0); ctx.restore();
+    }
+    ctx.drawImage(this.layers.find((l) => l.name === 'knot')!.canvas, 0, 0);
+  }
 }
