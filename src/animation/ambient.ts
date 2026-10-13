@@ -43,6 +43,8 @@ uniform float uTime, uRamp;
 varying vec2 vUv;
 const vec2 SIZE = vec2(1024.0, 1536.0);
 const float TAU = 6.2831853;
+// the flowers around the card are held still (0.0); 1.0 restores their sway
+const float FLOWER_MOTION = 0.0;
 // largest rotations, in degrees
 const float STEM_DEG = 23.4;         // thin outer stems, about their roots
 const float HEAD_DEG_SMALL = 6.2;   // small flower heads, about their stems
@@ -271,6 +273,7 @@ void main() {
     s0 = s1;
   }
   vec2 foliage = px - src;
+  foliage *= FLOWER_MOTION;
   // and, whatever a piece does, nothing comes within reach of the frame or scenery
   vec3 here = texture2D(uSway, vUv).rgb;
   float reachMax = 0.6 * max(min(here.g, here.b) * 255.0 - 4.0, 0.0);
